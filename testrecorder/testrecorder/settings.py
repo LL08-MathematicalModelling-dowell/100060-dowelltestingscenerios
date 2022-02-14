@@ -25,10 +25,8 @@ SECRET_KEY = 'yxm^%2i@a0*pd(@5ucvjpiqd1w$2t+2#my6yw2gjy&56dtl+!x'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['100034.pythonanywhere.com']
-#ALLOWED_HOSTS = []
-#ALLOWED_HOSTS = ['192.168.42.168', '127.0.0.1', 'localhost', '0.0.0.0']
-#ALLOWED_HOSTS = ['desktop-io1omsg.local', '127.0.0.1', 'localhost', '0.0.0.0', 'raspberrypi.local']
+#ALLOWED_HOSTS = ['100034.pythonanywhere.com']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -138,5 +136,3 @@ STATICFILES_DIRS = [
    os.path.join(BASE_DIR, 'static/')
 ]
 STATIC_URL = '/static/'
-
-#FILE_UPLOAD_HANDLERS = ['django.core.files.uploadhandler.TemporaryFileUploadHandler',]

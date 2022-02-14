@@ -32,12 +32,19 @@ let screenAudioConstraints = {
 };
 let recordingSynched = false;
 
+let fileRandomString = "qwerty";
+
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
   let seleniumIDEModal = new bootstrap.Modal(document.getElementById('seleniumIDEModal'));
   seleniumIDEModal.show();
 }
+
+// Generate random string for appending to file name
+generateString(6).then((randomString) => {
+  fileRandomString = randomString;
+})
 
 // Gets webcam stream
 async function captureMediaDevices(currentMediaConstraints) {
@@ -90,7 +97,7 @@ async function recordStream() {
   webcamRecorder = new MediaRecorder(webCamStream);
 
   webcamRecorder.ondataavailable = event => {
-    if ((event.data.size > 0)&&(recordingSynched == true)) {
+    if ((event.data.size > 0) && (recordingSynched == true)) {
       webcamChunks.push(event.data)
     }
   }
@@ -148,7 +155,7 @@ async function recordMergedStream() {
     mergedStreamRecorder = new MediaRecorder(mergedStream);
 
     mergedStreamRecorder.ondataavailable = event => {
-      if ((event.data.size > 0)&&(recordingSynched == true)) {
+      if ((event.data.size > 0) && (recordingSynched == true)) {
         mergedStreamChunks.push(event.data)
       }
     }
@@ -178,6 +185,14 @@ async function stopRecording() {
   // Enable start recording button
   document.getElementById("start").disabled = false;
 
+  // Show upload in progress modal
+  let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
+  uploadModal.show();
+
+  // Clear the progress bar
+  let globalProgress = 0;
+  await setProgressBarValue(globalProgress);
+
   // Check the settings
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
@@ -193,13 +208,50 @@ async function stopRecording() {
 
 
     if (webcamChunks.length != 0) {
-      const webcambBlobs = new Blob(webcamChunks, {
-        type: 'video/webm'
-      })
+      let prog = 0;
+      let fileName = testNameValue + "_" + "webcam_" + fileRandomString + ".webm"
+      for (let i = 0; i < webcamChunks.length; i++) {
+        let fd = new FormData();
+        fd.set('video_bytes', webcamChunks[i]);
+        fd.set('fileName', fileName);
+        url = "/file/upload/bytes/"
+        await fetch(url, { method: 'post', body: fd }).then((res) => {
+          res.text();
+          if (res.status === 201) {
+            // Show some progress
+            prog = Math.floor((12 / webcamChunks.length) * i);
+            setProgressBarValue(globalProgress + prog);
+          } else {
+            console.log(response.status)
+    
+            // Hide upload in progress modal
+            const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+            btnCloseUploadigModal.click();
+    
+            // Show upload failed modal
+            showUploadFailedModal();
 
-      let webcamFileName = testNameValue + '_' + "webcam.webm";
-      let webcamVideo = new File([webcambBlobs], webcamFileName, { type: 'video/webm' });
-      testRecordingData.append('webcam_file', webcamVideo);
+            // Break from loop
+            i = i + webcamChunks.length;
+          }
+        }).catch(error => {
+          msg = "STATUS: Files Upload Failed."
+          document.getElementById("app-status").innerHTML = msg;
+    
+          // Hide upload in progress modal
+          const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+          btnCloseUploadigModal.click();
+    
+          // Show upload failed modal
+          showUploadFailedModal();
+
+          // Break from loop
+          i = i + webcamChunks.length;
+        });
+      }
+
+      globalProgress = globalProgress + prog;
+      testRecordingData.set('webcam_file', fileName);
     }
   }
 
@@ -208,13 +260,49 @@ async function stopRecording() {
 
 
     if (screenRecorderChunks.length != 0) {
-      const screenBlobs = new Blob(screenRecorderChunks, {
-        type: 'video/webm'
-      })
+      let prog = 0;
+      let fileName = testNameValue + "_" + "screen_" + fileRandomString + ".webm"
+      for (let i = 0; i < screenRecorderChunks.length; i++) {
+        let fd = new FormData();
+        fd.set('video_bytes', screenRecorderChunks[i]);
+        fd.set('fileName', fileName);
+        url = "/file/upload/bytes/"
+        await fetch(url, { method: 'post', body: fd }).then((res) => {
+          res.text();
+          if (res.status === 201) {
+            // Show some progress
+            prog = Math.floor((12 / screenRecorderChunks.length) * i);
+            setProgressBarValue(globalProgress + prog);
+          } else {
+            console.log(response.status)
+    
+            // Hide upload in progress modal
+            const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+            btnCloseUploadigModal.click();
+    
+            // Show upload failed modal
+            showUploadFailedModal();
 
-      let screenFileName = testNameValue + '_' + "screen.webm";
-      let screenVideo = new File([screenBlobs], screenFileName, { type: 'video/webm' });
-      testRecordingData.append('screen_file', screenVideo);
+            // Break from loop
+            i = i + screenRecorderChunks.length;
+          }
+        }).catch(error => {
+          msg = "STATUS: Files Upload Failed."
+          document.getElementById("app-status").innerHTML = msg;
+    
+          // Hide upload in progress modal
+          const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+          btnCloseUploadigModal.click();
+    
+          // Show upload failed modal
+          showUploadFailedModal();
+
+          // Break from loop
+          i = i + screenRecorderChunks.length;
+        });
+      }
+      globalProgress = globalProgress + prog;
+      testRecordingData.set('screen_file', fileName);
     }
   }
 
@@ -223,23 +311,60 @@ async function stopRecording() {
     //mergedStreamRecorder.stop();
 
     if (mergedStreamChunks.length != 0) {
-      const mergedStreamBlobs = new Blob(mergedStreamChunks, {
-        type: 'video/webm'
-      })
+      let prog = 0;
+      let fileName = testNameValue + "_" + "merged_" + fileRandomString + ".webm"
+      for (let i = 0; i < mergedStreamChunks.length; i++) {
+        let fd = new FormData();
+        fd.set('video_bytes', mergedStreamChunks[i]);
+        fd.set('fileName', fileName);
+        url = "/file/upload/bytes/"
+        await fetch(url, { method: 'post', body: fd }).then((res) => {
+          res.text();
+          if (res.status === 201) {
+            // Show some progress
+            prog = Math.floor((12 / mergedStreamChunks.length) * i);
+            setProgressBarValue(globalProgress + prog);
+          } else {
+            console.log(response.status)
+    
+            // Hide upload in progress modal
+            const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+            btnCloseUploadigModal.click();
+    
+            // Show upload failed modal
+            showUploadFailedModal();
 
-      let mergedStreamFileName = testNameValue + '_' + "mergedstream.webm";
-      let mergedStreamVideo = new File([mergedStreamBlobs], mergedStreamFileName, { type: 'video/webm' });
-      testRecordingData.append('merged_webcam_screen_file', mergedStreamVideo);
+            // Break from loop
+            i = i + mergedStreamChunks.length;
+          }
+        }).catch(error => {
+          msg = "STATUS: Files Upload Failed."
+          document.getElementById("app-status").innerHTML = msg;
+    
+          // Hide upload in progress modal
+          const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+          btnCloseUploadigModal.click();
+    
+          // Show upload failed modal
+          showUploadFailedModal();
+
+          // Break from loop
+          i = i + mergedStreamChunks.length;
+        });
+      }
+
+      globalProgress = globalProgress + prog;
+      testRecordingData.set('merged_webcam_screen_file', fileName);
     }
   }
 
   // Append test details data
-  testRecordingData.append('user_name', usernameValue);
-  testRecordingData.append('test_description', testDescriptionValue);
-  testRecordingData.append('test_name', testNameValue);
+  testRecordingData.set('user_name', usernameValue);
+  testRecordingData.set('test_description', testDescriptionValue);
+  testRecordingData.set('test_name', testNameValue);
 
   // Send data to server for storage
-  sendAvailableData();
+  sendAvailableData(globalProgress);
 }
 
 // Records screen and audio
@@ -272,7 +397,8 @@ async function recordScreenAndAudio() {
   screenRecorder = new MediaRecorder(stream)
 
   screenRecorder.ondataavailable = event => {
-    if ((event.data.size > 0)&&(recordingSynched == true)) {
+    if ((event.data.size > 0) && (recordingSynched == true)) {
+      //if (event.data.size > 0) {
       screenRecorderChunks.push(event.data)
     }
   }
@@ -290,6 +416,12 @@ async function recordScreenAndAudio() {
 async function startRecording() {
   // Remove focus from start recording button
   document.getElementById('start').blur();
+
+  // Generate random string for appending to file name
+  generateString(6).then((randomString) => {
+    fileRandomString = randomString;
+    //console.log("fileRandomString: ", fileRandomString)
+  })
 
   // Enable or disable audio recording
   try {
@@ -343,7 +475,7 @@ async function startRecording() {
       screenRecorder.start(200);
       webcamRecorder.start(200);
       mergedStreamRecorder.start(200);
-      
+
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
     }
@@ -358,8 +490,11 @@ async function startRecording() {
       // Show webcam recording has started
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
-      await recordStream();
-      recordingSynched = true;
+
+      recordStream().then(()=>{
+        recordingSynched = true;
+        webcamRecorder.start(200);
+      });
     }
     catch (err) {
       let msg = "STATUS: Webcam recording Error."
@@ -372,8 +507,11 @@ async function startRecording() {
       // Show screen recording has started
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
-      await recordScreenAndAudio();
-      recordingSynched = true;
+
+      recordScreenAndAudio().then(()=>{
+        recordingSynched = true;
+        screenRecorder.start(200);
+      });
     }
     catch (err) {
       let msg = "STATUS: Screen recording Error."
@@ -508,14 +646,7 @@ async function validateModal() {
 }
 
 // Sends recorded test data using axios
-async function sendAvailableData() {
-  // Show upload in progress modal
-  let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
-  uploadModal.show();
-
-  // Clear the progress bar
-  await setProgressBarValue(0);
-
+async function sendAvailableData(prevProgress) {
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
@@ -529,14 +660,14 @@ async function sendAvailableData() {
       onUploadProgress: (p) => {
         let uploadedPercentage = 0;
         if (p.total > 0) {
-          uploadedPercentage = Math.floor((p.loaded * 100) / p.total);
+          uploadedPercentage = Math.floor((p.loaded * 12) / p.total);
         }
         else {
           uploadedPercentage = 0;
         }
 
         // Update the progress bar
-        setProgressBarValue(uploadedPercentage);
+        setProgressBarValue(uploadedPercentage + prevProgress);
       }
     }).then(response => {
       console.log(response)
@@ -602,8 +733,14 @@ async function retryTestFilesUpload() {
   msg = "STATUS: Trying to send files again."
   document.getElementById("app-status").innerHTML = msg;
 
-  // Try to Send test data again
-  sendAvailableData();
+  // Generate random string for appending to file name
+  generateString(6).then((randomString) => {
+    fileRandomString = randomString;
+    //console.log("fileRandomString: ", fileRandomString);
+
+    // Try to Send test data again
+    stopRecording();
+  })
 }
 
 // Gets the key log file
@@ -628,7 +765,8 @@ async function uploadSeleniumIdeFile() {
     }
 
     // Append key log file
-    testRecordingData.append('key_log_file', currentKeyLogFile);
+    let newFileName = fileRandomString+"_"+currentKeyLogFile.name;
+    testRecordingData.set('key_log_file', currentKeyLogFile,newFileName);
 
     // Hide the get key log file modal and proceed to stop test
     const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
@@ -778,4 +916,28 @@ async function getCookie(name) {
     }
   }
   return cookieValue;
+}
+
+// Generates a random string for attaching to file names
+async function generateString(length) {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}
+
+// Shows upload failed modal
+async function showUploadFailedModal(){
+  modalstate = document.getElementById('uploadFailed').classList.contains('show');
+  //console.log("modalstate", modalstate);
+
+  if (modalstate != true){
+    let uploadFailedModal = document.getElementById('uploadFailed');
+    uploadFailedModal.classList.add('show');
+    //console.log("modal shown");
+  }
 }
