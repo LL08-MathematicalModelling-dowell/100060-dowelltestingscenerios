@@ -44,7 +44,7 @@
         <div class="row my-custom-row justify-content-center mt-3">
 
             <!-- Settings -->
-            <div class="col-sm-6">
+            <div class="col-sm-4">
                 <div class="col-sm-6">
                     <div class="bg-light">
                         <h6>Settings</h6>
@@ -72,7 +72,7 @@
             </div>
 
             <!-- Controls -->
-            <div class="col-sm-6">
+            <div class="col-sm-8">
                 <div class="row bg-light ">
                     <div class="row ">
                         <div class="col-sm-12 ">
@@ -84,16 +84,28 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-sm-6 mt-3">
+                                <div class="col-sm-4 mt-3">
                                     <button type="button" class="btn btn-danger btn-sm w-100" id="start"
                                         data-bs-toggle="modal" data-bs-target="#test-details-modal">Start
                                         Recording</button>
                                 </div>
 
-                                <div class="col-sm-6 mt-3">
+                                <div class="col-sm-4 mt-3">
                                     <button type="button" class="btn btn-success btn-sm w-100" id="stop"
                                         onClick="keyLogFileCheck()">Save/Stop
                                         Recording</button>
+                                </div>
+
+                                <div class="col-sm-4 mt-3">
+                                    <form action="{% url 'view_records' %}" method="POST">
+                                        {% csrf_token %}
+                                        <input id="webcam_link" name="webcam_link" value="#" type="hidden">
+                                        <input id="screen_link" name="screen_link" value="#" type="hidden">
+                                        <input id="merged_link" name="merged_link" value="#" type="hidden">
+                                        <button type="submit" class="btn btn-info btn-sm w-100" id="view_records">
+                                            View Recording
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 

@@ -676,6 +676,9 @@ async function sendAvailableData(prevProgress) {
         msg = "STATUS: Files Uploaded."
         document.getElementById("app-status").innerHTML = msg;
 
+        // Set current video file links on mega drive
+        set_video_links(response.data)
+
         // Clear previous test data
         usernameValue = null;
         testNameValue = null;
@@ -940,4 +943,18 @@ async function showUploadFailedModal(){
     uploadFailedModal.classList.add('show');
     //console.log("modal shown");
   }
+}
+
+async function view_video_records(){
+  alert("Hellow from view")
+}
+
+async function set_video_links(linksData){
+  console.log("linksData",linksData)
+  let webcamLink = document.getElementById('webcam_link');
+  let screenLink = document.getElementById('screen_link');
+  let mergedLink = document.getElementById('merged_link');
+  webcamLink.value = linksData.webcam_file; 
+  screenLink.value = linksData.screen_file;
+  mergedLink.value = linksData.merged_webcam_screen_file;
 }
