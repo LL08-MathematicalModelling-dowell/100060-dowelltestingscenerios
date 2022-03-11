@@ -97,15 +97,18 @@
                                 </div>
 
                                 <div class="col-sm-4 mt-3">
-                                    <form action="{% url 'view_records' %}" method="POST">
+                                    <!--<form action="{% url 'view_records' %}" method="POST" target="_blank">
                                         {% csrf_token %}
                                         <input id="webcam_link" name="webcam_link" value="#" type="hidden">
                                         <input id="screen_link" name="screen_link" value="#" type="hidden">
                                         <input id="merged_link" name="merged_link" value="#" type="hidden">
                                         <button type="submit" class="btn btn-info btn-sm w-100" id="view_records">
                                             View Recording
-                                        </button>
-                                    </form>
+                                        </button>goToPage(event)
+                                    </form>-->
+                                    <button type="button" class="btn btn-info btn-sm w-100" id="view_records" onclick="goToPage(event)" disabled>
+                                        View Recording
+                                    </button>
                                 </div>
                             </div>
 
@@ -313,6 +316,9 @@
 
     <!-- Video Stream Merger JavaScript -->
     <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
+
+    <!-- YouTube API JavaScript -->
+    <script src="https://apis.google.com/js/api.js"></script>
 
     <!-- Application JavaScript -->
     <script src="{% static '/js/index.js' %}"></script>

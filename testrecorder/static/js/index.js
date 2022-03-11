@@ -34,6 +34,12 @@ let recordingSynched = false;
 
 let fileRandomString = "qwerty";
 
+let appWebsocket = null;
+let streamWebcamToYT = false;
+let streamScreenToYT = false;
+let streamMergedToYT = false;
+let newBroadcastID = null;
+let btnViewRecords = document.getElementById('view_records');
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -94,11 +100,15 @@ async function recordStream() {
   video.srcObject = webCamStream
   video.muted = true
 
-  webcamRecorder = new MediaRecorder(webCamStream);
+  webcamRecorder = new MediaRecorder(webCamStream, {
+    mimeType: 'video/webm;codecs=h264',
+    videoBitsPerSecond: 3000000
+  });
 
   webcamRecorder.ondataavailable = event => {
-    if ((event.data.size > 0) && (recordingSynched == true)) {
-      webcamChunks.push(event.data)
+    if ((event.data.size > 0) && (recordingSynched == true) && (streamWebcamToYT == true)) {
+      //webcamChunks.push(event.data);
+      appWebsocket.send(event.data);
     }
   }
 
@@ -152,11 +162,15 @@ async function recordMergedStream() {
 
     // We now have a merged MediaStream!
     const mergedStream = merger.result
-    mergedStreamRecorder = new MediaRecorder(mergedStream);
+    mergedStreamRecorder = new MediaRecorder(mergedStream, {
+      mimeType: 'video/webm;codecs=h264',
+      videoBitsPerSecond: 3000000
+    });
 
     mergedStreamRecorder.ondataavailable = event => {
-      if ((event.data.size > 0) && (recordingSynched == true)) {
-        mergedStreamChunks.push(event.data)
+      if ((event.data.size > 0) && (recordingSynched == true) && (streamMergedToYT == true)) {
+        //mergedStreamChunks.push(event.data);
+        appWebsocket.send(event.data);
       }
     }
 
@@ -182,10 +196,19 @@ async function recordMergedStream() {
 
 // Stops webcam and screen recording
 async function stopRecording() {
+  // Close the websocket and stop streaming
+  await stopStreamin();
+
+  // Transition the broadcast to complete state
+  await endBroadcast();
+
   // Enable start recording button
   document.getElementById("start").disabled = false;
 
-  // Show upload in progress modal
+  // Enable view records button
+  btnViewRecords.disabled = false;
+
+  /*// Show upload in progress modal
   let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
   uploadModal.show();
 
@@ -223,11 +246,11 @@ async function stopRecording() {
             setProgressBarValue(globalProgress + prog);
           } else {
             console.log(response.status)
-    
+
             // Hide upload in progress modal
             const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
             btnCloseUploadigModal.click();
-    
+
             // Show upload failed modal
             showUploadFailedModal();
 
@@ -237,11 +260,11 @@ async function stopRecording() {
         }).catch(error => {
           msg = "STATUS: Files Upload Failed."
           document.getElementById("app-status").innerHTML = msg;
-    
+
           // Hide upload in progress modal
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
           btnCloseUploadigModal.click();
-    
+
           // Show upload failed modal
           showUploadFailedModal();
 
@@ -275,11 +298,11 @@ async function stopRecording() {
             setProgressBarValue(globalProgress + prog);
           } else {
             console.log(response.status)
-    
+
             // Hide upload in progress modal
             const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
             btnCloseUploadigModal.click();
-    
+
             // Show upload failed modal
             showUploadFailedModal();
 
@@ -289,11 +312,11 @@ async function stopRecording() {
         }).catch(error => {
           msg = "STATUS: Files Upload Failed."
           document.getElementById("app-status").innerHTML = msg;
-    
+
           // Hide upload in progress modal
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
           btnCloseUploadigModal.click();
-    
+
           // Show upload failed modal
           showUploadFailedModal();
 
@@ -326,11 +349,11 @@ async function stopRecording() {
             setProgressBarValue(globalProgress + prog);
           } else {
             console.log(response.status)
-    
+
             // Hide upload in progress modal
             const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
             btnCloseUploadigModal.click();
-    
+
             // Show upload failed modal
             showUploadFailedModal();
 
@@ -340,11 +363,11 @@ async function stopRecording() {
         }).catch(error => {
           msg = "STATUS: Files Upload Failed."
           document.getElementById("app-status").innerHTML = msg;
-    
+
           // Hide upload in progress modal
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
           btnCloseUploadigModal.click();
-    
+
           // Show upload failed modal
           showUploadFailedModal();
 
@@ -364,7 +387,7 @@ async function stopRecording() {
   testRecordingData.set('test_name', testNameValue);
 
   // Send data to server for storage
-  sendAvailableData(globalProgress);
+  sendAvailableData(globalProgress);*/
 }
 
 // Records screen and audio
@@ -394,12 +417,16 @@ async function recordScreenAndAudio() {
     video.muted = true
   }
 
-  screenRecorder = new MediaRecorder(stream)
+  screenRecorder = new MediaRecorder(stream, {
+    mimeType: 'video/webm;codecs=h264',
+    videoBitsPerSecond: 3000000
+  });
 
   screenRecorder.ondataavailable = event => {
-    if ((event.data.size > 0) && (recordingSynched == true)) {
+    if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
       //if (event.data.size > 0) {
-      screenRecorderChunks.push(event.data)
+      //screenRecorderChunks.push(event.data)
+      appWebsocket.send(event.data);
     }
   }
 
@@ -414,6 +441,18 @@ async function recordScreenAndAudio() {
 
 // Checks recording settings and starts the recording
 async function startRecording() {
+
+  /*// Create a websocket for streaming recording data
+  appWebsocket = await createWebsocket();
+  console.log("appWebsocket: ", appWebsocket);
+  console.log("appWebsocket readyState open: ", appWebsocket.OPEN);
+  console.log("appWebsocket readyState closing: ", appWebsocket.CLOSING);
+  console.log("appWebsocket readyState closed: ", appWebsocket.CLOSED);
+  if (appWebsocket == null) {
+    // Failed to create websocket
+    return;
+  }*/
+
   // Remove focus from start recording button
   document.getElementById('start').blur();
 
@@ -472,6 +511,9 @@ async function startRecording() {
 
       // Synchronize recording
       recordingSynched = true;
+      streamWebcamToYT = false;
+      streamScreenToYT = false;
+      streamMergedToYT = true;
       screenRecorder.start(200);
       webcamRecorder.start(200);
       mergedStreamRecorder.start(200);
@@ -491,9 +533,13 @@ async function startRecording() {
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
 
-      recordStream().then(()=>{
+      recordStream().then(() => {
         recordingSynched = true;
+        streamWebcamToYT = true;
+        streamScreenToYT = false;
+        streamMergedToYT = false;
         webcamRecorder.start(200);
+        streamWebcamToYT = true;
       });
     }
     catch (err) {
@@ -508,8 +554,11 @@ async function startRecording() {
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
 
-      recordScreenAndAudio().then(()=>{
+      recordScreenAndAudio().then(() => {
         recordingSynched = true;
+        streamWebcamToYT = false;
+        streamScreenToYT = true;
+        streamMergedToYT = false;
         screenRecorder.start(200);
       });
     }
@@ -641,7 +690,8 @@ async function validateModal() {
     document.getElementById("start").disabled = true;
 
     // Start the test now
-    await startRecording();
+    //await startRecording();
+    await createWebsocket();
   }
 }
 
@@ -729,7 +779,7 @@ async function sendAvailableData(prevProgress) {
 
 // A function to retry sending test data and files to server
 async function retryTestFilesUpload() {
-  // Hide upload failed modal 
+  // Hide upload failed modal
   const btnCloseUploadFailedModal = document.getElementById('btnCloseUploadFailedModal');
   btnCloseUploadFailedModal.click();
 
@@ -768,8 +818,8 @@ async function uploadSeleniumIdeFile() {
     }
 
     // Append key log file
-    let newFileName = fileRandomString+"_"+currentKeyLogFile.name;
-    testRecordingData.set('key_log_file', currentKeyLogFile,newFileName);
+    let newFileName = fileRandomString + "_" + currentKeyLogFile.name;
+    testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
 
     // Hide the get key log file modal and proceed to stop test
     const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
@@ -934,27 +984,202 @@ async function generateString(length) {
 }
 
 // Shows upload failed modal
-async function showUploadFailedModal(){
+async function showUploadFailedModal() {
   modalstate = document.getElementById('uploadFailed').classList.contains('show');
   //console.log("modalstate", modalstate);
 
-  if (modalstate != true){
+  if (modalstate != true) {
     let uploadFailedModal = document.getElementById('uploadFailed');
     uploadFailedModal.classList.add('show');
     //console.log("modal shown");
   }
 }
 
-async function view_video_records(){
+async function view_video_records() {
   alert("Hellow from view")
 }
 
-async function set_video_links(linksData){
-  console.log("linksData",linksData)
+async function set_video_links(linksData) {
+  console.log("linksData", linksData)
   let webcamLink = document.getElementById('webcam_link');
   let screenLink = document.getElementById('screen_link');
   let mergedLink = document.getElementById('merged_link');
-  webcamLink.value = linksData.webcam_file; 
+  webcamLink.value = linksData.webcam_file;
   screenLink.value = linksData.screen_file;
+  //screenLink.value = "https://youtu.be/9Kann9lg1O8";
   mergedLink.value = linksData.merged_webcam_screen_file;
+}
+
+/*async function createWebsocket() {
+  try {
+    let wsStart = 'ws://'
+    let endpoint = wsStart + window.location.host + "/ws/app/"
+    let socket = new WebSocket(endpoint)
+    console.log(endpoint)
+    //appWebsocket = socket;
+    return socket;
+  } catch (error) {
+    let msg = "STATUS: Websocket creation error."
+    document.getElementById("app-status").innerHTML = msg;
+    console.error("Websocket creation error: ",error)
+    return null
+  }
+}*/
+
+async function createWebsocket() {
+    let wsStart = 'ws://'
+
+    if(window.location.protocol == 'https:'){
+        wsStart = 'wss://'
+    }else{
+        wsStart = 'ws://'
+    }
+  //let wsStart = 'ws://'
+  //let endpoint = wsStart + window.location.host + "/ws/app/"
+
+  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  appWebsocket = new WebSocket(endpoint)
+  console.log(endpoint)
+
+  appWebsocket.onopen = function (evt) {
+    console.log(evt)
+    // Create broadcast and bind stream
+    //authenticate().then(loadClient);
+    //execute();
+    createBroadcast().then(startRecording);
+
+    // Start the recording
+    //startRecording();
+  };
+
+  appWebsocket.onclose = function (evt) {
+    console.log("Websocket Closed: ", evt)
+  };
+
+  appWebsocket.onerror = function (evt) {
+    let msg = "STATUS: Websocket creation error."
+    document.getElementById("app-status").innerHTML = msg;
+    console.error("Websocket creation error: ", evt);
+    resetStateOnError();
+  };
+}
+
+// YouTube API code
+function authenticate() {
+  return gapi.auth2.getAuthInstance()
+    .signIn({ scope: "https://www.googleapis.com/auth/youtube.force-ssl" })
+    .then(function () { console.log("Sign-in successful"); },
+      function (err) { console.error("Error signing in", err); });
+}
+function loadClient() {
+  gapi.client.setApiKey("AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw");
+  return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+    .then(function () { console.log("GAPI client loaded for API"); },
+      function (err) { console.error("Error loading GAPI client for API", err); });
+}
+// Make sure the client is loaded and sign-in is complete before calling this method.
+function execute() {
+  var minutesToAdd = 5;
+  var secondsToAdd = 1;
+  var currentDate = new Date();
+  //var futureDate = new Date(currentDate.getTime() + minutesToAdd*60000);
+  var futureDate = new Date(currentDate.getTime() + secondsToAdd * 1000);
+  iso_time = futureDate.toISOString();
+  let videoTitle = "Test Record Broadcast " + testNameValue + " " + iso_time;
+  console.log(videoTitle)
+  return gapi.client.youtube.liveBroadcasts.insert({
+    "part": [
+      "snippet",
+      "contentDetails",
+      "statistics",
+      "status"
+    ],
+    "resource": {
+      "status": {
+        "privacyStatus": "private",
+        //"privacyStatus": "public",
+        "selfDeclaredMadeForKids": false
+      },
+      "snippet": {
+        "scheduledStartTime": iso_time,
+        "title": videoTitle
+      },
+      "contentDetails": {
+        "enableAutoStart": true
+      }
+    }
+  })
+    .then(function (response) {
+      // Handle the results here (response.result has the parsed body).
+      console.log("Response", response);
+      newBroadcastID = response.result.id;
+      console.log("New Broadcast ID: ", newBroadcastID)
+      // We have a broadcast
+      if (response.status === 200) {
+        return gapi.client.youtube.liveBroadcasts.bind({
+          "id": newBroadcastID,
+          "part": [
+            "snippet"
+          ],
+          "streamId": "IdKn6oPpnjySBnpWgWcg5w1646927327966026"
+        })
+          .then(function (response) {
+            // Handle the results here (response.result has the parsed body).
+            console.log("Response", response);
+          },
+            function (err) { console.error("Execute error", err); });
+      }
+    },
+      function (err) { console.error("Execute error", err); });
+}
+
+// Make sure the client is loaded and sign-in is complete before calling this method.
+function executeTransitionBroadcast() {
+  return gapi.client.youtube.liveBroadcasts.transition({
+    "broadcastStatus": "complete",
+    "id": newBroadcastID,
+    "part": [
+      "id",
+      "snippet",
+      "contentDetails",
+      "status"
+    ]
+  })
+    .then(function (response) {
+      // Handle the results here (response.result has the parsed body).
+      console.log("Response", response);
+    },
+      function (err) { console.error("Execute Transition Broadcast error", err); });
+}
+gapi.load("client:auth2", function () {
+  gapi.auth2.init({ client_id: "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com" });
+});
+
+async function createBroadcast() {
+  authenticate().then(loadClient).then(execute);
+}
+
+async function endBroadcast() {
+  authenticate().then(loadClient).then(executeTransitionBroadcast);
+  console.log("Broadcast Trasitioned to complete state!");
+}
+
+async function stopStreamin() {
+  try {
+    streamWebcamToYT = false;
+    streamScreenToYT = false;
+    streamMergedToYT = false;
+    appWebsocket.close(1000, "User stopped recording");
+  } catch (error) {
+    console.error("Error while stopping streaming!", error)
+  }
+}
+
+async function goToPage(event) {
+  //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
+  let youtubeLink = "https://youtu.be/"+newBroadcastID;
+  window.open(youtubeLink, '_blank');
+  // Disable view records button
+  //btnViewRecords.disabled = true;
+  return false;
 }

@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'rest_framework',
     'file_app',
+    'channels',
+    'app_websocket',
 ]
 
 MIDDLEWARE = [
@@ -72,6 +74,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
+ASGI_APPLICATION = 'testrecorder.asgi.application'
 
 
 # Database

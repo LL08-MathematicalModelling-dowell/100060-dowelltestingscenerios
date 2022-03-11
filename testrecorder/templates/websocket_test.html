@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+
+    <h1 id="main">Websocket is working</h1>
+    <script>
+        number_one = document.getElementById('main')
+        let wsStart = 'ws://'
+
+        if(window.location.protocol == 'https:'){
+            wsStart = 'wss://'
+        }else{
+            wsStart = 'ws://'
+        }
+        //var endpoint = wsStart + window.location.host + window.location.pathname
+        //var endpoint = wsStart + window.location.host + "/ws/app/"
+        var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+        var socket = new WebSocket(endpoint)
+        console.log(endpoint)
+
+
+        socket.onopen = function (e) {
+            console.log('open', e)
+            socket.send(1)
+        }
+
+
+        socket.onmessage = function (e) {
+            console.log('message', e)
+            number_one.innerHTML = e.data
+            data = {"Hello": "video frame"}
+            //socket.send(1)
+            socket.send(data)
+        }
+    </script>
+</body>
+
+</html>
