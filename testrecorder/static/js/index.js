@@ -518,6 +518,9 @@ async function startRecording() {
       webcamRecorder.start(200);
       mergedStreamRecorder.start(200);
 
+      // Enable view records button
+      btnViewRecords.disabled = false;
+
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
     }
@@ -540,6 +543,8 @@ async function startRecording() {
         streamMergedToYT = false;
         webcamRecorder.start(200);
         streamWebcamToYT = true;
+        // Enable view records button
+        btnViewRecords.disabled = false;
       });
     }
     catch (err) {
@@ -560,6 +565,8 @@ async function startRecording() {
         streamScreenToYT = true;
         streamMergedToYT = false;
         screenRecorder.start(200);
+        // Enable view records button
+        btnViewRecords.disabled = false;
       });
     }
     catch (err) {
