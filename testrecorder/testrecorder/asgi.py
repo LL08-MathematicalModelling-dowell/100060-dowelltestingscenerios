@@ -22,7 +22,7 @@ import os
 import django
 from channels.http import AsgiHandler
 from channels.routing import ProtocolTypeRouter,get_default_application
-from django.core.asgi import get_asgi_application
+#from django.core.asgi import get_asgi_application
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter, URLRouter
 #from django.core.asgi import get_asgi_application
@@ -34,20 +34,20 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 
 #application = get_default_application()
 #application = get_asgi_application()
-application = ProtocolTypeRouter({
+"""application = ProtocolTypeRouter({
   "http": get_asgi_application(),
   "websocket": AuthMiddlewareStack(
         URLRouter(
             routing.ws_urlpatterns
         )
     ),
-})
+})"""
 
-"""application = ProtocolTypeRouter({
+application = ProtocolTypeRouter({
   "http": AsgiHandler(),
   "websocket": AuthMiddlewareStack(
         URLRouter(
             routing.ws_urlpatterns
         )
     ),
-})"""
+})

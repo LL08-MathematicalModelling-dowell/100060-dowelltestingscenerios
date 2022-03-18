@@ -40,7 +40,6 @@ let streamScreenToYT = false;
 let streamMergedToYT = false;
 let newBroadcastID = null;
 let btnViewRecords = document.getElementById('view_records');
-let newRtmpUrl = null;
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -699,8 +698,7 @@ async function validateModal() {
 
     // Start the test now
     //await startRecording();
-    //await createWebsocket();
-    await createBroadcast()
+    await createWebsocket();
   }
 }
 
@@ -1036,7 +1034,7 @@ async function set_video_links(linksData) {
 }*/
 
 async function createWebsocket() {
-    /*let wsStart = 'ws://'
+    let wsStart = 'ws://'
 
     if(window.location.protocol == 'https:'){
         wsStart = 'wss://'
@@ -1044,9 +1042,9 @@ async function createWebsocket() {
         wsStart = 'ws://'
     }
   //let wsStart = 'ws://'
-  let endpoint = wsStart + window.location.host + "/ws/app/"*/
+  let endpoint = wsStart + window.location.host + "/ws/app/"
 
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
 
@@ -1060,15 +1058,13 @@ async function createWebsocket() {
     });*/
 
     // Send rtmp url
-    //let rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
-    //data = {"rtmpUrl": rtmpUrl}
+    let rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
+    data = {"rtmpUrl": rtmpUrl}
             //socket.send(1)
     //appWebsocket.send(data)
-    //appWebsocket.send(rtmpUrl)
-    appWebsocket.send(newRtmpUrl)
-    console.log("Sent RTMP URL: ",newRtmpUrl)
+    appWebsocket.send(rtmpUrl)
 
-    //createBroadcast();
+    createBroadcast();
 
     // Start the recording
     //startRecording();
@@ -1087,14 +1083,6 @@ async function createWebsocket() {
 
   appWebsocket.onmessage = function (e) {
     console.log('message', e)
-    let receivedMsg = e.data;
-    console.log("Received data: ", receivedMsg)
-    
-    if(receivedMsg.includes("RTMP url received: rtmp://")){
-      console.log('RTMP url ACK received');
-    }else{
-      console.error('RTMP url ACK not received');
-    }
   };
 }
 
@@ -1109,8 +1097,8 @@ function authenticate() {
       
 }
 function loadClient() {
-  gapi.client.setApiKey("AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw"); //dowelltestrecorder acct
-  //gapi.client.setApiKey("AIzaSyApYCDyb5rKryce6V4oT2FGb6L1QW68EmM"); //manmaish account
+  //gapi.client.setApiKey("AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw"); //dowelltestrecorder acct
+  gapi.client.setApiKey("AIzaSyApYCDyb5rKryce6V4oT2FGb6L1QW68EmM"); //manmaish account
   return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
     .then(function () { console.log("GAPI client loaded for API"); },
       function (err) { console.error("Error loading GAPI client for API", err); 
@@ -1156,11 +1144,22 @@ function execute() {
       console.log("New Broadcast ID: ", newBroadcastID)
       // We have a broadcast
       if (response.status === 200) {
-        // Create and bind a livestream to new broadcast
-        createNoneReusableLivestream();
-      }else{
-        console.error("Binding livestream failed!");
-        throw new Error("Binding livestream failed!");
+        return gapi.client.youtube.liveBroadcasts.bind({
+          "id": newBroadcastID,
+          "part": [
+            "snippet"
+          ],
+          //"streamId": "IdKn6oPpnjySBnpWgWcg5w1646927327966026" // dowelltestrecorder acct
+          //"streamId": "Nj87lCcakEkeQKniYUcJNA1646032700262929" // manmaish account default livestream
+          "streamId": "Nj87lCcakEkeQKniYUcJNA1646572779312595" // manmaish account second livestream
+        })
+          .then(function (response) {
+            // Handle the results here (response.result has the parsed body).
+            console.log("Response", response);
+          },
+            function (err) { console.error("Execute error", err); 
+            throw new Error(err);
+          });
       }
     },
       function (err) { console.error("Execute error", err); 
@@ -1187,103 +1186,19 @@ function executeTransitionBroadcast() {
       function (err) { console.error("Execute Transition Broadcast error", err); });
       
 }
-
-// Create a non-reusable stream
-function createNoneReusableLivestream() {
-  return gapi.client.youtube.liveStreams.insert({
-    "part": [
-      "snippet,cdn,contentDetails,status"
-    ],
-    "resource": {
-      "snippet": {
-        "title": "Your new video stream's name",
-        "description": "A description of your video stream. This field is optional."
-      },
-      "cdn": {
-        "frameRate": "60fps",
-        "ingestionType": "rtmp",
-        "resolution": "1080p"
-      },
-      "contentDetails": {
-        "isReusable": false
-      }
-    }
-  })
-    .then(function (response) {
-      // Handle the results here (response.result has the parsed body).
-      console.log("Response", response);
-    
-      if (response.status === 200) {
-        let newStreamId = response.result.id;
-      let newStreamName = response.result.cdn.ingestionInfo.streamName;
-      let newStreamIngestionAddress = response.result.cdn.ingestionInfo.ingestionAddress;
-      console.log("New stream id: ", newStreamId);
-      console.log("New stream name: ", newStreamName);
-      console.log("New stream ingestion address: ", newStreamIngestionAddress);
-      newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName;
-      console.log("New stream RTMP url: ", newRtmpUrl);
-
-        return gapi.client.youtube.liveBroadcasts.bind({
-          "id": newBroadcastID,
-          "part": [
-            "snippet"
-          ],
-          //"streamId": "IdKn6oPpnjySBnpWgWcg5w1646927327966026" // dowelltestrecorder acct
-          //"streamId": "Nj87lCcakEkeQKniYUcJNA1646032700262929" // manmaish account default livestream
-          //"streamId": "Nj87lCcakEkeQKniYUcJNA1646572779312595" // manmaish account second livestream
-          "streamId": newStreamId // non-reusable livestream id
-        })
-          .then(function (response) {
-            // Handle the results here (response.result has the parsed body).
-            console.log("Response", response);
-            createWebsocket().then(startRecording,()=>{
-              console.error("Error when running createWebsocket");
-              throw new Error("Error when running createWebsocket");
-            }).then(console.log("Started recording"),()=>{
-              console.error("Error when running startRecording");
-              throw new Error("Error when running startRecording");
-            });
-          },
-            function (err) { console.error("Execute error", err); 
-            throw new Error(err);
-          });
-      }else{
-        console.error("Binding livestream failed!");
-        throw new Error("Binding livestream failed!");
-      }
-    },
-      function (err) { console.error("Execute error", err); 
-      throw new Error("Creating livestream failed!");
-    });
-}
-
 gapi.load("client:auth2", function () {
-  gapi.auth2.init({ client_id: "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com" });
-  //gapi.auth2.init({ client_id: "782628737992-rvo1d5htv11qr89bvuphdvk399l3mano.apps.googleusercontent.com" }); // manmaish acct
+  //gapi.auth2.init({ client_id: "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com" });
+  gapi.auth2.init({ client_id: "782628737992-rvo1d5htv11qr89bvuphdvk399l3mano.apps.googleusercontent.com" }); // manmaish acct
 });
-
-/*async function createBroadcast() {
-  //authenticate().then(loadClient).then(execute);
-  authenticate().then(loadClient,()=>{
-    console.error("Error when Authenticating")
-  }).then(execute).then(createWebsocket,()=>{
-    console.error("Error when Running execute: ");
-    throw new Error("Error when Running execute: ");
-  }).then(startRecording,()=>{
-    console.error("Error when Running startRecording: ");
-    throw new Error("Error when Running startRecording: ");
-  }).catch( (err) => {
-    console.error("I was able to catch an error: ",err)
-    resetStateOnError();
-    showErrorModal();
-  });
-}*/
 
 async function createBroadcast() {
   //authenticate().then(loadClient).then(execute);
   authenticate().then(loadClient,()=>{
     console.error("Error when Authenticating")
-  }).then(execute).catch( (err) => {
+  }).then(execute).then(startRecording,()=>{
+    console.error("Error when Running execute: ");
+    throw new Error("Error when Running execute: ");
+  }).catch( (err) => {
     console.error("I was able to catch an error: ",err)
     resetStateOnError();
     showErrorModal();
