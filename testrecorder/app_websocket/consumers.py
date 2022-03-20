@@ -79,7 +79,7 @@ class VideoConsumer(AsyncConsumer):
                 command = ['ffmpeg',
                 # Facebook requires an audio track, so we create a silent one here.
                 # Remove this line, as well as `-shortest`, if you send audio from the browser.
-                '-f', 'lavfi', '-i', 'anullsrc',
+                #'-f', 'lavfi', '-i', 'anullsrc',
                 
                 # FFmpeg will read input video from STDIN
                 '-i', '-',
@@ -87,7 +87,7 @@ class VideoConsumer(AsyncConsumer):
                 # Because we're using a generated audio source which never ends,
                 # specify that we'll stop at end of other input.  Remove this line if you
                 # send audio from the browser.
-                '-shortest',
+                #'-shortest',
                 
                 # If we're encoding H.264 in-browser, we can set the video codec to 'copy'
                 # so that we don't waste any CPU and quality with unnecessary transcoding.

@@ -1200,9 +1200,9 @@ function createNoneReusableLivestream() {
         "description": "A description of your video stream. This field is optional."
       },
       "cdn": {
-        "frameRate": "60fps",
+        "frameRate": "variable",
         "ingestionType": "rtmp",
-        "resolution": "1080p"
+        "resolution": "variable"
       },
       "contentDetails": {
         "isReusable": false
