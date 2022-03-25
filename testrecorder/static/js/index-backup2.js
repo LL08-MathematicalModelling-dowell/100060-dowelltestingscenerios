@@ -4,7 +4,6 @@ const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
 const keyLogCheckbox = document.getElementById('key-logging')
 const audioCheckbox = document.getElementById('audio-settings')
-const publicVideosCheckbox = document.getElementById('public-videos')
 
 // App global variables
 let usernameValue = null;
@@ -42,9 +41,6 @@ let streamMergedToYT = false;
 let newBroadcastID = null;
 let btnViewRecords = document.getElementById('view_records');
 let newRtmpUrl = null;
-let websocketReconnect = false;
-let recordinginProgress = true;
-let videoPrivacyStatus = "private";
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -213,7 +209,7 @@ async function stopRecording() {
   // Enable view records button
   btnViewRecords.disabled = false;
 
-  // Show upload in progress modal
+  /*// Show upload in progress modal
   let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
   uploadModal.show();
 
@@ -231,7 +227,7 @@ async function stopRecording() {
     testRecordingData = new FormData();
   }
 
-  /*// Create webcam video file
+  // Create webcam video file
   if (recordWebcam == true) {
 
 
@@ -384,18 +380,6 @@ async function stopRecording() {
       globalProgress = globalProgress + prog;
       testRecordingData.set('merged_webcam_screen_file', fileName);
     }
-  }*/
-
-  // Set videos youtube links
-  if ((recordScreen == true) && (recordWebcam == true)) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('merged_webcam_screen_file', youtubeLink);
-  }else if (recordScreen == true) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('screen_file', youtubeLink);
-  }else if (recordWebcam == true) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('webcam_file', youtubeLink);
   }
 
   // Append test details data
@@ -404,7 +388,7 @@ async function stopRecording() {
   testRecordingData.set('test_name', testNameValue);
 
   // Send data to server for storage
-  sendAvailableData(globalProgress);
+  sendAvailableData(globalProgress);*/
 }
 
 // Records screen and audio
@@ -444,12 +428,6 @@ async function recordScreenAndAudio() {
       //if (event.data.size > 0) {
       //screenRecorderChunks.push(event.data)
       appWebsocket.send(event.data);
-
-      /*try {
-        appWebsocket.send(event.data);
-      } catch (error) {
-        console.error("Error while sending data via websocket: ",error)
-      }*/
     }
   }
 
@@ -544,9 +522,6 @@ async function startRecording() {
       // Enable view records button
       btnViewRecords.disabled = false;
 
-      // Indicate that recording is in progress
-      recordinginProgress = true;
-
       msg = "STATUS: Recording Started."
       document.getElementById("app-status").innerHTML = msg;
     }
@@ -571,8 +546,6 @@ async function startRecording() {
         streamWebcamToYT = true;
         // Enable view records button
         btnViewRecords.disabled = false;
-        // Indicate that recording is in progress
-        recordinginProgress = true;
       });
     }
     catch (err) {
@@ -595,8 +568,6 @@ async function startRecording() {
         screenRecorder.start(200);
         // Enable view records button
         btnViewRecords.disabled = false;
-        // Indicate that recording is in progress
-        recordinginProgress = true;
       });
     }
     catch (err) {
@@ -729,12 +700,7 @@ async function validateModal() {
     // Start the test now
     //await startRecording();
     //await createWebsocket();
-    //await createBroadcast()
-
-    // Set youtube video privacy status and create broadcast
-    setVideoPrivacyStatus().then(()=>{
-      createBroadcast();
-    }, console.error("Failed to set video privacy status"));
+    await createBroadcast()
   }
 }
 
@@ -770,7 +736,7 @@ async function sendAvailableData(prevProgress) {
         document.getElementById("app-status").innerHTML = msg;
 
         // Set current video file links on mega drive
-        //set_video_links(response.data)
+        set_video_links(response.data)
 
         // Clear previous test data
         usernameValue = null;
@@ -863,7 +829,6 @@ async function uploadSeleniumIdeFile() {
     // Append key log file
     let newFileName = fileRandomString + "_" + currentKeyLogFile.name;
     testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
-    console.log("newFileName: ", newFileName);
 
     // Hide the get key log file modal and proceed to stop test
     const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
@@ -972,7 +937,6 @@ async function resetStateOnError() {
   webCamStream = null;
   screenStream = null;
   audioStream = null;
-  //websocketReconnect = false;
   webcamMediaConstraints = {
     video: true, audio: true
   };
@@ -1072,31 +1036,22 @@ async function set_video_links(linksData) {
 }*/
 
 async function createWebsocket() {
-  /*let wsStart = 'ws://'
+    let wsStart = 'ws://'
 
-  if (window.location.protocol == 'https:') {
-    wsStart = 'wss://'
-  } else {
-    wsStart = 'ws://'
-  }
+    if(window.location.protocol == 'https:'){
+        wsStart = 'wss://'
+    }else{
+        wsStart = 'ws://'
+    }
   //let wsStart = 'ws://'
-  let endpoint = wsStart + window.location.host + "/ws/app/"*/
+  let endpoint = wsStart + window.location.host + "/ws/app/"
 
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
 
   appWebsocket.onopen = function (evt) {
     console.log(evt)
-
-    // Alert user websocket is open
-    let msg = "STATUS: Websocket created."
-    document.getElementById("app-status").innerHTML = msg;
-    console.log(msg);
-
-    // No need to reconnect
-    websocketReconnect = false;
-
     // Create broadcast and bind stream
     //authenticate().then(loadClient);
     //execute();
@@ -1107,7 +1062,7 @@ async function createWebsocket() {
     // Send rtmp url
     //let rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
     //data = {"rtmpUrl": rtmpUrl}
-    //socket.send(1)
+            //socket.send(1)
     //appWebsocket.send(data)
     //appWebsocket.send(rtmpUrl)
     //appWebsocket.send(newRtmpUrl)
@@ -1116,12 +1071,12 @@ async function createWebsocket() {
     // Check if we need to add audio stream
     let recordAudio = audioCheckbox.checked;
     if (recordAudio == true) {
-      let msg = "browser_sound," + newRtmpUrl;
+      let msg = "browser_sound,"+newRtmpUrl;
       appWebsocket.send(msg)
-      console.log("Sent RTMP URL: ", msg)
-    } else {
+      console.log("Sent RTMP URL: ",msg)
+    }else{
       appWebsocket.send(newRtmpUrl)
-      console.log("Sent RTMP URL: ", newRtmpUrl)
+      console.log("Sent RTMP URL: ",newRtmpUrl)
     }
 
 
@@ -1133,31 +1088,23 @@ async function createWebsocket() {
 
   appWebsocket.onclose = function (evt) {
     console.log("Websocket Closed: ", evt)
-    if(evt.code != 1000){
-      // We need to reconnect
-      websocketReconnect = true;
-    }
   };
 
   appWebsocket.onerror = function (evt) {
-    // We need to reconnect
-    //websocketReconnect = true;
-    //appWebsocket.close();
-
     let msg = "STATUS: Websocket creation error."
     document.getElementById("app-status").innerHTML = msg;
     console.error("Websocket creation error: ", evt);
-    //resetStateOnError();
+    resetStateOnError();
   };
 
   appWebsocket.onmessage = function (e) {
     console.log('message', e)
     let receivedMsg = e.data;
     console.log("Received data: ", receivedMsg)
-
-    if (receivedMsg.includes("RTMP url received: rtmp://")) {
+    
+    if(receivedMsg.includes("RTMP url received: rtmp://")){
       console.log('RTMP url ACK received');
-    } else {
+    }else{
       console.error('RTMP url ACK not received');
     }
   };
@@ -1168,21 +1115,19 @@ function authenticate() {
   return gapi.auth2.getAuthInstance()
     .signIn({ scope: "https://www.googleapis.com/auth/youtube.force-ssl" })
     .then(function () { console.log("Sign-in successful"); },
-      function (err) {
-        console.error("Error signing in", err);
-        throw new Error(err);
-      });
-
+      function (err) { console.error("Error signing in", err);
+      throw new Error(err); 
+    });
+      
 }
 function loadClient() {
-  gapi.client.setApiKey("AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw"); //dowelltestrecorder acct
-  //gapi.client.setApiKey("AIzaSyApYCDyb5rKryce6V4oT2FGb6L1QW68EmM"); //manmaish account
+  //gapi.client.setApiKey("AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw"); //dowelltestrecorder acct
+  gapi.client.setApiKey("AIzaSyApYCDyb5rKryce6V4oT2FGb6L1QW68EmM"); //manmaish account
   return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
     .then(function () { console.log("GAPI client loaded for API"); },
-      function (err) {
-        console.error("Error loading GAPI client for API", err);
-        throw new Error(err);
-      });
+      function (err) { console.error("Error loading GAPI client for API", err); 
+      throw new Error(err);
+    });
 }
 // Make sure the client is loaded and sign-in is complete before calling this method.
 function execute() {
@@ -1203,9 +1148,8 @@ function execute() {
     ],
     "resource": {
       "status": {
-        //"privacyStatus": "private",
+        "privacyStatus": "private",
         //"privacyStatus": "public",
-        "privacyStatus": videoPrivacyStatus,
         "selfDeclaredMadeForKids": false
       },
       "snippet": {
@@ -1226,15 +1170,14 @@ function execute() {
       if (response.status === 200) {
         // Create and bind a livestream to new broadcast
         createNoneReusableLivestream();
-      } else {
+      }else{
         console.error("Binding livestream failed!");
         throw new Error("Binding livestream failed!");
       }
     },
-      function (err) {
-        console.error("Execute error", err);
-        throw new Error(err);
-      });
+      function (err) { console.error("Execute error", err); 
+      throw new Error(err);
+    });
 }
 
 // Make sure the client is loaded and sign-in is complete before calling this method.
@@ -1254,7 +1197,7 @@ function executeTransitionBroadcast() {
       console.log("Response", response);
     },
       function (err) { console.error("Execute Transition Broadcast error", err); });
-
+      
 }
 
 // Create a non-reusable stream
@@ -1281,16 +1224,16 @@ function createNoneReusableLivestream() {
     .then(function (response) {
       // Handle the results here (response.result has the parsed body).
       console.log("Response", response);
-
+    
       if (response.status === 200) {
         let newStreamId = response.result.id;
-        let newStreamName = response.result.cdn.ingestionInfo.streamName;
-        let newStreamIngestionAddress = response.result.cdn.ingestionInfo.ingestionAddress;
-        console.log("New stream id: ", newStreamId);
-        console.log("New stream name: ", newStreamName);
-        console.log("New stream ingestion address: ", newStreamIngestionAddress);
-        newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName;
-        console.log("New stream RTMP url: ", newRtmpUrl);
+      let newStreamName = response.result.cdn.ingestionInfo.streamName;
+      let newStreamIngestionAddress = response.result.cdn.ingestionInfo.ingestionAddress;
+      console.log("New stream id: ", newStreamId);
+      console.log("New stream name: ", newStreamName);
+      console.log("New stream ingestion address: ", newStreamIngestionAddress);
+      newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName;
+      console.log("New stream RTMP url: ", newRtmpUrl);
 
         return gapi.client.youtube.liveBroadcasts.bind({
           "id": newBroadcastID,
@@ -1305,32 +1248,30 @@ function createNoneReusableLivestream() {
           .then(function (response) {
             // Handle the results here (response.result has the parsed body).
             console.log("Response", response);
-            createWebsocket().then(startRecording, () => {
+            createWebsocket().then(startRecording,()=>{
               console.error("Error when running createWebsocket");
               throw new Error("Error when running createWebsocket");
-            }).then(console.log("Started recording"), () => {
+            }).then(console.log("Started recording"),()=>{
               console.error("Error when running startRecording");
               throw new Error("Error when running startRecording");
             });
           },
-            function (err) {
-              console.error("Execute error", err);
-              throw new Error(err);
-            });
-      } else {
+            function (err) { console.error("Execute error", err); 
+            throw new Error(err);
+          });
+      }else{
         console.error("Binding livestream failed!");
         throw new Error("Binding livestream failed!");
       }
     },
-      function (err) {
-        console.error("Execute error", err);
-        throw new Error("Creating livestream failed!");
-      });
+      function (err) { console.error("Execute error", err); 
+      throw new Error("Creating livestream failed!");
+    });
 }
 
 gapi.load("client:auth2", function () {
-  gapi.auth2.init({ client_id: "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com" });
-  //gapi.auth2.init({ client_id: "782628737992-rvo1d5htv11qr89bvuphdvk399l3mano.apps.googleusercontent.com" }); // manmaish acct
+  //gapi.auth2.init({ client_id: "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com" });
+  gapi.auth2.init({ client_id: "782628737992-rvo1d5htv11qr89bvuphdvk399l3mano.apps.googleusercontent.com" }); // manmaish acct
 });
 
 /*async function createBroadcast() {
@@ -1352,20 +1293,18 @@ gapi.load("client:auth2", function () {
 
 async function createBroadcast() {
   //authenticate().then(loadClient).then(execute);
-  authenticate().then(loadClient, () => {
+  authenticate().then(loadClient,()=>{
     console.error("Error when Authenticating")
-  }).then(execute).catch((err) => {
-    console.error("I was able to catch an error: ", err)
+  }).then(execute).catch( (err) => {
+    console.error("I was able to catch an error: ",err)
     resetStateOnError();
     showErrorModal();
   });
 }
 
 async function endBroadcast() {
-  //authenticate().then(loadClient).then(executeTransitionBroadcast);
-  //console.log("Broadcast Trasitioned to complete state!");
-  executeTransitionBroadcast().then(console.log("Broadcast Trasitioned to complete state!"),
-  console.error("Broadcast Trasitioning to complete state failed!"));
+  authenticate().then(loadClient).then(executeTransitionBroadcast);
+  console.log("Broadcast Trasitioned to complete state!");
 }
 
 async function stopStreamin() {
@@ -1381,7 +1320,7 @@ async function stopStreamin() {
 
 async function goToPage(event) {
   //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
-  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  let youtubeLink = "https://youtu.be/"+newBroadcastID;
   window.open(youtubeLink, '_blank');
   // Disable view records button
   //btnViewRecords.disabled = true;
@@ -1400,131 +1339,4 @@ async function showErrorModal() {
   }*/
   let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
   errorModal.show();
-}
-
-setTimeout(function () {
-  connect();
-}, 1000);
-
-async function connect() {
-  console.log("One Shot Timer fired.")
-}
-
-async function reConnectWebsocket() {
-  if(websocketReconnect == true){
-    console.log("Attempting websocket reconnection...");
-    createWebsocket();
-  }
-}
-
-let reconnectTimer = setInterval(() => {
-  console.log("Reconnect Contionus Timer fired.");
-  reConnectWebsocket();
-}, 5000) // each 5 second
-
-let minutes = 10;
-let milliSeconds = minutes * 60 * 1000;
-let timer = setInterval(() => {
-  //connectToWebsocket();
-  createDummyWebsocket();
-}, milliSeconds) // each 1 second
-
-/*async function connectToWebsocket() {
-    let wsStart = 'ws://'
-
-    if (window.location.protocol == 'https:') {
-        wsStart = 'wss://'
-    } else {
-        wsStart = 'ws://'
-    }
-    //var endpoint = wsStart + window.location.host + window.location.pathname
-    //var endpoint = wsStart + window.location.host + "/ws/app/"
-    var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-    var socket = new WebSocket(endpoint)
-    console.log(endpoint)
-
-
-    socket.onopen = function (e) {
-        console.log('open', e)
-        socket.close();
-    }
-}*/
-
-async function createDummyWebsocket() {
-  /*let wsStart = 'ws://'
-
-  if(window.location.protocol == 'https:'){
-      wsStart = 'wss://'
-  }else{
-      wsStart = 'ws://'
-  }
-//let wsStart = 'ws://'
-let endpoint = wsStart + window.location.host + "/ws/app/"*/
-
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  let dummyAppWebsocket = new WebSocket(endpoint)
-  console.log(endpoint)
-
-  dummyAppWebsocket.onopen = function (evt) {
-    console.log(evt)
-    // Create broadcast and bind stream
-    //authenticate().then(loadClient);
-    //execute();
-    /*createBroadcast().then(startRecording,()=>{
-      console.error("Error when starting to record");
-    });*/
-
-    // Send rtmp url
-    let rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
-    //data = {"rtmpUrl": rtmpUrl}
-    //socket.send(1)
-    //dummyAppWebsocket.send(data)
-    //dummyAppWebsocket.send(rtmpUrl)
-    dummyAppWebsocket.send(rtmpUrl)
-    console.log("Sent RTMP URL: ", rtmpUrl)
-
-    //createBroadcast();
-
-    // Start the recording
-    //startRecording();
-  };
-
-  dummyAppWebsocket.onclose = function (evt) {
-    console.log("Dummy Websocket Closed: ", evt)
-  };
-
-  dummyAppWebsocket.onerror = function (evt) {
-    /*let msg = "STATUS: Websocket creation error."
-    document.getElementById("app-status").innerHTML = msg;
-    console.error("Websocket creation error: ", evt);
-    resetStateOnError();*/
-    console.error("Dummy Websocket creation error: ", evt);
-  };
-
-  dummyAppWebsocket.onmessage = function (e) {
-    console.log('message', e)
-    let receivedMsg = e.data;
-    console.log("Received data: ", receivedMsg)
-
-    if (receivedMsg.includes("RTMP url received: rtmp://")) {
-      console.log('Dummy RTMP url ACK received');
-    } else {
-      console.error('Dummy RTMP url ACK not received');
-    }
-
-    // Close web socket
-    dummyAppWebsocket.close();
-  };
-}
-
-
-// sets youtube video privacy status
-async function setVideoPrivacyStatus(){
-  // Check if we need to make videos public
-  let makePublic = publicVideosCheckbox.checked;
-  if (makePublic == true) {
-    videoPrivacyStatus = "public";
-  } else {
-    videoPrivacyStatus = "private";
-  }
 }

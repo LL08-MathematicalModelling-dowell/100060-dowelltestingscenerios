@@ -135,30 +135,121 @@ class FileView(APIView):
             # Process webcam file
             try:
                 self.webcam_file_name=request.data['webcam_file']
-                print("Webcam File Name: ",self.webcam_file_name)
+                #print("Webcam File Name: ",self.webcam_file_name)
+                self.webcam_recording_file_path = settings.MEDIA_ROOT+"/"+self.webcam_file_name
+                #print("webcam_recording_file_path: ",self.webcam_recording_file_path)
 
-                # set webcam file youtube video link
-                self.megadrive_record.webcam_file = self.webcam_file_name
+                """# Convert file from webm to mp4
+                converted_file = self.convert_webm_to_mp4(self.webcam_recording_file_path)
+                if converted_file == False:
+                    msg = "Webcam File conversion to mp4 failed!"
+                    print(msg)
+                    self.clean_up(self.webcam_recording_file_path)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    file_name = converted_file"""
+
+                # upload Webcam file
+                file_name = self.webcam_recording_file_path
+                megadrive_file_link = self.upload_file_to_megadrive(file_name)
+                if megadrive_file_link == False:
+                    msg = "Webcam File upload to mega drive failed!"
+                    #print(msg)
+                    #self.clean_up(self.webcam_recording_file_path)
+                    self.clean_up(file_name)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    self.megadrive_record.webcam_file = megadrive_file_link
+                    #print("webcam_megadrive_file_link: ", megadrive_file_link)
+                    #self.clean_up(self.webcam_recording_file_path)
+                    self.clean_up(file_name)
             except Exception as err:
                 print("Error while handling webcam file: " + str(err))
 
             # Process screen file
             try:
                 self.screen_file_name=request.data['screen_file']
-                print("Screen File Name: ",self.screen_file_name)
+                #print("Screen File Name: ",self.screen_file_name)
+                self.screen_recording_file_path = settings.MEDIA_ROOT+"/"+self.screen_file_name
+                #print("screen_recording_file_path: ",self.screen_recording_file_path)
 
-                # set screen file youtube video link
-                self.megadrive_record.screen_file = self.screen_file_name
+                """# Convert file from webm to mp4
+                converted_file = self.convert_webm_to_mp4(self.screen_recording_file_path)
+                if converted_file == False:
+                    msg = "Screen File conversion to mp4 failed!"
+                    self.clean_up(self.screen_recording_file_path)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    file_name = converted_file"""
+
+                # upload screen file
+                file_name = self.screen_recording_file_path
+                megadrive_file_link = self.upload_file_to_megadrive(file_name)
+                if megadrive_file_link == False:
+                    msg = "Screen File upload to mega drive failed!"
+                    #print(msg)
+                    self.clean_up(file_name)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    self.megadrive_record.screen_file = megadrive_file_link
+                    #print("screen_megadrive_file_link: ", megadrive_file_link)
+                    self.clean_up(file_name)
             except Exception as err:
                 print("Error while handling screen file: " + str(err))
 
             # Process merged file
             try:
                 self.merged_file_name=request.data['merged_webcam_screen_file']
-                print("Merged File Name: ",self.merged_file_name)
-                
-                # set merged file youtube video link
-                self.megadrive_record.merged_webcam_screen_file = self.merged_file_name
+                #print("Merged File Name: ",self.merged_file_name)
+                self.merged_recording_file_path = settings.MEDIA_ROOT+"/"+self.merged_file_name
+                #print("merged_recording_file_path: ",self.merged_recording_file_path)
+
+                # Convert file from webm to mp4
+                converted_file = self.convert_webm_to_mp4(self.merged_recording_file_path)
+                if converted_file == False:
+                    msg = "Merged File conversion to mp4 failed!"
+                    print(msg)
+                    self.clean_up(self.merged_recording_file_path)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    file_name = converted_file
+
+                # upload merged file
+                #file_name = self.merged_recording_file_path
+                megadrive_file_link = self.upload_file_to_megadrive(file_name)
+                if megadrive_file_link == False:
+                    msg = "Merged File upload to mega drive failed!"
+                    #print(msg)
+                    self.clean_up(file_name)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    self.megadrive_record.merged_webcam_screen_file = megadrive_file_link
+                    #print("merged_megadrive_file_link: ", megadrive_file_link)
+                    self.clean_up(file_name)
             except Exception as err:
                 print("Error while handling merged file: " + str(err))
 
