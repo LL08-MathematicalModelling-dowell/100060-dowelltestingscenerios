@@ -23,6 +23,7 @@ class MegaTestRecord(models.Model):
     screen_file = models.CharField(max_length=1024, default="")
     merged_webcam_screen_file = models.CharField(max_length=1024, default="")
     key_log_file = models.CharField(max_length=1024, default="")
+    beanote_file = models.CharField(max_length=1024, default="")
     timestamp = models.DateTimeField(auto_now_add=True)
 
     class Meta:

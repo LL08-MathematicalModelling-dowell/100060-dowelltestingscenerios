@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'file_app',
     'channels',
     'app_websocket',
+    'youtube',
 ]
 
 MIDDLEWARE = [

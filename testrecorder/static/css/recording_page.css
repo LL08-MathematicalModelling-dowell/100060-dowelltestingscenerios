@@ -4,7 +4,7 @@
     width: 60vw;
     height: 56vh;
 }
-    
+
 .btn:focus {
     outline: none;
     box-shadow: none;
@@ -15,7 +15,22 @@
     color: #fff;
 }
 
+.green-header {
+    background: #00941E;
+    color: #fff;
+}
+
 .required:after {
     content: "*";
     color: red;
+}
+
+.white-text {
+    color: white;
+}
+.bodyStyle
+{
+background-image:url('{{ STATIC_URL }}images/app-background.jpg');
+background-repeat:no-repeat;
+background-size:100%;
 }

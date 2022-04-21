@@ -390,10 +390,10 @@ async function stopRecording() {
   if ((recordScreen == true) && (recordWebcam == true)) {
     let youtubeLink = "https://youtu.be/" + newBroadcastID;
     testRecordingData.set('merged_webcam_screen_file', youtubeLink);
-  } else if (recordScreen == true) {
+  }else if (recordScreen == true) {
     let youtubeLink = "https://youtu.be/" + newBroadcastID;
     testRecordingData.set('screen_file', youtubeLink);
-  } else if (recordWebcam == true) {
+  }else if (recordWebcam == true) {
     let youtubeLink = "https://youtu.be/" + newBroadcastID;
     testRecordingData.set('webcam_file', youtubeLink);
   }
@@ -732,15 +732,9 @@ async function validateModal() {
     //await createBroadcast()
 
     // Set youtube video privacy status and create broadcast
-    /*setVideoPrivacyStatus().then(() => {
+    setVideoPrivacyStatus().then(()=>{
       createBroadcast();
-    }, console.error("Failed to set video privacy status"));*/
-
-    setVideoPrivacyStatus().then(() => {
-      createBroadcast();
-    }).catch((error)=>{
-      console.error("Failed to set video privacy status")
-    });
+    }, console.error("Failed to set video privacy status"));
   }
 }
 
@@ -854,30 +848,8 @@ async function uploadSeleniumIdeFile() {
   let keyLogFileUploadModal = new bootstrap.Modal(document.getElementById('keyLogFileUploadModal'));
   keyLogFileUploadModal.show();
 
-  // Selenium ide file input
   const input = document.getElementById('inpt-test-file');
   const currentKeyLogFile = input.files[0];
-
-  // Beanote/Clickup file upload
-  const input2 = document.getElementById('inpt-beanote-file');
-  const currentBeanoteFile = input2.files[0];
-
-  // Append beanote/Clickup file first
-  // Close modal
-  if (currentBeanoteFile != null) {
-    input2.value = "";
-
-    // Initialize the data object if null
-    if (testRecordingData == null) {
-      testRecordingData = new FormData();
-    }
-
-    // Append file
-    let newBeanoteFileName = fileRandomString + "_" + currentBeanoteFile.name;
-    testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
-    console.log("newBeanoteFileName: ", newBeanoteFileName);
-  }
-
 
   // Close modal
   if (currentKeyLogFile != null) {
@@ -893,15 +865,9 @@ async function uploadSeleniumIdeFile() {
     testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
     console.log("newFileName: ", newFileName);
 
-    /*// Hide the get key log file modal and proceed to stop test
+    // Hide the get key log file modal and proceed to stop test
     const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
-    btnCloseKeyLofFileUploadModal.click();*/
-  }
-
-  if ((currentKeyLogFile != null)||(currentBeanoteFile != null)) {
-      // Hide the get key log file modal and proceed to stop test
-      const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
-      btnCloseKeyLofFileUploadModal.click();
+    btnCloseKeyLofFileUploadModal.click();
   }
 }
 
@@ -941,8 +907,6 @@ async function keyLogFileCheck() {
         console.error("Error while stopping merged stream recorder: " + err.message);
       }
     }
-
-   // let logKeyboard = keyLogCheckbox.checked;
 
     if (logKeyboard == true) {
       let msg = "STATUS: Getting key log file."
@@ -1167,16 +1131,11 @@ async function createWebsocket() {
     //startRecording();
   };
 
-  let errorStop = false;
   appWebsocket.onclose = function (evt) {
     console.log("Websocket Closed: ", evt)
-    if (evt.code != 1000) {
+    if(evt.code != 1000){
       // We need to reconnect
-      //websocketReconnect = true;
-      if(errorStop == false){
-        errorStop = true;
-        //alert("Recording stopped due to websocket error!")
-      }
+      websocketReconnect = true;
     }
   };
 
@@ -1391,7 +1350,7 @@ gapi.load("client:auth2", function () {
   });
 }*/
 
-/*async function createBroadcast() {
+async function createBroadcast() {
   //authenticate().then(loadClient).then(execute);
   authenticate().then(loadClient, () => {
     console.error("Error when Authenticating")
@@ -1400,110 +1359,13 @@ gapi.load("client:auth2", function () {
     resetStateOnError();
     showErrorModal();
   });
-}*/
-
-async function createBroadcast() {
-  url = "youtube/createbroadcast/api/"
-  let broadcast_data = new Object();
-  broadcast_data.videoPrivacyStatus=videoPrivacyStatus;
-  broadcast_data.testNameValue=testNameValue;
-  json_broadcast_data = JSON.stringify(broadcast_data);
-  //headers: {"Content-type":"application/json;charset=UTF-8"}
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-
-  let broadcastCreated = false;
-
-  await fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders})
-  //axios.request({url, method: 'post', body: json_broadcast_data, headers: myHeaders})
-  /*.then((res) => {
-    console.log(res);
-  })*/
-  .then((response) => {
-    if (response.status != 201) {
-      throw new Error("Error when creating broadcast!");
-    }else{
-      broadcastCreated = true;
-      return response.json();
-    }
-  })
-  .then((json) => {
-    data = json;
-    console.log("data: ", data);
-    newStreamId=data.newStreamId;
-    newStreamName=data.newStreamName;
-    newStreamIngestionAddress=data.newStreamIngestionAddress;
-    //newRtmpUrl=data.newRtmpUrl;
-    newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
-    newBroadcastID=data.new_broadcast_id;
-    console.log("newStreamId:",newStreamId);
-    console.log("newStreamName:",newStreamName);
-    console.log("newStreamIngestionAddress",newStreamIngestionAddress);
-    console.log("newRtmpUrl:",newRtmpUrl);
-    console.log("new_broadcast_id:",newBroadcastID);
-  })
-  .catch((err) => {
-    console.error("I was able to catch an error: ", err)
-    resetStateOnError();
-    showErrorModal();
-  });
-
-  //.then(createWebsocket()).then(startRecording, () => {
-  if(broadcastCreated == true){
-  createWebsocket().then(startRecording, () => {
-    console.error("Error when running createWebsocket");
-    throw new Error("Error when running createWebsocket");
-  }).then(console.log("Started recording"), () => {
-    console.error("Error when running startRecording");
-    throw new Error("Error when running startRecording");
-  })
-  .catch((err) => {
-    console.error("I was able to catch an error: ", err)
-    resetStateOnError();
-    showErrorModal();
-  });
-}
 }
 
-/*async function endBroadcast() {
+async function endBroadcast() {
   //authenticate().then(loadClient).then(executeTransitionBroadcast);
   //console.log("Broadcast Trasitioned to complete state!");
   executeTransitionBroadcast().then(console.log("Broadcast Trasitioned to complete state!"),
-    console.error("Broadcast Trasitioning to complete state failed!"));
-}*/
-
-
-async function endBroadcast() {
-  url = "youtube/transitionbroadcast/api/";
-  let broadcast_data = new Object();
-  broadcast_data.the_broadcast_id=newBroadcastID;
-  json_broadcast_data = JSON.stringify(broadcast_data);
-  //headers: {"Content-type":"application/json;charset=UTF-8"}
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-
-  fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders})
-  //axios.request({url, method: 'post', body: json_broadcast_data, headers: myHeaders})
-  /*.then((res) => {
-    console.log(res);
-  })*/
-  .then((response) => {
-    if (response.status != 200) {
-      throw new Error("Error when transitioning broadcast!");
-    }else{
-      return response.json();
-    }
-  })
-  .then((json) => {
-    data = json;
-    console.log("data: ", data);
-  })
-  .then(console.log("Broadcast Trasitioned to complete state!"))
-  .catch((err) => {
-    console.error("Broadcast Trasitioning to complete state failed!");
-  });
+  console.error("Broadcast Trasitioning to complete state failed!"));
 }
 
 async function stopStreamin() {
@@ -1549,7 +1411,7 @@ async function connect() {
 }
 
 async function reConnectWebsocket() {
-  if (websocketReconnect == true) {
+  if(websocketReconnect == true){
     console.log("Attempting websocket reconnection...");
     createWebsocket();
   }
@@ -1657,84 +1519,12 @@ let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
 
 // sets youtube video privacy status
-async function setVideoPrivacyStatus() {
+async function setVideoPrivacyStatus(){
   // Check if we need to make videos public
   let makePublic = publicVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
   } else {
     videoPrivacyStatus = "private";
-  }
-}
-
-// Shows the beanote file upload modal
-async function showBeanoteFileUploadModal() {
-  // Synchronized recording stop
-  recordingSynched = false;
-  let logKeyboard = keyLogCheckbox.checked;
-  let recordWebcam = cameraCheckbox.checked;
-  let recordScreen = screenCheckbox.checked;
-
-  // Stop the webcam stream
-  if (recordWebcam == true) {
-    try {
-      webcamRecorder.stream.getTracks().forEach(track => track.stop());
-    } catch (err) {
-      console.error("Error while stopping webcam recorder: " + err.message);
-    }
-  }
-
-  // Stop screen stream
-  if (recordScreen == true) {
-    try {
-      screenRecorder.stream.getTracks().forEach(track => track.stop());
-    } catch (err) {
-      console.error("Error while stopping screen recorder: " + err.message);
-    }
-  }
-
-  // Stop screen and webcam merged stream
-  if ((recordScreen == true) && (recordWebcam == true)) {
-    try {
-      mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
-    } catch (err) {
-      console.error("Error while stopping merged stream recorder: " + err.message);
-    }
-  }
-
-  // Close modal if showing
-  const btnCloseBeanoteFileModal = document.getElementById('closeBeanoteFileModal');
-  btnCloseBeanoteFileModal.click();
-  // Show the get key log file modal
-  let beanoteFileUploadModal = new bootstrap.Modal(document.getElementById('beanoteFileUploadModal'));
-  beanoteFileUploadModal.show();
-}
-
-// Gets the key log file
-async function getBeanoteFile() {
-
-  const input = document.getElementById('inpt-beanote-file');
-  const currentBeanoteFile = input.files[0];
-
-  // Close modal
-  if (currentBeanoteFile != null) {
-    input.value = "";
-
-    // Initialize the data object if null
-    if (testRecordingData == null) {
-      testRecordingData = new FormData();
-    }
-
-    // Append key log file
-    let newFileName = fileRandomString + "_" + currentBeanoteFile.name;
-    testRecordingData.set('beanote_file', currentBeanoteFile, newFileName);
-    console.log("newBeanoteFileName: ", newFileName);
-
-    // Hide the get key log file modal and proceed to stop test
-    const btnCloseBeanoteFileModal = document.getElementById('closeBeanoteFileModal');
-    btnCloseBeanoteFileModal.click();
-
-    // Check for keylog file
-    keyLogFileCheck();
   }
 }

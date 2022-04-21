@@ -117,7 +117,7 @@ class VideoConsumer(AsyncConsumer):
                 #Send an acknowledgement for rtmp url received
                 msg = "RTMP url received: "+self.rtmpUrl
                 await self.send({"type": "websocket.send","text": msg})
-            elif 'rtmp://a.rtmp.youtube.com' in data:
+            elif 'rtmp://a.rtmp.youtube.com' in data or 'rtmps://a.rtmps.youtube.com' in data:
                 # Case where no browser audio is enabled
                 self.rtmpUrl = data
                 print("Received RTMP url: ",self.rtmpUrl)

@@ -21,4 +21,5 @@ urlpatterns = [
     path('', include('home.urls')),
     path('file/', include('file_app.urls')),
     path('websocket/', include('app_websocket.urls')),
+    path('youtube/', include('youtube.urls')),
 ]

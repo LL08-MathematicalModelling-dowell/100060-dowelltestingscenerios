@@ -15,6 +15,7 @@ from .models import MegaTestRecord
 import os
 import ffmpeg
 import json
+from . import youtube_api
 
 class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -132,6 +133,38 @@ class FileView(APIView):
             except Exception as err:
                 print("Error while handling keylog file: " + str(err))
 
+            # Process Beanote file
+            try:
+                self.beanote_file_name=request.data['beanote_file'].name
+                print("Beanote File Name: ",self.beanote_file_name)
+
+                # save beanote file
+                beanote_filedata=request.data['beanote_file']
+                self.beanote_recording_file_path = settings.MEDIA_ROOT+"/"+self.beanote_file_name
+                #print("beanote_recording_file_path: ",self.beanote_recording_file_path)
+                with open(self.beanote_recording_file_path, 'ab+') as destination:
+                    for chunk in beanote_filedata.chunks():
+                        destination.write(chunk)
+
+                # upload key log file
+                file_name = self.beanote_recording_file_path
+                megadrive_file_link = self.upload_file_to_megadrive(file_name)
+                if megadrive_file_link == False:
+                    msg = "Beanote File upload to mega drive failed!"
+                    #print(msg)
+                    self.clean_up(self.beanote_recording_file_path)
+
+                    #Delete uploaded files on error
+                    self.delete_all_files()
+
+                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+                else:
+                    self.megadrive_record.beanote_file = megadrive_file_link
+                    #print("keylog_megadrive_file_link: ", megadrive_file_link)
+                    self.clean_up(self.beanote_recording_file_path)
+            except Exception as err:
+                print("Error while handling beanote file: " + str(err))
+
             # Process webcam file
             try:
                 self.webcam_file_name=request.data['webcam_file']
@@ -206,4 +239,15 @@ class BytesView(APIView):
         with open(recording_file_path, 'ab+') as destination:
             for chunk in filedata.chunks():
                 destination.write(chunk)
+        return Response("Bytes Received", status=status.HTTP_201_CREATED)
+
+class CreateBroadcastView(APIView):
+    #parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        videoPrivacyStatus = "private"
+        testNameValue = "Test1"
+        stream_dict = youtube_api.create_broadcast(videoPrivacyStatus,testNameValue)
+        print("stream_dict: ",stream_dict)
+
         return Response("Bytes Received", status=status.HTTP_201_CREATED)
