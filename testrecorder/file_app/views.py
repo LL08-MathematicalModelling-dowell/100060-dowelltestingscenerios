@@ -8,7 +8,7 @@ from .serializers import FileSerializer, MegaFileSerializer
 import random
 from django.conf import settings
 
-from mega import Mega
+#from mega import Mega
 import json
 import requests
 from .models import MegaTestRecord
@@ -73,14 +73,14 @@ class FileView(APIView):
             print("responses password: ",response_data["password"]) 
 
             # Start the upload process
-            mega=Mega()
+            """mega=Mega()
             #m = mega.login(responses["username"],responses["password"])
             m = mega.login(response_data["username"],response_data["password"])
             # Get the destination folder
             folder = m.find('test_recording_application_V1')
             file = m.upload(file_to_upload, folder[0])
             upload_link = m.get_upload_link(file)
-            print("new upload_link: ", upload_link)
+            print("new upload_link: ", upload_link)"""
             return upload_link
         except Exception as err:
             print("Error while uploading file to megadrive: " + str(err))
@@ -90,10 +90,11 @@ class FileView(APIView):
     def post(self, request, *args, **kwargs):
         file_serializer = FileSerializer(data=request.data)
 
-        print(request.data)
+        print("Request Data: ",request.data)
 
         if file_serializer.is_valid():
             #file_serializer.save()
+            print("self.parser_classes: ",self.parser_classes)
 
             # Object to store mega drive records details
             self.megadrive_record = MegaTestRecord()

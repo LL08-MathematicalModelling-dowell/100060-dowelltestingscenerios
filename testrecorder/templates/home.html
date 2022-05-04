@@ -266,7 +266,7 @@ body
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <p style="font-size: 2rem; color: rgb(255, 0, 0);">
+                        <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
                             <i class="bi-x"></i>An error has occurred, please do the following.
                         </p>
                         <p>
@@ -286,6 +286,39 @@ body
                 </div>
             </div>
         </div>
+
+                <!-- Network Error occurred modal -->
+                <div class="modal" id="networkErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Network Error Modal</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                                    <i class="bi-x"></i>Recording stopped due to network error, please do the following.
+                                </p>
+                                <p>
+                                    1. Close this modal.
+                                </p>
+                                <p>
+                                    2. Check your internet connection.
+                                </p>
+                                <p>
+                                    3. Refresh the page on your browser.
+                                </p>
+                                <p>
+                                    4. Start the recording process again.
+                                </p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                                    id="btnCloseErrorModal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
         <!-- Key log file upload modal-->
         <div class="modal" id="keyLogFileUploadModal">

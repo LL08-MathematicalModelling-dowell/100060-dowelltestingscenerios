@@ -166,6 +166,10 @@ class VideoConsumer(AsyncConsumer):
         if 'bytes' in event.keys():
             self.process.stdin.write(event['bytes'])
 
+            #Send an acknowledgement for bytes received
+            msg = "Bytes received"
+            await self.send({"type": "websocket.send","text": msg})
+
 
         """sleep(1)
 

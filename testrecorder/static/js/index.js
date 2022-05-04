@@ -43,8 +43,11 @@ let newBroadcastID = null;
 let btnViewRecords = document.getElementById('view_records');
 let newRtmpUrl = null;
 let websocketReconnect = false;
-let recordinginProgress = true;
+let recordinginProgress = false;
 let videoPrivacyStatus = "private";
+let lastMsgRcvTime = 0;
+let msgRcvdFlag = false;
+let networkTimer = false;
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -82,7 +85,8 @@ async function captureScreen(mediaConstraints = {
   video: {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
-  }
+  },
+  audio: true
 }) {
 
   try {
@@ -201,6 +205,12 @@ async function recordMergedStream() {
 
 // Stops webcam and screen recording
 async function stopRecording() {
+  // Stop network timer
+  try {
+    clearInterval(networkTimer);
+  } catch (error) {
+    console.error("Error while stopping network timer!");
+  }
   // Close the websocket and stop streaming
   await stopStreamin();
 
@@ -751,10 +761,11 @@ async function sendAvailableData(prevProgress) {
 
   // Send data
   if ((usernameValue != null) && (testRecordingData != null)) {
-    axios.request({
+    /*axios.request({
       method: "post",
       url: '/file/upload/',
-      headers: { 'X-CSRFToken': csrftoken },
+      //headers: { 'X-CSRFToken': csrftoken, "Content-Type": "multipart/form-data"},
+      headers: { 'X-CSRFToken': csrftoken},
       data: testRecordingData,
       onUploadProgress: (p) => {
         let uploadedPercentage = 0;
@@ -768,12 +779,22 @@ async function sendAvailableData(prevProgress) {
         // Update the progress bar
         setProgressBarValue(uploadedPercentage + prevProgress);
       }
-    }).then(response => {
+    })*/
+    
+    setProgressBarValue(50);
+
+    await fetch('/file/upload/', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrftoken},
+      body: testRecordingData
+    })
+    .then(response => {
       console.log(response)
       if (response.status == 201) {
         console.log(response.status)
         msg = "STATUS: Files Uploaded."
         document.getElementById("app-status").innerHTML = msg;
+        setProgressBarValue(100);
 
         // Set current video file links on mega drive
         //set_video_links(response.data)
@@ -874,7 +895,7 @@ async function uploadSeleniumIdeFile() {
 
     // Append file
     let newBeanoteFileName = fileRandomString + "_" + currentBeanoteFile.name;
-    testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
+    //testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
     console.log("newBeanoteFileName: ", newBeanoteFileName);
   }
 
@@ -890,7 +911,7 @@ async function uploadSeleniumIdeFile() {
 
     // Append key log file
     let newFileName = fileRandomString + "_" + currentKeyLogFile.name;
-    testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
+    //testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
     console.log("newFileName: ", newFileName);
 
     /*// Hide the get key log file modal and proceed to stop test
@@ -1118,7 +1139,9 @@ async function createWebsocket() {
   //let wsStart = 'ws://'
   let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  let endpoint = "ws://206.72.196.211:8000/ws/app/"
+
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
 
@@ -1192,14 +1215,15 @@ async function createWebsocket() {
   };
 
   appWebsocket.onmessage = function (e) {
-    console.log('message', e)
+    //console.log('message', e)
     let receivedMsg = e.data;
-    console.log("Received data: ", receivedMsg)
+    //console.log("Received data: ", receivedMsg)
+    msgRcvdFlag = true;
 
     if (receivedMsg.includes("RTMP url received: rtmp://")) {
       console.log('RTMP url ACK received');
     } else {
-      console.error('RTMP url ACK not received');
+      //console.error('RTMP url ACK not received');
     }
   };
 }
@@ -1540,9 +1564,9 @@ async function showErrorModal() {
   errorModal.show();
 }
 
-setTimeout(function () {
+/*setTimeout(function () {
   connect();
-}, 1000);
+}, 1000);*/
 
 async function connect() {
   console.log("One Shot Timer fired.")
@@ -1555,10 +1579,10 @@ async function reConnectWebsocket() {
   }
 }
 
-let reconnectTimer = setInterval(() => {
+/*let reconnectTimer = setInterval(() => {
   console.log("Reconnect Contionus Timer fired.");
   reConnectWebsocket();
-}, 5000) // each 5 second
+}, 5000) // each 5 second*/
 
 let minutes = 10;
 let milliSeconds = minutes * 60 * 1000;
@@ -1566,6 +1590,50 @@ let timer = setInterval(() => {
   //connectToWebsocket();
   createDummyWebsocket();
 }, milliSeconds) // each 1 second
+
+// Timer to check network status every second
+networkTimer = setInterval(() => {
+  //connectToWebsocket();
+  //createDummyWebsocket();
+  checkNetworkStatus();
+}, 1000) // each 1 second
+
+// Function to check network status
+async function checkNetworkStatus(){
+  let currentDateTime = new Date();
+  //console.log("The current date time is as follows:");
+  //console.log(currentDateTime);
+  let resultInSeconds=currentDateTime.getTime() / 1000;
+  //console.log("The current date time in seconds is as follows:")
+  //console.log(resultInSeconds);
+  let timeNow = resultInSeconds;
+
+  if(msgRcvdFlag == true){
+    lastMsgRcvTime = timeNow;
+    msgRcvdFlag = false;
+  }else{
+    if(recordinginProgress == false){
+      lastMsgRcvTime = timeNow;
+    }else if((timeNow - lastMsgRcvTime) > 25){ // More than 25 secs
+      msgRcvdFlag = false;
+      lastMsgRcvTime = timeNow;
+      // Stop recording due to network problem
+      /*clearInterval(networkTimer)
+      .then(stopStreams())
+      .then(resetStateOnError())
+      then(alert("Recording stopped due to network problem"));*/
+      
+      clearInterval(networkTimer);
+      stopStreams();
+      resetStateOnError();
+      //alert("Recording stopped due to network problem");
+      let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
+      errorModal.show(); 
+    }
+
+  }
+}
+
 
 /*async function connectToWebsocket() {
     let wsStart = 'ws://'
@@ -1709,6 +1777,43 @@ async function showBeanoteFileUploadModal() {
   let beanoteFileUploadModal = new bootstrap.Modal(document.getElementById('beanoteFileUploadModal'));
   beanoteFileUploadModal.show();
 }
+
+// Stop streams
+async function stopStreams() {
+  // Synchronized recording stop
+  recordingSynched = false;
+  let logKeyboard = keyLogCheckbox.checked;
+  let recordWebcam = cameraCheckbox.checked;
+  let recordScreen = screenCheckbox.checked;
+
+  // Stop the webcam stream
+  if (recordWebcam == true) {
+    try {
+      webcamRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping webcam recorder: " + err.message);
+    }
+  }
+
+  // Stop screen stream
+  if (recordScreen == true) {
+    try {
+      screenRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping screen recorder: " + err.message);
+    }
+  }
+
+  // Stop screen and webcam merged stream
+  if ((recordScreen == true) && (recordWebcam == true)) {
+    try {
+      mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping merged stream recorder: " + err.message);
+    }
+  }
+}
+
 
 // Gets the key log file
 async function getBeanoteFile() {

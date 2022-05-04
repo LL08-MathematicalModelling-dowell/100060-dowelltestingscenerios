@@ -29,7 +29,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from . import routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
-#django.setup()
+django.setup()
 
 
 #application = get_default_application()
