@@ -13,14 +13,15 @@
         number_one = document.getElementById('main')
         let wsStart = 'ws://'
 
-        if(window.location.protocol == 'https:'){
+        if (window.location.protocol == 'https:') {
             wsStart = 'wss://'
-        }else{
+        } else {
             wsStart = 'ws://'
         }
         //var endpoint = wsStart + window.location.host + window.location.pathname
         //var endpoint = wsStart + window.location.host + "/ws/app/"
-        var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+        //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+        var endpoint = "ws://206.72.196.211:80/ws/app/"
         var socket = new WebSocket(endpoint)
         console.log(endpoint)
 
@@ -34,10 +35,14 @@
         socket.onmessage = function (e) {
             console.log('message', e)
             number_one.innerHTML = e.data
-            data = {"Hello": "video frame"}
+            data = { "Hello": "video frame" }
             //socket.send(1)
             socket.send(data)
         }
+
+        socket.onerror = function (evt) {
+            console.error("Websocket creation error: ", evt);
+        };
     </script>
 </body>
 

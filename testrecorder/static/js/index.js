@@ -1140,7 +1140,8 @@ async function createWebsocket() {
   let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
   //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  let endpoint = "ws://206.72.196.211:8000/ws/app/"
+  //let endpoint = "ws://206.72.196.211:8000/ws/app/"
+  let endpoint = "ws://206.72.196.211:80/ws/app/"
 
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
