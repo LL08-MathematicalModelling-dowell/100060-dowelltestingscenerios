@@ -1,5 +1,6 @@
 testrecorder/.idea/
 testrecorder/media/
+__pycache__/
 *.pyc
 testrecorder/file_app/credentials.json
 testrecorder/youtube/client_secret.json
