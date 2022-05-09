@@ -142,13 +142,20 @@ async function recordMergedStream() {
     let screenHeight = screen.height;
     merger.setOutputSize(screenWidth, screenHeight);
 
+    // Check if we need to add audio stream
+    let recordAudio = audioCheckbox.checked;
+    let muteState = !recordAudio;
+    //console.log("muteState: ",muteState)
+
     // Add the screen capture. Position it to fill the whole stream (the default)
     merger.addStream(screenStream, {
       x: 0, // position of the topleft corner
       y: 0,
       width: merger.width,
       height: merger.height,
-      mute: true // we don't want sound from the screen (if there is any)
+      //mute: true // we don't want sound from the screen (if there is any)
+      //mute: false // we want sound from the screen (if there is any)
+      mute: muteState // user preference on sound from the screen (if there is any)
     })
 
     // Calculate dynamic webcam stream height and width
@@ -426,9 +433,41 @@ async function recordScreenAndAudio() {
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
-    stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+    //stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+
+    const mergeAudioStreams = (desktopStream, voiceStream) => {
+      const context = new AudioContext();
+        
+      // Create a couple of sources
+      const source1 = context.createMediaStreamSource(desktopStream);
+      const source2 = context.createMediaStreamSource(voiceStream);
+      const destination = context.createMediaStreamDestination();
+      
+      const desktopGain = context.createGain();
+      const voiceGain = context.createGain();
+        
+      desktopGain.gain.value = 0.7;
+      voiceGain.gain.value = 0.7;
+       
+      source1.connect(desktopGain).connect(destination);
+      // Connect source2
+      source2.connect(voiceGain).connect(destination);
+        
+      return destination.stream.getAudioTracks();
+    };
+
+    //stream = mergeAudioStreams;
+    //stream = new MediaStream([...mergeAudioStreams.getTracks()]);
+    const tracks = [
+      ...screenStream.getVideoTracks(), 
+      ...mergeAudioStreams(screenStream, audioStream)
+    ];
+    
+    //console.log('Tracks to add to stream', tracks);
+    stream = new MediaStream(tracks);
   } else {
-    stream = new MediaStream([...screenStream.getTracks()]);
+    //stream = new MediaStream([...screenStream.getTracks()]);
+    stream = new MediaStream([...screenStream.getVideoTracks()]);
   }
 
   // Show screen record if webcam is not recording
@@ -1139,9 +1178,9 @@ async function createWebsocket() {
   //let wsStart = 'ws://'
   let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
-  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   //let endpoint = "ws://206.72.196.211:8000/ws/app/"
-  let endpoint = "ws://206.72.196.211:80/ws/app/"
+  //let endpoint = "ws://206.72.196.211:80/ws/app/"
 
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
