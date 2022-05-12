@@ -5,11 +5,12 @@ from django.shortcuts import render
 
 class HomePageView(TemplateView):
     template_name = 'home.html'
+    #template_name = 'not_working.html'
 
 
 
- 
- 
+
+
 def records_view(request):
     print("Request Data: ",request.POST)
     # dictionary for initial data with
@@ -29,9 +30,9 @@ def records_view(request):
 
     print("context: ",context)
 
- 
+
     # add the dictionary during initialization
     #context["dataset"] = GeeksModel.objects.all()
-         
+
     return render(request, "view_records.html", context)
 

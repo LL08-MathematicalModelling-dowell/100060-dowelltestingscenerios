@@ -433,41 +433,41 @@ async function recordScreenAndAudio() {
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
-    //stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+    stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
 
-    const mergeAudioStreams = (desktopStream, voiceStream) => {
+    /*const mergeAudioStreams = (desktopStream, voiceStream) => {
       const context = new AudioContext();
-        
+
       // Create a couple of sources
       const source1 = context.createMediaStreamSource(desktopStream);
       const source2 = context.createMediaStreamSource(voiceStream);
       const destination = context.createMediaStreamDestination();
-      
+
       const desktopGain = context.createGain();
       const voiceGain = context.createGain();
-        
+
       desktopGain.gain.value = 0.7;
       voiceGain.gain.value = 0.7;
-       
+
       source1.connect(desktopGain).connect(destination);
       // Connect source2
       source2.connect(voiceGain).connect(destination);
-        
+
       return destination.stream.getAudioTracks();
     };
 
     //stream = mergeAudioStreams;
     //stream = new MediaStream([...mergeAudioStreams.getTracks()]);
     const tracks = [
-      ...screenStream.getVideoTracks(), 
+      ...screenStream.getVideoTracks(),
       ...mergeAudioStreams(screenStream, audioStream)
     ];
-    
+
     //console.log('Tracks to add to stream', tracks);
-    stream = new MediaStream(tracks);
+    stream = new MediaStream(tracks);*/
   } else {
-    //stream = new MediaStream([...screenStream.getTracks()]);
-    stream = new MediaStream([...screenStream.getVideoTracks()]);
+    stream = new MediaStream([...screenStream.getTracks()]);
+    //stream = new MediaStream([...screenStream.getVideoTracks()]);
   }
 
   // Show screen record if webcam is not recording
@@ -819,7 +819,7 @@ async function sendAvailableData(prevProgress) {
         setProgressBarValue(uploadedPercentage + prevProgress);
       }
     })*/
-    
+
     setProgressBarValue(50);
 
     await fetch('/file/upload/', {
@@ -1178,9 +1178,10 @@ async function createWebsocket() {
   //let wsStart = 'ws://'
   let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   //let endpoint = "ws://206.72.196.211:8000/ws/app/"
   //let endpoint = "ws://206.72.196.211:80/ws/app/"
+  var endpoint = "wss://liveuxstoryboard.com/ws/app/"
 
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
@@ -1626,10 +1627,10 @@ async function reConnectWebsocket() {
 
 let minutes = 10;
 let milliSeconds = minutes * 60 * 1000;
-let timer = setInterval(() => {
+/*let timer = setInterval(() => {
   //connectToWebsocket();
   createDummyWebsocket();
-}, milliSeconds) // each 1 second
+}, milliSeconds) // each 1 second*/
 
 // Timer to check network status every second
 networkTimer = setInterval(() => {
@@ -1662,13 +1663,13 @@ async function checkNetworkStatus(){
       .then(stopStreams())
       .then(resetStateOnError())
       then(alert("Recording stopped due to network problem"));*/
-      
+
       clearInterval(networkTimer);
       stopStreams();
       resetStateOnError();
       //alert("Recording stopped due to network problem");
       let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-      errorModal.show(); 
+      errorModal.show();
     }
 
   }
@@ -1707,7 +1708,8 @@ async function createDummyWebsocket() {
 //let wsStart = 'ws://'
 let endpoint = wsStart + window.location.host + "/ws/app/"*/
 
-  let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+  var endpoint = "wss://liveuxstoryboard.com/ws/app/"
   let dummyAppWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
 
