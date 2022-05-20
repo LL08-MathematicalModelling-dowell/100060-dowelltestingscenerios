@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView
 from django.shortcuts import render
 #from .models import GeeksModel
+from django.views.decorators.csrf import csrf_exempt
 
 
 class HomePageView(TemplateView):
@@ -10,7 +11,7 @@ class HomePageView(TemplateView):
 
 
 
-
+@csrf_exempt
 def records_view(request):
     print("Request Data: ",request.POST)
     # dictionary for initial data with
@@ -23,16 +24,16 @@ def records_view(request):
     webcam_file = request.POST.get('webcam_link')
     screen_file = request.POST.get('screen_link')
     merged_file = request.POST.get('merged_link')
+    key_log_file = request.POST.get('key_log_file_link')
+    beanote_file = request.POST.get('beanote_file_link')
     print("screen_link: ",screen_file)
     context["webcam_link"] = webcam_file
     context['screen_link'] = screen_file
     context["merged_link"] = merged_file
+    context['key_log_file_link'] = key_log_file
+    context["beanote_file_link"] = beanote_file
 
     print("context: ",context)
-
-
-    # add the dictionary during initialization
-    #context["dataset"] = GeeksModel.objects.all()
 
     return render(request, "view_records.html", context)
 

@@ -1,20 +1,37 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        body {
+          background-color: #dfdfdf;  
+        }
+        
+        a {
+            font-size: 1.575em; /* 14px/16=0.875em */
+        }
+    </style>
 
 <body>
 
     <h1>Click on the links to view the recorded files</h1>
 
     {% if webcam_link %}
-    <p>Webcam File URL: <a href="{{ webcam_link }}" target="_blank">Mega drive webcam file</a></p>
+    <p>Webcam File URL: <a href="{{ webcam_link }}" target="_blank">Current webcam file</a></p>
     {% endif %}
 
     {% if screen_link %}
-    <p>Screen File URL: <a href="{{ screen_link }}" target="_blank">Mega drive screen file</a></p>
+    <p>Screen File URL: <a href="{{ screen_link }}" target="_blank">Current screen file</a></p>
     {% endif %}
 
     {% if merged_link %}
-    <p>Merged File URL: <a href="{{ merged_link }}" target="_blank">Mega drive merged file</a></p>
+    <p>Merged File URL: <a href="{{ merged_link }}" target="_blank">Current merged file</a></p>
+    {% endif %}
+
+    {% if key_log_file_link %}
+    <p>Key Log File URL: <a href="{{ key_log_file_link }}" target="_blank">Current key log file</a></p>
+    {% endif %}
+
+    {% if beanote_file_link %}
+    <p>Beanote File URL: <a href="{{ beanote_file_link }}" target="_blank">Current beanote file</a></p>
     {% endif %}
 
 </body>
