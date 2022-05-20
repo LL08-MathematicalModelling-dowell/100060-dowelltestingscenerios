@@ -1,6 +1,7 @@
 testrecorder/.idea/
 testrecorder/media/
 testrecorder/temp/
+testrecorder/db.sqlite3
 __pycache__/
 *.pyc
 testrecorder/file_app/credentials.json
