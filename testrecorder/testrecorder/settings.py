@@ -28,6 +28,9 @@ DEBUG = True
 #ALLOWED_HOSTS = ['100034.pythonanywhere.com']
 ALLOWED_HOSTS = ['*']
 
+# Allow cors
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # Application definition
 
@@ -44,6 +47,7 @@ INSTALLED_APPS = [
     'channels',
     'app_websocket',
     'youtube',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'testrecorder.urls'
@@ -140,3 +145,7 @@ STATICFILES_DIRS = [
    os.path.join(BASE_DIR, 'static/')
 ]
 STATIC_URL = '/static/'
+
+# Temporary files directory
+TEMP_FILES_ROOT = os.path.join(BASE_DIR, "temp")
+PERMANENT_FILES_ROOT = os.path.join(BASE_DIR, "media/UXLivingLab/UX_LIVE")

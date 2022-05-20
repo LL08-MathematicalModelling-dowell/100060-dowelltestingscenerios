@@ -109,36 +109,35 @@ body
                                         Recording</button>
                                 </div>
 
-                                <!--<div class="col-sm-4 mt-3">
-                                    <button type="button" class="btn btn-success btn-sm w-100" id="stop"
-                                        onClick="showBeanoteFileUploadModal()">Save/Stop
-                                        Recording</button>
-                                </div>-->
-
                                 <div class="col-sm-4 mt-3">
-                                    <!--<form action="{% url 'view_records' %}" method="POST" target="_blank">
-                                        {% csrf_token %}
-                                        <input id="webcam_link" name="webcam_link" value="#" type="hidden">
-                                        <input id="screen_link" name="screen_link" value="#" type="hidden">
-                                        <input id="merged_link" name="merged_link" value="#" type="hidden">
-                                        <button type="submit" class="btn btn-info btn-sm w-100" id="view_records">
-                                            View Recording
-                                        </button>goToPage(event)
-                                    </form>-->
                                     <button type="button" class="btn btn-info btn-sm w-100" id="view_records" onclick="goToPage(event)" disabled>
-                                        View Recording
+                                        View YouTube Recording
                                     </button>
                                 </div>
                             </div>
 
                             <div class="row">
-                                <div class="col-sm-6 mt-3">
+                                <!--<div class="col-sm-4 mt-3">
                                     <button type="button" class="btn btn-secondary btn-sm w-100" id="pause"
                                         onClick="pauseRecording()">Pause Recording</button>
                                 </div>
-                                <div class="col-sm-6 mt-3">
+                                <div class="col-sm-4 mt-3">
                                     <button type="button" class="btn btn-primary btn-sm w-100" id="resume"
                                         onClick="resumeRecording()">Resume Recording</button>
+                                </div>-->
+                                <div class="col-sm-4 mt-3">
+                                    <!--<form action="{% url 'view_records' %}" method="POST" target="_blank">-->
+                                    <form action="https://liveuxstoryboard.com/recordings/" method="POST" target="_blank">
+                                    <!--<form action="http://localhost:8080/recordings/" method="POST" target="_blank">-->
+                                        {% csrf_token %}
+                                        <input id="webcam_link" name="webcam_link" value="" type="hidden">
+                                        <input id="screen_link" name="screen_link" value="" type="hidden">
+                                        <input id="merged_link" name="merged_link" value="" type="hidden">
+                                        <input id="beanote_file_link" name="beanote_file_link" value="" type="hidden">
+                                        <input id="key_log_file_link" name="key_log_file_link" value="" type="hidden">
+                                        <button type="submit" class="btn btn-dark btn-sm w-100" id="view_vps_files"
+                                        >View VPS Files</button>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -273,10 +272,13 @@ body
                             1. Close this modal.
                         </p>
                         <p>
-                            2. Refresh the page on your browser.
+                            2. Check your internet connection.
                         </p>
                         <p>
-                            3. Start the recording process again.
+                            3. Refresh the page on your browser.
+                        </p>
+                        <p>
+                            4. Start the recording process again.
                         </p>
                     </div>
                     <div class="modal-footer">
@@ -430,14 +432,8 @@ body
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
         crossorigin="anonymous"></script>
 
-    <!-- Axios import -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
     <!-- Video Stream Merger JavaScript -->
     <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
-
-    <!-- YouTube API JavaScript -->
-    <script src="https://apis.google.com/js/api.js"></script>
 
     <!-- Application JavaScript -->
     <script src="{% static '/js/index.js' %}"></script>

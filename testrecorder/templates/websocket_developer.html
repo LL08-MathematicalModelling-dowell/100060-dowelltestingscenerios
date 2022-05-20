@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+
+<body>
+
+    <h1 id="main">Websocket Development</h1>
+    <p>
+        <button class="btn btn-success" onclick="createAllsockets()">Test Socket</button>
+    </p>
+    <script>
+        async function createWebcamScreenSocket(socketType) {
+            number_one = document.getElementById('main')
+            let wsStart = 'ws://'
+
+            if (window.location.protocol == 'https:') {
+                wsStart = 'wss://'
+            } else {
+                wsStart = 'ws://'
+            }
+            //var endpoint = wsStart + window.location.host + window.location.pathname
+            //var endpoint = wsStart + window.location.host + "/ws/app/"
+            //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
+            //var endpoint = "ws://206.72.196.211:80/ws/app/"
+            var endpoint = wsStart + window.location.host + "/ws/webcamscreen/"
+            var socket = new WebSocket(endpoint)
+            console.log(endpoint)
+
+            socket.onopen = function (e) {
+                console.log('open', e)
+                //socket.send(1)
+                let screenFileName = "test1_10_5_2022_T15_52_6_" + socketType + ".webm";
+                let msg = "FILENAME," + screenFileName;
+                socket.send(msg)
+            }
+
+
+            socket.onmessage = function (e) {
+                //console.log('message', e)
+                let receivedMsg = e.data;
+                console.log("Received data: ", receivedMsg)
+                msgRcvdFlag = true;
+
+                if (receivedMsg.includes("Received Recording File Name")) {
+                    console.log('Socket received file name');
+                    // ToDo: Enable streaming of video using websocket
+                } else {
+                    //Handle next message;
+                }
+            }
+
+            socket.onerror = function (evt) {
+                console.error("Websocket creation error: ", evt);
+                throw new Error("Websocket creation error: "+evt);
+                // ToDo: Tell user, stop the recording.
+            };
+        }
+
+        async function createAllsockets() {
+            // ToDO; Check which recording type is enabled first
+            createWebcamScreenSocket("screen")
+                .then(createWebcamScreenSocket("webcam"))
+                .catch((err) => {
+                    console.error("Failed to create websockets: ", err)
+                });
+        }
+    </script>
+</body>
+
+</html>

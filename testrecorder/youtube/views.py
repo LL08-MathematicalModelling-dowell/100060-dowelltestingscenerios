@@ -442,7 +442,8 @@ def insert_broadcast(youtube,videoPrivacyStatus,testNameValue):
     #testNameValue = "Python tests"  # ToDo get this from request
     videoPrivacyStatus = videoPrivacyStatus
     testNameValue = testNameValue
-    videoTitle = "Test Broadcast " + testNameValue + " " + future_date_iso
+    #videoTitle = "Test Broadcast " + testNameValue + " " + future_date_iso
+    videoTitle = testNameValue + " " + future_date_iso
     print(future_date_iso)
 
     request = youtube.liveBroadcasts().insert(
