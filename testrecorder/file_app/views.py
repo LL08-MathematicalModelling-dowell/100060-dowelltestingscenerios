@@ -34,13 +34,14 @@ class FileView(APIView):
         """Creates a folder for storing user files"""
 
         # Create username directory
+        path = ""
         try:
             # username directory path
             path = os.path.join(permanent_files_dir, user_name)
             os.mkdir(path)
         except OSError as error:
             print(error)
-            if "file already exists" not in str(error):
+            if not os.path.isdir(path):
                 return False, ""
 
         # Create second directory
@@ -55,7 +56,7 @@ class FileView(APIView):
             return True, path2
         except OSError as error:
             print(error)
-            if "file already exists" in str(error):
+            if os.path.isdir(path2):
                 return True, path2
             else:
                 return False, path2
