@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>Calendly Widget</title>
+{% endblock title %}
+
+{% block body %}
+<div class="container-fluid">
+    <div id="widget" class="row justify-content-center align-items-center">
+        <!-- Calendly widget begin -->
+        <iframe src="https://calendly.com/uxlivestoryboard/ux_live_group_event1"
+            title="Group event calendly widget" height="630"></iframe>
+        <!-- Calendly widget end -->
+    </div>
+</div>
+{% endblock body %}

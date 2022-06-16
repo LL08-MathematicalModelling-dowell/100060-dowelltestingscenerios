@@ -1,16 +1,19 @@
-<!DOCTYPE html>
-<html>
-    <style>
-        body {
-          background-color: #dfdfdf;  
-        }
-        
-        a {
-            font-size: 1.575em; /* 14px/16=0.875em */
-        }
-    </style>
+{% extends 'base.html' %}
+{% load static %}
 
-<body>
+{% block css %}
+<style>
+    body {
+      background-color: #dfdfdf;  
+    }
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>View Records</title>
+{% endblock title %}
+
+{% block body %}
 
     <h1>Click on the links to view the recorded files</h1>
 
@@ -34,6 +37,4 @@
     <p>Beanote File URL: <a href="{{ beanote_file_link }}" target="_blank">Current beanote file</a></p>
     {% endif %}
 
-</body>
-
-</html>
+{% endblock body %}

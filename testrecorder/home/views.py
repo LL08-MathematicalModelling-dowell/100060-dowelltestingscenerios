@@ -7,6 +7,13 @@ from django.views.decorators.csrf import csrf_exempt
 class HomePageView(TemplateView):
     template_name = 'home.html'
     #template_name = 'not_working.html'
+    #template_name = 'calendly.html'
+
+class CalendlyPageView(TemplateView):
+    template_name = 'calendly.html'
+
+class AboutPageView(TemplateView):
+    template_name = 'about.html'
 
 
 
