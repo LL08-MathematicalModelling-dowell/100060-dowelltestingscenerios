@@ -107,7 +107,7 @@ class FileView(APIView):
                         for chunk in keylog_filedata.chunks():
                             destination.write(chunk)
 
-                    self.megadrive_record.key_log_file = self.keylog_recording_file_path
+                    self.megadrive_record.key_log_file = self.convert_file_path_to_link(self.keylog_recording_file_path)
                 else:
                     msg = "Failed to save keylog file"
                     return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -131,7 +131,7 @@ class FileView(APIView):
                         for chunk in beanote_filedata.chunks():
                             destination.write(chunk)
 
-                    self.megadrive_record.beanote_file = self.beanote_recording_file_path
+                    self.megadrive_record.beanote_file = self.convert_file_path_to_link(self.beanote_recording_file_path)
                 else:
                     msg = "Failed to save beanote file"
                     return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -162,7 +162,7 @@ class FileView(APIView):
                             shutil.move(source_path, self.webcam_recording_file_path)
 
 
-                        self.megadrive_record.webcam_file = self.webcam_recording_file_path
+                        self.megadrive_record.webcam_file = self.convert_file_path_to_link(self.webcam_recording_file_path)
                     else:
                         msg = "Failed to save webcam file"
                         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)  
@@ -192,7 +192,7 @@ class FileView(APIView):
                         if os.path.exists(source_path):
                             shutil.move(source_path, self.screen_recording_file_path)
 
-                        self.megadrive_record.screen_file = self.screen_recording_file_path
+                        self.megadrive_record.screen_file = self.convert_file_path_to_link(self.screen_recording_file_path)
                     else:
                         msg = "Failed to save screen file"
                         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -215,12 +215,12 @@ class FileView(APIView):
             self.megadrive_record.save()
             
             # Modify file paths to be links
-            self.megadrive_record.webcam_file = self.convert_file_path_to_link(self.megadrive_record.webcam_file)
+            """self.megadrive_record.webcam_file = self.convert_file_path_to_link(self.megadrive_record.webcam_file)
             self.megadrive_record.screen_file = self.convert_file_path_to_link(self.megadrive_record.screen_file)
             self.megadrive_record.beanote_file = self.convert_file_path_to_link(self.megadrive_record.beanote_file)
-            self.megadrive_record.key_log_file = self.convert_file_path_to_link(self.megadrive_record.key_log_file)
+            self.megadrive_record.key_log_file = self.convert_file_path_to_link(self.megadrive_record.key_log_file)"""
             mega_file_serializer = VpsFileSerializer(self.megadrive_record)
-            print("settings.BASE_DIR: ",settings.BASE_DIR)
+            #print("settings.BASE_DIR: ",settings.BASE_DIR)
 
             file_links = mega_file_serializer.data
             print("file_links: ",file_links)

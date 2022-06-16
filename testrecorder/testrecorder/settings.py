@@ -86,10 +86,21 @@ ASGI_APPLICATION = 'testrecorder.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
+"""DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}"""
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': 'live_ux_storyboard_v1',
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': 'mongodb+srv://dowelltestrecorder:Dowell12@cluster0.noett.mongodb.net/?retryWrites=true&w=majority'
+        }  
     }
 }
 
@@ -125,6 +136,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Static files (CSS, JavaScript, Images)

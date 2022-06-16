@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+    body {
+      background-color: #dfdfdf;  
+    }
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>About Live UX Storyboard</title>
+{% endblock title %}
+
+{% block body %}
+<div class="container-fluid mt-3">
+    <div class="row">
+        <h1>About Live UX Storyboard</h1>
+        <p>An application that helps to record user activities using:</p>
+        <ol class="ms-5">
+            <li>Their webcam.</li>
+            <li>Their Screen.</li>
+            <li>Their Microphone.</li>
+        </ol>
+        <p>Some of the files are saved in YouTube and others on our interserver VPS.</p>
+
+        <h1>Contact Us</h1>
+        <p>If you have any compliments, complaints, questions or suggestions, please send us a message at: <strong>dowelltestrecorder@gmail.com</strong></p>
+        <p>If your message is about an error, please take a sceenshot of the error with developer tools enabled.</p>
+    </div>
+</div>
+{% endblock body %}
