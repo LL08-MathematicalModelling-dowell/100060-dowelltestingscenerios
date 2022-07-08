@@ -40,6 +40,7 @@ class VpsTestRecord(models.Model):
     key_log_file = models.CharField(max_length=1024, default="")
     beanote_file = models.CharField(max_length=1024, default="")
     timestamp = models.DateTimeField(auto_now_add=True)
+    clickup_task_notes = models.TextField(default="")
 
     class Meta:
         db_table = 'vps_test_records'

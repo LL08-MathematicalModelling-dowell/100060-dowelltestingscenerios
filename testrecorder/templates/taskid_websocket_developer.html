@@ -8,7 +8,7 @@
 
 <body>
 
-    <h1 id="main">Websocket Development</h1>
+    <h1 id="main">Task ID Websocket Development</h1>
     <p>
         <button class="btn btn-success" onclick="createAllsockets()">Test Socket</button>
     </p>
@@ -17,7 +17,9 @@
     </p>
     <script>
         let globalSocket=null;
-        async function createWebcamScreenSocket(socketType) {
+        let receivedTaskID = null;
+        let taskIDwasRreceived = false;
+        async function createTaskidWebsocket() {
             number_one = document.getElementById('main')
             let wsStart = 'ws://'
 
@@ -37,12 +39,7 @@
             console.log(endpoint)
 
             socket.onopen = function (e) {
-                console.log('open', e)
-                //socket.send(1)
-                let screenFileName = "test1_10_5_2022_T15_52_6_" + socketType + ".webm";
-                let msg1 = "FILENAME," + screenFileName;
-                let msg = JSON.stringify({'message':msg1});
-                socket.send(msg)
+                console.log('Task ID websocket open', e)
             }
 
 
@@ -50,34 +47,27 @@
                 //console.log('message', e)
                 let receivedMsg = e.data;
                 console.log("Received data: ", receivedMsg)
-                msgRcvdFlag = true;
                 let task_json_infor = JSON.parse(receivedMsg);
 
                 if("message" in task_json_infor.payload){
-                    console.log("Received Task ID: ",task_json_infor.payload.message.task_id);
-                    alert("Received Task ID: "+task_json_infor.payload.message.task_id);
-                }
-
-
-                if (receivedMsg.includes("Received Recording File Name")) {
-                    console.log('Socket received file name');
-                    // ToDo: Enable streaming of video using websocket
-                } else {
-                    //Handle next message;
+                    receivedTaskID = task_json_infor.payload.message.task_id;
+                    taskIDwasRreceived = true;
+                    console.log("Received Task ID: ", receivedTaskID);
+                    alert("Received Task ID: "+receivedTaskID);
                 }
             }
 
             socket.onerror = function (evt) {
                 console.error("Websocket creation error: ", evt);
-                throw new Error("Websocket creation error: "+evt);
+                taskidWebsocketReconnection();
+                //throw new Error("Websocket creation error: "+evt);
                 // ToDo: Tell user, stop the recording.
             };
         }
 
         async function createAllsockets() {
             // ToDO; Check which recording type is enabled first
-            createWebcamScreenSocket("screen")
-                //.then(createWebcamScreenSocket("webcam"))
+            createTaskidWebsocket()
                 .catch((err) => {
                     console.error("Failed to create websockets: ", err)
                 });
@@ -86,6 +76,11 @@
         async function sendSocketMessage(){
             let msg = JSON.stringify({'message':'Testing group notification'});
             globalSocket.send(msg);
+        }
+
+        async function taskidWebsocketReconnection(){
+            console.log("Retrying connection to task id websocket in 5 Seconds")
+            setTimeout(createTaskidWebsocket(), 5000);
         }
     </script>
 </body>

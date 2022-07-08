@@ -5,10 +5,12 @@ const screenCheckbox = document.getElementById('screen-recording')
 const keyLogCheckbox = document.getElementById('key-logging')
 const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
+const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
 // App global variables
 let usernameValue = null;
 let testNameValue = null;
+let clickupTaskID = null;
 let testDescriptionValue = null;
 let screenRecorderChunks = [];
 let webcamChunks = [];
@@ -53,6 +55,9 @@ let networkTimer = false;
 let filesTimestamp = null;
 let screenFileName = null;
 let webcamFileName = null;
+let taskIdWebSocket = null;
+let receivedTaskID = null;
+let taskIDwasRreceived = false;
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -64,6 +69,18 @@ if (dontShowSeleniumIDEModalAgain != "true") {
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
 })
+
+// Clickup error modal
+let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
+
+// user settings modal
+let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
+
+// Get task id from user modal
+let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
+
+// Fill user email settings if it exists
+document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
 
 // Gets webcam stream
 async function captureMediaDevices(currentMediaConstraints) {
@@ -122,7 +139,7 @@ async function recordStream() {
   });
 
   webcamRecorder.ondataavailable = event => {
-    if(recordinginProgress==true){
+    if (recordinginProgress == true) {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamWebcamToYT == true)) {
         //webcamChunks.push(event.data);
         appWebsocket.send(event.data);
@@ -200,7 +217,7 @@ async function recordMergedStream() {
     });
 
     mergedStreamRecorder.ondataavailable = event => {
-      if(recordinginProgress==true){
+      if (recordinginProgress == true) {
         if ((event.data.size > 0) && (recordingSynched == true) && (streamMergedToYT == true)) {
           //mergedStreamChunks.push(event.data);
           appWebsocket.send(event.data);
@@ -269,6 +286,13 @@ async function stopRecording() {
   // Initialize upload data object if null
   if (testRecordingData == null) {
     testRecordingData = new FormData();
+  }
+
+  // Add the clickup task ID
+  if(taskIDwasRreceived == true){
+    testRecordingData.set('clickupTaskID', receivedTaskID);
+  }else if(clickupTaskID != null){
+    testRecordingData.set('clickupTaskID', clickupTaskID);
   }
 
   // Set videos youtube links, or file names
@@ -366,7 +390,7 @@ async function recordScreenAndAudio() {
 
   screenRecorder.ondataavailable = event => {
     //console.log("Data available");
-    if(recordinginProgress==true){
+    if (recordinginProgress == true) {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
@@ -610,6 +634,7 @@ async function validateModal() {
   // Clear previous test data
   usernameValue = null;
   testNameValue = null;
+  clickupTaskID = null;
   testDescriptionValue = null;
   testRecordingData = null;
 
@@ -667,17 +692,17 @@ async function validateModal() {
     document.getElementById("start").disabled = true;
 
     setVideoPrivacyStatus()
-    .then(() => {
-      startRecording();
-    })
-    /*.then(() => {
-      createAllsockets();
-    })*/
-    .catch((err) => {
-      console.error("Start recording error: ", err)
-      resetStateOnError();
-      showErrorModal();
-    });
+      .then(() => {
+        startRecording();
+      })
+      /*.then(() => {
+        createAllsockets();
+      })*/
+      .catch((err) => {
+        console.error("Start recording error: ", err)
+        resetStateOnError();
+        showErrorModal();
+      });
     /*.catch((error) => {
       console.error("Failed to set video privacy status")
     });*/
@@ -693,9 +718,9 @@ async function sendAvailableData(prevProgress) {
   if ((usernameValue != null) && (testRecordingData != null)) {
     setProgressBarValue(50);
     //let fileUploadUrl = 'http://localhost:8000/file/upload/';
-    let fileUploadUrl = "https://liveuxstoryboard.com/file/upload/"
-    //let fileUploadUrl = '/file/upload/';
-
+    //let fileUploadUrl = "https://liveuxstoryboard.com/file/upload/"
+    let fileUploadUrl = '/file/upload/';
+    let responseStatus = null;
     await fetch(fileUploadUrl, {
       method: 'POST',
       headers: { 'X-CSRFToken': csrftoken },
@@ -703,8 +728,13 @@ async function sendAvailableData(prevProgress) {
     })
       .then(response => {
         console.log(response)
-        if (response.status == 201) {
-          console.log(response.status)
+        responseStatus = response.status;
+        console.log("Response Status", responseStatus);
+        // Return json data
+        return response.json();
+      })
+      .then((json) => {
+        if (responseStatus == 201) {
           msg = "STATUS: Files Uploaded."
           document.getElementById("app-status").innerHTML = msg;
           setProgressBarValue(100);
@@ -720,6 +750,10 @@ async function sendAvailableData(prevProgress) {
           screenRecorderChunks = [];
           // Clear old merged stream recording data
           mergedStreamChunks = [];
+          // Clear task id data
+          receivedTaskID = null;
+          taskIDwasRreceived = false;
+          clickupTaskID = null;
 
           // Hide upload in progress modal
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
@@ -729,11 +763,17 @@ async function sendAvailableData(prevProgress) {
           let uploadCompleteModal = new bootstrap.Modal(document.getElementById('uploadComplete'));
           uploadCompleteModal.show();
 
-          // Return json data
-          return response.json();
-
+          //Set current video file links on vps
+          try {
+            let newFileLinks = json;
+            console.log("newFileLinks: ", newFileLinks)
+            set_video_links(newFileLinks)
+          } catch (error) {
+            console.error("Error while setting video links: ", error)
+          }
         } else {
-          console.log(response.status)
+          // Server error message
+          console.log("Server Error Message: ", json)
           msg = "STATUS: Files Upload Failed."
           document.getElementById("app-status").innerHTML = msg;
 
@@ -741,22 +781,24 @@ async function sendAvailableData(prevProgress) {
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
           btnCloseUploadigModal.click();
 
-          // Show upload failed modal
-          let uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
-          uploadFailedModal.show();
-        }
-      })
-      .then((json) => {
-        try {
-          let newFileLinks = json;
-          console.log("newFileLinks: ", newFileLinks)
-          //Set current video file links on vps
-          set_video_links(newFileLinks)
-        } catch (error) {
-          console.error("Error while setting video links: ", error)
+          // Check which error modal to show
+          let errorMessage = null;
+          if ("error_msg" in json) {
+            errorMessage = json.error_msg;
+          }
+
+          if (errorMessage.includes("Error while handling Clickup Task")) {
+            // Show clickup task error modal
+            taskErrorModal.show();
+          } else {
+            // Show upload failed modal
+            let uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
+            uploadFailedModal.show();
+          }
         }
       })
       .catch(error => {
+        console.error(error);
         msg = "STATUS: Files Upload Failed."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -856,47 +898,7 @@ async function uploadSeleniumIdeFile() {
 async function keyLogFileCheck() {
   try {
 
-    // Try to stop network timer
-    try {
-      clearInterval(networkTimer);
-    } catch (error) {
-      console.error("Error while stopping network timer!");
-    }
-
-    // Synchronized recording stop
-    recordingSynched = false;
     let logKeyboard = keyLogCheckbox.checked;
-    let recordWebcam = cameraCheckbox.checked;
-    let recordScreen = screenCheckbox.checked;
-
-    // Stop the webcam stream
-    if (recordWebcam == true) {
-      try {
-        webcamRecorder.stream.getTracks().forEach(track => track.stop());
-      } catch (err) {
-        console.error("Error while stopping webcam recorder: " + err.message);
-      }
-    }
-
-    // Stop screen stream
-    if (recordScreen == true) {
-      try {
-        screenRecorder.stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
-        console.error("Error while stopping screen recorder: " + err.message);
-      }
-    }
-
-    // Stop screen and webcam merged stream
-    if ((recordScreen == true) && (recordWebcam == true)) {
-      try {
-        mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
-        console.error("Error while stopping merged stream recorder: " + err.message);
-      }
-    }
-
-    // let logKeyboard = keyLogCheckbox.checked;
 
     if (logKeyboard == true) {
       let msg = "STATUS: Getting key log file."
@@ -1003,6 +1005,7 @@ async function resetStateOnError() {
   // Reset App global variables
   usernameValue = null;
   testNameValue = null;
+  clickupTaskID = null;
   testDescriptionValue = null;
   screenRecorderChunks = [];
   webcamChunks = [];
@@ -1026,6 +1029,10 @@ async function resetStateOnError() {
     },
     video: false
   };
+
+  taskIdWebSocket = null;
+  receivedTaskID = null;
+  taskIDwasRreceived = false;
 }
 
 // Updates the test information upload progress bar
@@ -1109,7 +1116,7 @@ async function set_video_links(linksData) {
 }
 
 async function createWebsocket() {
-  /*let wsStart = 'ws://'
+  let wsStart = 'ws://'
 
   if (window.location.protocol == 'https:') {
     wsStart = 'wss://'
@@ -1117,12 +1124,12 @@ async function createWebsocket() {
     wsStart = 'ws://'
   }
   //let wsStart = 'ws://'
-  let endpoint = wsStart + window.location.host + "/ws/app/"*/
+  let endpoint = wsStart + window.location.host + "/ws/app/"
 
   //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   //let endpoint = "ws://206.72.196.211:8000/ws/app/"
   //let endpoint = "ws://206.72.196.211:80/ws/app/"
-  let endpoint = "wss://liveuxstoryboard.com/ws/app/"
+  //let endpoint = "wss://liveuxstoryboard.com/ws/app/"
 
   appWebsocket = new WebSocket(endpoint)
   console.log(endpoint)
@@ -1201,17 +1208,17 @@ async function createWebsocket() {
       recordinginProgress = true;
 
       // Start the recorders
-    let recordWebcam = cameraCheckbox.checked;
-    let recordScreen = screenCheckbox.checked;
-    if ((recordScreen == true) && (recordWebcam == true)) {
-      screenRecorder.start(200);
-      webcamRecorder.start(200);
-      mergedStreamRecorder.start(200);
-    } else if (recordWebcam == true) {
-      webcamRecorder.start(200);
-    }else if (recordScreen == true) {
-      screenRecorder.start(200);
-    }
+      let recordWebcam = cameraCheckbox.checked;
+      let recordScreen = screenCheckbox.checked;
+      if ((recordScreen == true) && (recordWebcam == true)) {
+        screenRecorder.start(200);
+        webcamRecorder.start(200);
+        mergedStreamRecorder.start(200);
+      } else if (recordWebcam == true) {
+        webcamRecorder.start(200);
+      } else if (recordScreen == true) {
+        screenRecorder.start(200);
+      }
 
       // Start recording now
       /*startRecording()
@@ -1515,19 +1522,19 @@ async function getBeanoteFile() {
 }
 
 async function createWebcamScreenSocket(socketType) {
-  /*let wsStart = 'ws://'
+  let wsStart = 'ws://'
 
   if (window.location.protocol == 'https:') {
     wsStart = 'wss://'
   } else {
     wsStart = 'ws://'
   }
-  var endpoint = wsStart + window.location.host + "/ws/webcamscreen/"*/
+  var endpoint = wsStart + window.location.host + "/ws/webcamscreen/"
   //var endpoint = wsStart + window.location.host + window.location.pathname
   //var endpoint = wsStart + window.location.host + "/ws/app/"
   //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
   //var endpoint = "ws://206.72.196.211:80/ws/app/" 
-  let endpoint = "wss://liveuxstoryboard.com/ws/webcamscreen/"
+  //let endpoint = "wss://liveuxstoryboard.com/ws/webcamscreen/"
 
   var socket = new WebSocket(endpoint)
   if (socketType === "webcam") {
@@ -1632,4 +1639,281 @@ async function createRecordingTimestamp() {
   // Set the files timestamp
   filesTimestamp = newTimestamp;
   console.log("New File Timestamp: ", filesTimestamp);
+}
+
+
+// set a new clickup task id
+async function setNewClickupTaskID() {
+  // Validate clickup task ID
+  let taskIDIsValid = true;
+  clickupTaskID = document.getElementById("clickup-task-id-retry").value;
+  //console.log("clickupTaskID: ",clickupTaskID);
+  // Remove leading and trailling white space
+  clickupTaskID = clickupTaskID.trim();
+  // Remove forward slashes
+  clickupTaskID = clickupTaskID.replaceAll('/', '');
+  // Remove hash symbol
+  clickupTaskID = clickupTaskID.replaceAll('#', '');
+  console.log("clickupTaskID: ", clickupTaskID);
+  let idMsg = "";
+
+  // Check for empty string
+  if (clickupTaskID === "") {
+    idMsg = "Please fill the task id";
+    taskIDIsValid = false;
+  }
+
+  document.getElementById("clickup-task-id-retry-error").innerHTML = idMsg;
+
+  // Proceed to retry
+  if (taskIDIsValid) {
+    // Hide clickup task error modal
+    const btnCloseClickupErrorModal = document.getElementById('btnCloseClickupErrorModal');
+    btnCloseClickupErrorModal.click();
+
+    retryTestFilesUpload();
+  }
+}
+
+// Creates task id websocket
+async function createTaskidWebsocket() {
+  number_one = document.getElementById('main')
+  let wsStart = 'ws://'
+
+  if (window.location.protocol == 'https:') {
+    wsStart = 'wss://'
+  } else {
+    wsStart = 'ws://'
+  }
+  var endpoint = wsStart + window.location.host + "/ws/taskid/"
+
+  var socket = new WebSocket(endpoint)
+  taskIdWebSocket = socket;
+  console.log(endpoint)
+
+  socket.onopen = function (e) {
+    console.log('Task ID websocket open', e)
+  }
+
+
+  socket.onmessage = function (e) {
+    //console.log('message', e)
+    let receivedMsg = e.data;
+    console.log("Received data: ", receivedMsg)
+    let task_json_infor = JSON.parse(receivedMsg);
+
+    if ("message" in task_json_infor.payload) {
+      let storedUserEmail = localStorage.getItem("userClickupEmail");
+      console.log("storedUserEmail: ", storedUserEmail);
+      let receivedUserEmail = task_json_infor.payload.message.history_items[0].user.email;
+      console.log("receivedUserEmail: ", receivedUserEmail);
+
+      // Make sure task id is for current user
+      if (storedUserEmail === receivedUserEmail) {
+        receivedTaskID = task_json_infor.payload.message.task_id;
+        taskIDwasRreceived = true;
+        console.log("Received Task ID: ", receivedTaskID);
+        alert("Received Task ID: " + receivedTaskID);
+      } else {
+        console.log("None user task id received");
+      }
+    }
+  }
+
+  socket.onerror = function (evt) {
+    console.error("Websocket creation error: ", evt);
+    // Try to reconnect on failure
+    taskidWebsocketReconnection();
+  };
+}
+
+// Makes task id websocket connection retrys
+async function taskidWebsocketReconnection() {
+  console.log("Retrying connection to task id websocket in 5 Seconds")
+  setTimeout(createTaskidWebsocket(), 5000);
+}
+
+// Handle task id checkbox state changes
+async function handleTaskIdCheckbox(e) {
+  const { checked } = e.target;
+  console.log("Task ID Checked? ", checked)
+
+  if (checked === true) {
+    console.log("Creating Task ID websocket connection")
+    createTaskidWebsocket();
+    showUserSettingsModal();
+  } else {
+    console.log("Closing Task ID websocket connection")
+
+    receivedTaskID = null;
+    taskIDwasRreceived = false;
+
+    try {
+      taskIdWebSocket.close();
+    } catch (error) {
+      console.error("Error while closing webcamWebSocket");
+      taskIdWebSocket = null;
+    }
+  }
+}
+
+// Gets clickup extension current user email
+async function getClickupUser() {
+  let clickupExtension = "chrome-extension://pliibjocnfmkagafnbkfcimonlnlpghj";
+  let userDetails = window.localStorage.getItem(clickupExtension);
+  console.log("Clickup user details: ", userDetails)
+}
+
+// Save clickup user email address
+async function saveClickupUserEmail() {
+  // Validate email
+  let emailIsValid = true;
+  let userClickupEmail = document.getElementById("userClickupEmail").value;
+  console.log("userClickupEmail: ", userClickupEmail);
+  // Remove leading and trailling white space
+  userClickupEmail = userClickupEmail.trim();
+
+  let emailErrorMsg = "";
+
+  // Check for empty string
+  if (userClickupEmail === "") {
+    emailErrorMsg = "Please fill in the email address";
+    emailIsValid = false;
+  }
+
+  // check for correct email format
+  let validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+  if (!userClickupEmail.match(validRegex)) {
+    emailErrorMsg = "Please enter a valid email address";
+    emailIsValid = false;
+  }
+
+  document.getElementById("userEmailError").innerHTML = emailErrorMsg;
+
+  // Proceed to save email address
+  if (emailIsValid) {
+    // Hide user settings modal
+    const btnCloseUserSettingsModal = document.getElementById('close-user-settings-modal');
+    btnCloseUserSettingsModal.click();
+
+    // Save in localstorage
+    localStorage.setItem("userClickupEmail", userClickupEmail);
+  }
+}
+
+// show user settings modal
+async function showUserSettingsModal() {
+
+  // Check if user email is stored
+  let storedUserEmail = localStorage.getItem("userClickupEmail");
+
+  if (storedUserEmail === null) {
+    // close modal if open
+    const btnCloseUserSettingsModal = document.getElementById('close-user-settings-modal');
+    btnCloseUserSettingsModal.click();
+
+    // Show modal
+    userSettingsModal.show();
+  }
+}
+
+// Shows get task id from user modal
+async function showGetTaskIdFromUserModal() {
+  try {
+    // Try to stop network timer
+    try {
+      clearInterval(networkTimer);
+    } catch (error) {
+      console.error("Error while stopping network timer!");
+    }
+
+    // Synchronized recording stop
+    recordingSynched = false;
+    //let logKeyboard = keyLogCheckbox.checked;
+    let recordWebcam = cameraCheckbox.checked;
+    let recordScreen = screenCheckbox.checked;
+
+    // Stop the webcam stream
+    if (recordWebcam == true) {
+      try {
+        webcamRecorder.stream.getTracks().forEach(track => track.stop());
+      } catch (err) {
+        console.error("Error while stopping webcam recorder: " + err.message);
+      }
+    }
+
+    // Stop screen stream
+    if (recordScreen == true) {
+      try {
+        screenRecorder.stream.getTracks().forEach(track => track.stop());
+      } catch (error) {
+        console.error("Error while stopping screen recorder: " + err.message);
+      }
+    }
+
+    // Stop screen and webcam merged stream
+    if ((recordScreen == true) && (recordWebcam == true)) {
+      try {
+        mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+      } catch (error) {
+        console.error("Error while stopping merged stream recorder: " + err.message);
+      }
+    }
+
+    // Check if we need to show modal first
+    let getClickupTaskNotes = clickupTaskNotesCheckbox.checked;
+    if ((getClickupTaskNotes == true)&&(taskIDwasRreceived == false)) {
+      // Get task id from user
+      let msg = "STATUS: Getting Task ID from user..."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // close modal if open
+      const btnCloseGetTaskIdFromUserModal = document.getElementById('btnCloseGetTaskIdFromUserModal');
+      btnCloseGetTaskIdFromUserModal.click();
+
+      // Show modal
+      getTaskIdFromUserModal.show();
+    } else {
+      // Proceed to check for beanote and selenium ide fiels
+      keyLogFileCheck();
+    }
+  } catch (error) {
+    let msg = "STATUS: Error While Getting Clickup Task ID From User."
+    document.getElementById("app-status").innerHTML = msg;
+    console.log("Error While Getting Clickup Task ID From User: " + err.message);
+  }
+}
+
+// Saves task id from user
+async function saveTaskIDFromUser() {
+  // Validate clickup task ID
+  let taskIDIsValid = true;
+  clickupTaskID = document.getElementById("clickupTaskIdFromUser").value;
+  //console.log("clickupTaskID: ",clickupTaskID);
+  // Remove leading and trailling white space
+  clickupTaskID = clickupTaskID.trim();
+  // Remove forward slashes
+  clickupTaskID = clickupTaskID.replaceAll('/', '');
+  // Remove hash symbol
+  clickupTaskID = clickupTaskID.replaceAll('#', '');
+  console.log("clickupTaskID: ", clickupTaskID);
+  let idMsg = "";
+
+  // Check for empty string
+  if (clickupTaskID === "") {
+    idMsg = "Please fill the task id";
+    taskIDIsValid = false;
+  }
+
+  document.getElementById("clickupTaskIdFromUserError").innerHTML = idMsg;
+
+  // Proceed to check for keylog file
+  if (taskIDIsValid) {
+    // Hide get task id from user modal
+    const btnCloseGetTaskIdFromUserModal = document.getElementById('btnCloseGetTaskIdFromUserModal');
+    btnCloseGetTaskIdFromUserModal.click();
+
+    keyLogFileCheck();
+  }
 }
