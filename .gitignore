@@ -8,3 +8,4 @@ testrecorder/file_app/credentials.json
 testrecorder/youtube/client_secret.json
 testrecorder/youtube/credentials.json
 testrecorder/youtube/credentials-old.json
+testrecorder/.env

@@ -3,6 +3,7 @@ import json
 
 from blinker import receiver_connected
 from channels.consumer import AsyncConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from random import randint
 from time import sleep
 import subprocess
@@ -204,3 +205,48 @@ class WebacamScreenVideoConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         # when websocket disconnects
         print("disconnected", event)
+
+
+class TaskIdConsumer(AsyncWebsocketConsumer):
+    """
+        Handles the sending of task ID to browser.
+    """
+
+    groups = ['general_group']
+    room_group_name = 'notification_group'
+
+    async def connect(self):
+        await self.accept()
+        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        await self.channel_layer.group_send(self.room_group_name, 
+            {
+                'type': 'send_message',
+                'event' : 'connect'
+            }
+        )
+
+    async def disconnect(self, close_code):
+        print("Disconnected: ",close_code)
+        # Leave room group
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        """
+        Receive message from WebSocket.
+        Get the event and send the appropriate event
+        """
+        text_data_json = json.loads(text_data)
+        message = text_data_json["message"]
+
+        # Send message to room group
+        """await self.channel_layer.group_send(self.room_group_name, {
+            'type': 'send_message',
+            'rcvd_message': message,
+        })"""
+
+    async def send_message(self, res):
+        """ Receive message from room group """
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            "payload": res,
+        }))
