@@ -24,6 +24,7 @@ load_dotenv()
 permanent_files_dir = settings.PERMANENT_FILES_ROOT
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import datetime
 
 
 class FileView(APIView):
@@ -139,6 +140,48 @@ class FileView(APIView):
             arranged_list.append(doc)
 
         return arranged_list, random
+
+    
+    def dowell_connection_db_insert(self,new_data):
+        """
+            Inserts a record in to the company's database
+        """
+
+        url = "http://100002.pythonanywhere.com/"
+
+        payload = json.dumps({
+            "cluster": "ux_live",
+            "database": "ux_live",
+            "collection": "ux_live_storyboard",
+            "document": "ux_live_storyboard",
+            "team_member_ID": "1088",
+            "function_ID": "ABCDE",
+            "command": "insert",
+            "field": {
+                "user_name":new_data.user_name,
+                "test_description":new_data.test_description,
+                "test_name":new_data.test_name,
+                "user_files_timestamp":new_data.user_files_timestamp,
+                "webcam_file":new_data.webcam_file,
+                "screen_file":new_data.screen_file,
+                "merged_webcam_screen_file":new_data.merged_webcam_screen_file,
+                "key_log_file":new_data.key_log_file,
+                "beanote_file":new_data.beanote_file,
+                "timestamp":datetime.datetime.now().isoformat(),
+                "clickup_task_notes":new_data.clickup_task_notes
+            },
+            "update_field": {
+                "order_nos": 21
+            },
+            "platform": "bangalore"
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        print(response.text)
+        return response.text
 
     def post(self, request, *args, **kwargs):
         file_serializer = VpsIncomingFileSerializer(data=request.data)
@@ -331,7 +374,9 @@ class FileView(APIView):
                 print("Error while handling merged file: " + str(err))
 
             # Save record in database
-            self.megadrive_record.save()
+            #self.megadrive_record.save()
+            # Dowell connection insertion of data
+            insert_response = self.dowell_connection_db_insert(self.megadrive_record)
 
             # Modify file paths to be links
             """self.megadrive_record.webcam_file = self.convert_file_path_to_link(self.megadrive_record.webcam_file)
