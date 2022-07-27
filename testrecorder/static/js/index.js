@@ -6,11 +6,11 @@ const keyLogCheckbox = document.getElementById('key-logging')
 const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
+let btnViewRecords = document.getElementById('view_records');
 
 // App global variables
 let usernameValue = null;
 let testNameValue = null;
-let clickupTaskID = null;
 let testDescriptionValue = null;
 let screenRecorderChunks = [];
 let webcamChunks = [];
@@ -44,7 +44,6 @@ let streamWebcamToYT = false;
 let streamScreenToYT = false;
 let streamMergedToYT = false;
 let newBroadcastID = null;
-let btnViewRecords = document.getElementById('view_records');
 let newRtmpUrl = null;
 let websocketReconnect = false;
 let recordinginProgress = false;
@@ -56,8 +55,11 @@ let filesTimestamp = null;
 let screenFileName = null;
 let webcamFileName = null;
 let taskIdWebSocket = null;
-let receivedTaskID = null;
+let receivedTaskID = [];
+//let receivedTaskID = ["3703820","33k9h43","33k9h43D"];
 let taskIDwasRreceived = false;
+let faultyTaskID = null; // Bad clickup task or task id
+
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
 if (dontShowSeleniumIDEModalAgain != "true") {
@@ -247,6 +249,7 @@ async function recordMergedStream() {
 
 // Stops webcam and screen recording
 async function stopRecording() {
+
   // Stop network timer
   try {
     clearInterval(networkTimer);
@@ -289,10 +292,8 @@ async function stopRecording() {
   }
 
   // Add the clickup task ID
-  if(taskIDwasRreceived == true){
-    testRecordingData.set('clickupTaskID', receivedTaskID);
-  }else if(clickupTaskID != null){
-    testRecordingData.set('clickupTaskID', clickupTaskID);
+  if (receivedTaskID.length > 0) {
+    testRecordingData.set('clickupTaskIDs', receivedTaskID);
   }
 
   // Set videos youtube links, or file names
@@ -634,7 +635,6 @@ async function validateModal() {
   // Clear previous test data
   usernameValue = null;
   testNameValue = null;
-  clickupTaskID = null;
   testDescriptionValue = null;
   testRecordingData = null;
 
@@ -751,9 +751,8 @@ async function sendAvailableData(prevProgress) {
           // Clear old merged stream recording data
           mergedStreamChunks = [];
           // Clear task id data
-          receivedTaskID = null;
+          receivedTaskID = [];
           taskIDwasRreceived = false;
-          clickupTaskID = null;
 
           // Hide upload in progress modal
           const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
@@ -787,7 +786,18 @@ async function sendAvailableData(prevProgress) {
             errorMessage = json.error_msg;
           }
 
-          if (errorMessage.includes("Error while handling Clickup Task")) {
+          //if (errorMessage.includes("Error while handling Clickup Task")) {
+          if (errorMessage.includes("Failed to get")) {
+            // Get task id that has error
+            const faultyTaskIDArray = errorMessage.split(";");
+            faultyTaskID = faultyTaskIDArray[1];
+            faultyTaskID = faultyTaskID.trim();
+            console.log("faultyTaskIDArray: ", faultyTaskIDArray)
+            console.log("faultyTaskID: ", faultyTaskID)
+
+            // Set the value of the task id input
+            clickupTaskIdRetryInput = document.getElementById('clickup-task-id-retry');
+            clickupTaskIdRetryInput.value = faultyTaskID;
             // Show clickup task error modal
             taskErrorModal.show();
           } else {
@@ -955,6 +965,13 @@ async function resetStateOnError() {
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
 
+  // Update application status
+  let msg = "STATUS: Recording stopped due to error."
+  document.getElementById("app-status").innerHTML = msg;
+
+  // Stop video display tracks
+  stopVideoElemTracks(video);
+
   // Stop the webcam stream
   if (recordWebcam == true) {
     try {
@@ -1005,7 +1022,6 @@ async function resetStateOnError() {
   // Reset App global variables
   usernameValue = null;
   testNameValue = null;
-  clickupTaskID = null;
   testDescriptionValue = null;
   screenRecorderChunks = [];
   webcamChunks = [];
@@ -1031,7 +1047,7 @@ async function resetStateOnError() {
   };
 
   taskIdWebSocket = null;
-  receivedTaskID = null;
+  receivedTaskID = [];
   taskIDwasRreceived = false;
 }
 
@@ -1218,6 +1234,17 @@ async function createWebsocket() {
         webcamRecorder.start(200);
       } else if (recordScreen == true) {
         screenRecorder.start(200);
+      }
+
+      // Update application status
+      let msg = "STATUS: Recording in Progress."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Start the task id websocket
+      let getClickupTaskIDs = clickupTaskNotesCheckbox.checked;
+      if (getClickupTaskIDs == true) {
+        console.log("Creating Task ID websocket connection")
+        createTaskidWebsocket();
       }
 
       // Start recording now
@@ -1641,24 +1668,23 @@ async function createRecordingTimestamp() {
   console.log("New File Timestamp: ", filesTimestamp);
 }
 
-
-// set a new clickup task id
-async function setNewClickupTaskID() {
+// Replace a faulty clickup task id
+async function replaceClickupTaskID() {
   // Validate clickup task ID
   let taskIDIsValid = true;
-  clickupTaskID = document.getElementById("clickup-task-id-retry").value;
-  //console.log("clickupTaskID: ",clickupTaskID);
+  let newClickupTaskID = document.getElementById("clickup-task-id-retry").value;
+  //console.log("newClickupTaskID: ",newClickupTaskID);
   // Remove leading and trailling white space
-  clickupTaskID = clickupTaskID.trim();
+  newClickupTaskID = newClickupTaskID.trim();
   // Remove forward slashes
-  clickupTaskID = clickupTaskID.replaceAll('/', '');
+  newClickupTaskID = newClickupTaskID.replaceAll('/', '');
   // Remove hash symbol
-  clickupTaskID = clickupTaskID.replaceAll('#', '');
-  console.log("clickupTaskID: ", clickupTaskID);
+  newClickupTaskID = newClickupTaskID.replaceAll('#', '');
+  //console.log("newClickupTaskID: ", newClickupTaskID);
   let idMsg = "";
 
   // Check for empty string
-  if (clickupTaskID === "") {
+  if (newClickupTaskID === "") {
     idMsg = "Please fill the task id";
     taskIDIsValid = false;
   }
@@ -1667,6 +1693,12 @@ async function setNewClickupTaskID() {
 
   // Proceed to retry
   if (taskIDIsValid) {
+    // Replace old task id with new one
+    const index = receivedTaskID.indexOf(faultyTaskID);
+    if (index !== -1) {
+      receivedTaskID[index] = newClickupTaskID;
+    }
+
     // Hide clickup task error modal
     const btnCloseClickupErrorModal = document.getElementById('btnCloseClickupErrorModal');
     btnCloseClickupErrorModal.click();
@@ -1710,7 +1742,7 @@ async function createTaskidWebsocket() {
 
       // Make sure task id is for current user
       if (storedUserEmail === receivedUserEmail) {
-        receivedTaskID = task_json_infor.payload.message.task_id;
+        receivedTaskID.push(task_json_infor.payload.message.task_id);
         taskIDwasRreceived = true;
         console.log("Received Task ID: ", receivedTaskID);
         alert("Received Task ID: " + receivedTaskID);
@@ -1739,13 +1771,13 @@ async function handleTaskIdCheckbox(e) {
   console.log("Task ID Checked? ", checked)
 
   if (checked === true) {
-    console.log("Creating Task ID websocket connection")
-    createTaskidWebsocket();
+    //console.log("Creating Task ID websocket connection")
+    //createTaskidWebsocket();
     showUserSettingsModal();
   } else {
     console.log("Closing Task ID websocket connection")
 
-    receivedTaskID = null;
+    receivedTaskID = [];
     taskIDwasRreceived = false;
 
     try {
@@ -1820,6 +1852,10 @@ async function showUserSettingsModal() {
 
 // Shows get task id from user modal
 async function showGetTaskIdFromUserModal() {
+
+  // Stop video display tracks
+  await stopVideoElemTracks(video);
+
   try {
     // Try to stop network timer
     try {
@@ -1847,7 +1883,7 @@ async function showGetTaskIdFromUserModal() {
     if (recordScreen == true) {
       try {
         screenRecorder.stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
+      } catch (err) {
         console.error("Error while stopping screen recorder: " + err.message);
       }
     }
@@ -1856,14 +1892,14 @@ async function showGetTaskIdFromUserModal() {
     if ((recordScreen == true) && (recordWebcam == true)) {
       try {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
-      } catch (error) {
+      } catch (err) {
         console.error("Error while stopping merged stream recorder: " + err.message);
       }
     }
 
     // Check if we need to show modal first
     let getClickupTaskNotes = clickupTaskNotesCheckbox.checked;
-    if ((getClickupTaskNotes == true)&&(taskIDwasRreceived == false)) {
+    if ((getClickupTaskNotes == true) && (receivedTaskID.length <= 0)) {
       // Get task id from user
       let msg = "STATUS: Getting Task ID from user..."
       document.getElementById("app-status").innerHTML = msg;
@@ -1878,9 +1914,10 @@ async function showGetTaskIdFromUserModal() {
       // Proceed to check for beanote and selenium ide fiels
       keyLogFileCheck();
     }
-  } catch (error) {
+  } catch (err) {
     let msg = "STATUS: Error While Getting Clickup Task ID From User."
     document.getElementById("app-status").innerHTML = msg;
+    //console.log("Error While Getting Clickup Task ID From User: " + error.message);
     console.log("Error While Getting Clickup Task ID From User: " + err.message);
   }
 }
@@ -1889,19 +1926,19 @@ async function showGetTaskIdFromUserModal() {
 async function saveTaskIDFromUser() {
   // Validate clickup task ID
   let taskIDIsValid = true;
-  clickupTaskID = document.getElementById("clickupTaskIdFromUser").value;
-  //console.log("clickupTaskID: ",clickupTaskID);
+  let newClickupTaskIDs = document.getElementById("clickupTaskIdFromUser").value;
+  //console.log("newClickupTaskIDs: ",newClickupTaskIDs);
   // Remove leading and trailling white space
-  clickupTaskID = clickupTaskID.trim();
+  newClickupTaskIDs = newClickupTaskIDs.trim();
   // Remove forward slashes
-  clickupTaskID = clickupTaskID.replaceAll('/', '');
+  newClickupTaskIDs = newClickupTaskIDs.replaceAll('/', '');
   // Remove hash symbol
-  clickupTaskID = clickupTaskID.replaceAll('#', '');
-  console.log("clickupTaskID: ", clickupTaskID);
+  newClickupTaskIDs = newClickupTaskIDs.replaceAll('#', '');
+  console.log("newClickupTaskIDs: ", newClickupTaskIDs);
   let idMsg = "";
 
   // Check for empty string
-  if (clickupTaskID === "") {
+  if (newClickupTaskIDs === "") {
     idMsg = "Please fill the task id";
     taskIDIsValid = false;
   }
@@ -1910,10 +1947,84 @@ async function saveTaskIDFromUser() {
 
   // Proceed to check for keylog file
   if (taskIDIsValid) {
+    // Add the new task id to global list of task ids
+    const newTaskIDsArray = newClickupTaskIDs.split(",");
+    console.log("newTaskIDsArray: ", newTaskIDsArray)
+    for (taskID in newTaskIDsArray) {
+      let tempTaskID = newTaskIDsArray[taskID].trim();
+      console.log("tempTaskID: ", tempTaskID);
+
+      if (tempTaskID !== null) {
+        receivedTaskID.push(tempTaskID);
+      }
+    }
     // Hide get task id from user modal
     const btnCloseGetTaskIdFromUserModal = document.getElementById('btnCloseGetTaskIdFromUserModal');
     btnCloseGetTaskIdFromUserModal.click();
 
     keyLogFileCheck();
   }
+}
+
+// Stops video element tracks
+async function stopVideoElemTracks(videoElem) {
+  // Actual video display element
+  try {
+    let tracks = videoElem.srcObject.getTracks();
+    tracks.forEach(track => track.stop());
+    videoElem.srcObject = null;
+  } catch (error) {
+    console.error("Error while stopping video display tracks: ", error.message)
+  }
+
+  // audio stream
+  try {
+    audioStream.getTracks().forEach(track => track.stop());
+  } catch (error) {
+
+  }
+
+  // screen stream
+  try {
+    screenStream.getTracks().forEach(track => track.stop());
+  } catch (error) {
+
+  }
+
+  // webcam stream
+  try {
+    webCamStream.getTracks().forEach(track => track.stop());
+  } catch (error) {
+
+  }
+}
+
+// for debugging formdata object
+async function debugFormData(formdataObject) {
+  for (var pair of formdataObject.entries()) {
+    console.log(pair[0] + ', ' + pair[1]);
+  }
+}
+// Removes clickup ids from upload data
+async function removeClickupTaskIds() {
+  //await debugFormData(testRecordingData);
+  try {
+    // Remove task ids array
+    testRecordingData.delete('clickupTaskIDs');
+
+    // Clear task ids array
+    receivedTaskID = [];
+    //await debugFormData(testRecordingData);
+  } catch (error) {
+    console.error("Error while removing clickup task ids from upload data.", error);
+  }
+}
+
+// Upload data without clickup notes
+async function uploadWithoutClickupNotes() {
+  removeClickupTaskIds().then(() => {
+    retryTestFilesUpload();
+  }).catch(() => {
+    console.error("Error while uploading without clickup task notes.");
+  });
 }
