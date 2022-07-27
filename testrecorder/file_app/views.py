@@ -1,3 +1,6 @@
+import datetime
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.shortcuts import render
 
 from rest_framework.views import APIView
@@ -22,19 +25,10 @@ from django.http import JsonResponse
 from dotenv import load_dotenv
 load_dotenv()
 permanent_files_dir = settings.PERMANENT_FILES_ROOT
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
-import datetime
 
 
 class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-
-    keylog_recording_file_path = ""
-    beanote_recording_file_path = ""
-    webcam_recording_file_path = ""
-    screen_recording_file_path = ""
-    merged_recording_file_path = ""
 
     def create_recording_folder(self, user_name, user_time_stamp):
         """Creates a folder for storing user files"""
@@ -82,7 +76,7 @@ class FileView(APIView):
 
         return no_single_slashes
 
-    def note_organiser(self,task_id):
+    def note_organiser(self, task_id):
         """
             Gets sections of a clickup task notes.
             task_id is the task to fetch.
@@ -92,7 +86,8 @@ class FileView(APIView):
         #url = "https://api.clickup.com/api/v2/task/32pk9rp/"
         url = 'https://api.clickup.com/api/v2/task/{}/'.format(task_id)
         print("url: ", url)
-        headers = {"Authorization": "pk_49467380_UI2LTGSATFMRPLZMGNH31AET9KQ95TFJ"}
+        headers = {
+            "Authorization": os.getenv("CLICKUP_TOKEN")}
         response = requests.get(url, headers=headers)
         print("Status Code", response.status_code)
         #print("JSON Response ", response.json())
@@ -101,7 +96,7 @@ class FileView(APIView):
 
         # Failed to get task notes
         if status_code != 200:
-            return False
+            return False, False
 
         x = data["text_content"]
 
@@ -136,13 +131,48 @@ class FileView(APIView):
         arranged_list = []
         for i in range(0, len(topics_list)):
             doc = {"Subject": topics_list[i],
-                "Notes": notes_list[i]}
+                   "Notes": notes_list[i]}
             arranged_list.append(doc)
 
         return arranged_list, random
 
-    
-    def dowell_connection_db_insert(self,new_data):
+
+    def get_event_id(self): 
+        """
+            Gets an event id.
+        """
+        dd=datetime.datetime.now()
+        time=dd.strftime("%d:%m:%Y,%H:%M:%S")
+        url="https://100003.pythonanywhere.com/event_creation"
+        data={
+                "platformcode":"FB" ,
+                "citycode":"101",
+                "daycode":"0",
+                "dbcode":"pfm" ,
+                "ip_address":"192.168.0.41",
+                "login_id":"lav",
+                "session_id":"new",
+                "processcode":"1",
+                "regional_time":time,
+                "dowell_time":time,
+                "location":"22446576",
+                "objectcode":"1",
+                "instancecode":"100051",
+                "context":"afdafa ",
+                "document_id":"3004",
+                "rules":"some rules",
+                "status":"work",
+                "data_type": "learn",
+                "purpose_of_usage": "add",
+                "colour":"color value",
+                "hashtags":"hash tag alue",
+                "mentions":"mentions value",
+                "emojis":"emojis",
+            }
+        r=requests.post(url,json=data)
+        return r.text
+
+    def dowell_connection_db_insert(self, new_data):
         """
             Inserts a record in to the company's database
         """
@@ -158,17 +188,18 @@ class FileView(APIView):
             "function_ID": "ABCDE",
             "command": "insert",
             "field": {
-                "user_name":new_data.user_name,
-                "test_description":new_data.test_description,
-                "test_name":new_data.test_name,
-                "user_files_timestamp":new_data.user_files_timestamp,
-                "webcam_file":new_data.webcam_file,
-                "screen_file":new_data.screen_file,
-                "merged_webcam_screen_file":new_data.merged_webcam_screen_file,
-                "key_log_file":new_data.key_log_file,
-                "beanote_file":new_data.beanote_file,
-                "timestamp":datetime.datetime.now().isoformat(),
-                "clickup_task_notes":new_data.clickup_task_notes
+                "user_name": new_data.user_name,
+                "test_description": new_data.test_description,
+                "test_name": new_data.test_name,
+                "user_files_timestamp": new_data.user_files_timestamp,
+                "webcam_file": new_data.webcam_file,
+                "screen_file": new_data.screen_file,
+                "merged_webcam_screen_file": new_data.merged_webcam_screen_file,
+                "key_log_file": new_data.key_log_file,
+                "beanote_file": new_data.beanote_file,
+                "timestamp": datetime.datetime.now().isoformat(),
+                "clickup_task_notes": new_data.clickup_task_notes,
+                "eventID": new_data.event_id
             },
             "update_field": {
                 "order_nos": 21
@@ -186,48 +217,68 @@ class FileView(APIView):
     def post(self, request, *args, **kwargs):
         file_serializer = VpsIncomingFileSerializer(data=request.data)
 
+        # Initialize some variables
+        keylog_recording_file_path = ""
+        beanote_recording_file_path = ""
+        webcam_recording_file_path = ""
+        screen_recording_file_path = ""
+        merged_recording_file_path = ""
+        clickup_task_notes_list = []
+
         print("Request Data: ", request.data)
 
         if file_serializer.is_valid():
             print("self.parser_classes: ", self.parser_classes)
 
             # Object to store storage vps records details
-            self.megadrive_record = VpsTestRecord()
-            self.megadrive_record.user_name = request.data['user_name']
-            self.megadrive_record.test_description = request.data['test_description']
-            self.megadrive_record.test_name = request.data['test_name']
-            self.megadrive_record.user_files_timestamp = request.data['user_files_timestamp']
+            megadrive_record = VpsTestRecord()
+            megadrive_record.user_name = request.data['user_name']
+            megadrive_record.test_description = request.data['test_description']
+            megadrive_record.test_name = request.data['test_name']
+            megadrive_record.user_files_timestamp = request.data['user_files_timestamp']
 
             # Process Clickup Task
             try:
-                if 'clickupTaskID' in request.data.keys():
-                    self.clickupTaskID = request.data['clickupTaskID']
-                    print("Clickup Task ID: ", self.clickupTaskID)
+                if 'clickupTaskIDs' in request.data.keys():
+                    clickupTaskID = request.data['clickupTaskIDs']
+                    print("Clickup Task IDs: ", clickupTaskID)
 
-                    # Get the notes
-                    topics_notes,random_notes = self.note_organiser(self.clickupTaskID)
+                    # Convert task id string to a list
+                    clickup_task_ids = clickupTaskID.split(",")
+                    print("Clickup Task IDs: ", clickup_task_ids)
 
-                    # Don't proceed if there was a problem getting topics notes or random notes
-                    if topics_notes:
-                        print("topics_notes: ", topics_notes)
-                    else:
-                        msg = "Failed to get topics_notes"
-                        print(msg)
-                        raise Exception(msg)
+                    # Get the notes for each task id in list
+                    for task_id in clickup_task_ids:
+                        topics_notes, random_notes = self.note_organiser(
+                            task_id)
+                        #topics_notes,random_notes = "",""
 
-                    if random_notes:
-                        print("random_notes: ", random_notes)
-                    else:
-                        msg = "Failed to get random_notes"
-                        print(msg)
-                        raise Exception(msg)
-                    
-                    # Add notes to global data object
-                    topicsNotes = {"Topics": topics_notes}
-                    randomNotes = {"Random_Notes": random_notes}
-                    Clickup_Notes = [topicsNotes,randomNotes]
+                        # Don't proceed if there was a problem getting topics notes or random notes
+                        if topics_notes:
+                            print("topics_notes: ", topics_notes)
+                            topicsNotes = {"Topics": topics_notes}
+                        else:
+                            msg = "Failed to get topics_notes for; "+task_id
+                            print(msg)
+                            raise Exception(msg)
+
+                        if random_notes:
+                            print("random_notes: ", random_notes)
+                            randomNotes = {"Random_Notes": random_notes}
+                        else:
+                            msg = "Failed to get random_notes for; "+task_id
+                            print(msg)
+                            raise Exception(msg)
+
+                        # Add current task id notes to global notes list
+                        #topicsNotes = {"Topics": topics_notes}
+                        #randomNotes = {"Random_Notes": random_notes}
+                        Clickup_Notes = [topicsNotes, randomNotes]
+                        clickup_task_notes_list.append(Clickup_Notes)
                     #print("Clickup_Notes: ",json.dumps(Clickup_Notes))
-                    self.megadrive_record.clickup_task_notes = Clickup_Notes
+                    megadrive_record.clickup_task_notes = clickup_task_notes_list
+                    print("clickup_task_notes_list: ",
+                          json.dumps(clickup_task_notes_list))
                 else:
                     print("Clickup Task ID Not Available!")
             except Exception as err:
@@ -240,25 +291,25 @@ class FileView(APIView):
 
             # Process keylog file
             try:
-                self.keylog_file_name = request.data['key_log_file'].name
-                print("Keylog File Name: ", self.keylog_file_name)
+                keylog_file_name = request.data['key_log_file'].name
+                print("Keylog File Name: ", keylog_file_name)
 
                 # Create folder to store the files
                 folder_created, new_path = self.create_recording_folder(
-                    self.megadrive_record.user_name, self.megadrive_record.user_files_timestamp)
+                    megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
                 if folder_created:
                     # save keylog file
                     keylog_filedata = request.data['key_log_file']
-                    self.keylog_recording_file_path = new_path+"/"+self.keylog_file_name
+                    keylog_recording_file_path = new_path+"/"+keylog_file_name
                     print("keylog_recording_file_path: ",
-                          self.keylog_recording_file_path)
-                    with open(self.keylog_recording_file_path, 'wb+') as destination:
+                          keylog_recording_file_path)
+                    with open(keylog_recording_file_path, 'wb+') as destination:
                         for chunk in keylog_filedata.chunks():
                             destination.write(chunk)
 
-                    self.megadrive_record.key_log_file = self.convert_file_path_to_link(
-                        self.keylog_recording_file_path)
+                    megadrive_record.key_log_file = self.convert_file_path_to_link(
+                        keylog_recording_file_path)
                 else:
                     msg = "Failed to save keylog file"
                     return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -267,25 +318,25 @@ class FileView(APIView):
 
             # Process Beanote file
             try:
-                self.beanote_file_name = request.data['beanote_file'].name
-                print("Beanote File Name: ", self.beanote_file_name)
+                beanote_file_name = request.data['beanote_file'].name
+                print("Beanote File Name: ", beanote_file_name)
 
                 # Create folder to store the files
                 folder_created, new_path = self.create_recording_folder(
-                    self.megadrive_record.user_name, self.megadrive_record.user_files_timestamp)
+                    megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
                 if folder_created:
                     # save beanote file
                     beanote_filedata = request.data['beanote_file']
-                    self.beanote_recording_file_path = new_path+"/"+self.beanote_file_name
+                    beanote_recording_file_path = new_path+"/"+beanote_file_name
                     print("beanote_recording_file_path: ",
-                          self.beanote_recording_file_path)
-                    with open(self.beanote_recording_file_path, 'wb+') as destination:
+                          beanote_recording_file_path)
+                    with open(beanote_recording_file_path, 'wb+') as destination:
                         for chunk in beanote_filedata.chunks():
                             destination.write(chunk)
 
-                    self.megadrive_record.beanote_file = self.convert_file_path_to_link(
-                        self.beanote_recording_file_path)
+                    megadrive_record.beanote_file = self.convert_file_path_to_link(
+                        beanote_recording_file_path)
                 else:
                     msg = "Failed to save beanote file"
                     return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -294,33 +345,33 @@ class FileView(APIView):
 
             # Process webcam file
             try:
-                self.webcam_file_name = request.data['webcam_file']
-                print("Webcam File Name: ", self.webcam_file_name)
+                webcam_file_name = request.data['webcam_file']
+                print("Webcam File Name: ", webcam_file_name)
 
-                if 'https://youtu.be' in self.webcam_file_name:
+                if 'https://youtu.be' in webcam_file_name:
                     # set webcam file youtube video link
-                    self.webcam_recording_file_path = self.webcam_file_name
+                    webcam_recording_file_path = webcam_file_name
                     print("webcam_recording_file_path: ",
-                          self.webcam_recording_file_path)
-                    self.megadrive_record.webcam_file = self.webcam_recording_file_path
+                          webcam_recording_file_path)
+                    megadrive_record.webcam_file = webcam_recording_file_path
                 else:
                     # Create folder to store the files
                     folder_created, new_path = self.create_recording_folder(
-                        self.megadrive_record.user_name, self.megadrive_record.user_files_timestamp)
+                        megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
                     if folder_created:
                         # Copy webcam file from temporary folder to permanent folder
-                        self.webcam_recording_file_path = new_path+"/"+self.webcam_file_name
+                        webcam_recording_file_path = new_path+"/"+webcam_file_name
                         print("webcam_recording_file_path: ",
-                              self.webcam_recording_file_path)
+                              webcam_recording_file_path)
 
-                        source_path = settings.TEMP_FILES_ROOT+"/"+self.webcam_file_name
+                        source_path = settings.TEMP_FILES_ROOT+"/"+webcam_file_name
                         if os.path.exists(source_path):
                             shutil.move(
-                                source_path, self.webcam_recording_file_path)
+                                source_path, webcam_recording_file_path)
 
-                        self.megadrive_record.webcam_file = self.convert_file_path_to_link(
-                            self.webcam_recording_file_path)
+                        megadrive_record.webcam_file = self.convert_file_path_to_link(
+                            webcam_recording_file_path)
                     else:
                         msg = "Failed to save webcam file"
                         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -329,33 +380,33 @@ class FileView(APIView):
 
             # Process screen file
             try:
-                self.screen_file_name = request.data['screen_file']
-                print("Screen File Name: ", self.screen_file_name)
+                screen_file_name = request.data['screen_file']
+                print("Screen File Name: ", screen_file_name)
 
-                if 'https://youtu.be' in self.screen_file_name:
+                if 'https://youtu.be' in screen_file_name:
                     # set screen file youtube video link
-                    self.screen_recording_file_path = self.screen_file_name
+                    screen_recording_file_path = screen_file_name
                     print("screen_recording_file_path: ",
-                          self.screen_recording_file_path)
-                    self.megadrive_record.screen_file = self.screen_recording_file_path
+                          screen_recording_file_path)
+                    megadrive_record.screen_file = screen_recording_file_path
                 else:
                     # Create folder to store the files
                     folder_created, new_path = self.create_recording_folder(
-                        self.megadrive_record.user_name, self.megadrive_record.user_files_timestamp)
+                        megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
                     if folder_created:
                         # Copy screen file from temporary folder to permanent folder
-                        self.screen_recording_file_path = new_path+"/"+self.screen_file_name
+                        screen_recording_file_path = new_path+"/"+screen_file_name
                         print("screen_recording_file_path: ",
-                              self.screen_recording_file_path)
+                              screen_recording_file_path)
 
-                        source_path = settings.TEMP_FILES_ROOT+"/"+self.screen_file_name
+                        source_path = settings.TEMP_FILES_ROOT+"/"+screen_file_name
                         if os.path.exists(source_path):
                             shutil.move(
-                                source_path, self.screen_recording_file_path)
+                                source_path, screen_recording_file_path)
 
-                        self.megadrive_record.screen_file = self.convert_file_path_to_link(
-                            self.screen_recording_file_path)
+                        megadrive_record.screen_file = self.convert_file_path_to_link(
+                            screen_recording_file_path)
                     else:
                         msg = "Failed to save screen file"
                         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
@@ -365,25 +416,26 @@ class FileView(APIView):
 
             # Process merged file
             try:
-                self.merged_file_name = request.data['merged_webcam_screen_file']
-                print("Merged File Name: ", self.merged_file_name)
+                merged_file_name = request.data['merged_webcam_screen_file']
+                print("Merged File Name: ", merged_file_name)
 
                 # set merged file youtube video link
-                self.megadrive_record.merged_webcam_screen_file = self.merged_file_name
+                megadrive_record.merged_webcam_screen_file = merged_file_name
             except Exception as err:
                 print("Error while handling merged file: " + str(err))
 
-            # Save record in database
-            #self.megadrive_record.save()
-            # Dowell connection insertion of data
-            insert_response = self.dowell_connection_db_insert(self.megadrive_record)
+            
+            # Get an event id
+            event_id = self.get_event_id()
+            print("Dowell Event ID: ",event_id)
+            megadrive_record.event_id = event_id
 
-            # Modify file paths to be links
-            """self.megadrive_record.webcam_file = self.convert_file_path_to_link(self.megadrive_record.webcam_file)
-            self.megadrive_record.screen_file = self.convert_file_path_to_link(self.megadrive_record.screen_file)
-            self.megadrive_record.beanote_file = self.convert_file_path_to_link(self.megadrive_record.beanote_file)
-            self.megadrive_record.key_log_file = self.convert_file_path_to_link(self.megadrive_record.key_log_file)"""
-            mega_file_serializer = VpsFileSerializer(self.megadrive_record)
+            # Save record in database
+            #megadrive_record.save()
+            # Dowell connection insertion of data
+            insert_response = self.dowell_connection_db_insert(megadrive_record)
+
+            mega_file_serializer = VpsFileSerializer(megadrive_record)
             #print("settings.BASE_DIR: ",settings.BASE_DIR)
 
             file_links = mega_file_serializer.data
@@ -423,4 +475,3 @@ class CreateBroadcastView(APIView):
         print("stream_dict: ", stream_dict)
 
         return Response("Bytes Received", status=status.HTTP_201_CREATED)
-
