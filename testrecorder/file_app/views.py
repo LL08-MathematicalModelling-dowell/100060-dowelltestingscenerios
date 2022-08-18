@@ -78,7 +78,7 @@ class FileView(APIView):
 
     def note_organiser(self, task_id):
         """
-            Gets sections of a clickup task notes.
+            Gets sections of a clickup task notes created using the extension.
             task_id is the task to fetch.
         """
 
@@ -91,6 +91,7 @@ class FileView(APIView):
         response = requests.get(url, headers=headers)
         print("Status Code", response.status_code)
         #print("JSON Response ", response.json())
+        #print("Response ", response.content.decode())
         status_code = response.status_code
         data = response.json()
 
@@ -132,6 +133,97 @@ class FileView(APIView):
         for i in range(0, len(topics_list)):
             doc = {"Subject": topics_list[i],
                    "Notes": notes_list[i]}
+            arranged_list.append(doc)
+
+        return arranged_list, random
+
+    def webpage_note_organiser(self,task_id):
+        """
+            Gets sections of a clickup task notes created using the clickup webpage,
+            not the extension.
+            task_id is the task to fetch.
+        """
+
+        # Fetch task json data from clickup API
+        url = 'https://api.clickup.com/api/v2/task/{}/'.format(task_id)
+        print("url: ", url)
+        headers = {"Authorization": "pk_49467380_UI2LTGSATFMRPLZMGNH31AET9KQ95TFJ"}
+        response = requests.get(url, headers=headers)
+        print("Status Code", response.status_code)
+        #print("JSON Response ", response.json())
+        status_code = response.status_code
+
+        # Failed to get task notes
+        if status_code != 200:
+            return False,False
+
+        # Got notes
+        data = response.json()
+        #print("data: ",data)
+        text_content=data["text_content"]
+        json_text_content = json.loads(text_content)
+        ops = json_text_content["ops"]
+        #print("ops: ",ops)
+
+        raw_notes = ""
+        for line in ops:
+            if "insert" in line:
+                line_text = line["insert"]
+                raw_notes = raw_notes + str(line_text)
+        #print("Raw Notes: ",raw_notes)
+
+        ''' seperating attendence and topics sections'''
+        list_1 = raw_notes.split('Topics Discussed\n', 1)
+
+        '''Seperating topics and random notes'''
+        list_2 = list_1[1].split('\nRandom Notes')
+        random = list_2[1]
+
+        '''further seperating each topic as an item in a list'''
+        list_3 = list_2[0].split('\n\n')
+        # print(list_3)
+        # print(len(list_3))
+
+        '''finding all topic names'''
+        topics_and_notes_dictionary = dict()
+        current_topic = ""
+        for i in list_3:
+            # Get a topic 
+            for line in i.split('\n'):
+                # restore line feed
+                line = line+"\n"
+                #print("line: ",line)
+                # Search for a topic
+                m = re.search('-(.+?)\n', line)
+                # if this is a topic 
+                if m:
+                    n = m.group(1)
+                    current_topic = n
+                    #print("Topic: ",n)
+                else:
+                    # it is a note
+                    if current_topic in topics_and_notes_dictionary.keys():
+                        # Don't add just a line feed as data
+                        if line != "\n":
+                            topics_and_notes_dictionary[current_topic]= topics_and_notes_dictionary[current_topic] + str(line)
+                    else:
+                        # Don't add just a line feed as data
+                        if line != "\n":
+                            topics_and_notes_dictionary[current_topic] =str(line)
+
+        topics_list = list(topics_and_notes_dictionary.keys())
+        notes_list = list(topics_and_notes_dictionary.values())
+        #print("Topics List: ",topics_list)
+        #print("Notes List: ",notes_list)
+        #print("No of Topics: ",len(topics_list))
+        #print("No of Notes: ",len(notes_list))
+        #print("topics_and_notes_dictionary: ",topics_and_notes_dictionary)
+
+        '''Arranging data in proper required order'''
+        arranged_list = []
+        for i in range(0, len(topics_list)):
+            doc = {"Subject": topics_list[i],
+                "Notes": notes_list[i]}
             arranged_list.append(doc)
 
         return arranged_list, random
@@ -249,8 +341,11 @@ class FileView(APIView):
 
                     # Get the notes for each task id in list
                     for task_id in clickup_task_ids:
-                        topics_notes, random_notes = self.note_organiser(
-                            task_id)
+                        try:
+                            topics_notes, random_notes = self.note_organiser(task_id)
+                        except Exception as err:
+                            print("Trying to use webpage_note_organiser because: " + str(err))
+                            topics_notes, random_notes = self.webpage_note_organiser(task_id)
                         #topics_notes,random_notes = "",""
 
                         # Don't proceed if there was a problem getting topics notes or random notes
@@ -282,8 +377,9 @@ class FileView(APIView):
                 else:
                     print("Clickup Task ID Not Available!")
             except Exception as err:
-                msg = "Error while handling Clickup Task: " + str(err)
-                print(msg)
+                msg1 = "Error while handling Clickup Task: " + str(err)
+                msg = "Failed to get topics_notes for; "+task_id
+                print(msg1)
                 #msg = str(err)
                 msg_dict = {"error_msg": msg}
                 # return Response(json_msg, status=status.HTTP_400_BAD_REQUEST)
