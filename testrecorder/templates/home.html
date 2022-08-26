@@ -117,9 +117,9 @@
                         <div class="row">
                             <!--<div class="col-sm-4 mt-3">
                                 <button type="button" class="btn btn-secondary btn-sm w-100" id="pause"
-                                        onClick="showGetTaskIdFromUserModal()">Tests Button</button>
-                                </div>
-                                <div class="col-sm-4 mt-3">
+                                    onClick="showSelectYoutubePlaylistModal()">Tests Button</button>
+                            </div>
+                            <div class="col-sm-4 mt-3">
                                     <button type="button" class="btn btn-primary btn-sm w-100" id="resume"
                                         onClick="resumeRecording()">Resume Recording</button>
                                 </div>-->
@@ -265,6 +265,25 @@
         </div>
     </div>
 
+    <!-- Creating broadcast in progress-->
+    <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Setting up recording</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseCreatingBroadcastModal" hidden></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border" role="status">
+                          <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Test Files upload failed modal -->
     <div class="modal" id="uploadFailed" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -357,8 +376,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onClick="replaceClickupTaskID()">Retry</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="btnCloseErrorModal" onClick="uploadWithoutClickupNotes()">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCloseErrorModal"
+                        onClick="uploadWithoutClickupNotes()">
                         Save Without Notes
                     </button>
                 </div>
@@ -541,6 +560,127 @@
         </div>
     </div>
 </div>
+</div>
+
+<!-- YouTube Playlist Selection Modal -->
+<div class="modal" id="playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">YouTube Playlist Selection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal"
+                    hidden></button>
+            </div>
+            <!-- Shown when playlists are received -->
+            <div id="received-playlists">
+                <div class="modal-body">
+                    <p>
+                        <strong>Please select a playlist</strong>
+                    </p>
+                    <div id="radio-buttons-container" class="form-check overflow-auto">
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onClick="playlistSelected()">Okay</button>
+                    <!--<button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Refresh List</button>-->
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="sendRTMPURL()"
+                        id="cancel-playlist-selection">
+                        Use Default Playlist
+                    </button>
+                </div>
+            </div>
+            <!-- Shown initially when getting the playlists -->
+            <div id="loading-playlists">
+                <div class="modal-body">
+                    <p style="font-size: 2rem; color: rgb(0, 0, 0);">
+                        <i class="bi-x"></i>Loading Playlists...
+                    </p>
+                </div>
+            </div>
+            <!-- Shown when failure to receive playlists occurs -->
+            <div id="failed-to-receive-playlists">
+                <div class="modal-body">
+                    <p style="font-size: 2rem; color: rgb(255, 0, 0);">
+                        <i class="bi-x"></i>Failed to get playlists!
+                    </p>
+                    <ol>
+                        <li>
+                            <p>
+                                Click on the retry button to try fetching the playlists again.
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                Click on the Use Default Playlist button to proceed without selecting a playlist.
+                            </p>
+                        </li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Retry</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="sendRTMPURL()"
+                        id="cancel-playlists-fetching">
+                        Use Default Playlist
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist insert video Error occurred modal -->
+<div class="modal" id="playlist-insert-video-error-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Insert Video Error Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btnClosePlaylistInsertErrorModal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>An error has occurred while inserting the video into the selected playlist,
+                    please do the
+                    following:
+                </p>
+                <ol>
+                    <li>Click on the retry button to try again.</li>
+                    <li>Click on the Use Default Playlist button to proceed without inserting the video into a playlist.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"
+                    onClick="insertVideoIntoPlaylist()">Retry</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="btnCancelPlaylistInsert"
+                    onClick="sendRTMPURL()">
+                    Use Default Playlist
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm playlist selection modal -->
+<div class="modal" id="confirm-playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Playlist Selection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-close-confirm-playlist-selection-modal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p id="playlist-confirmation-message">
+                    Are you sure you want to use the playlist
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="insertVideoIntoPlaylist()" data-bs-dismiss="modal">Start Live</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal()"
+                >Cancel</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Bootstrap Bundle with Popper -->

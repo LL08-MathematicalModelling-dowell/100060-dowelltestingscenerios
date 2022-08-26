@@ -291,7 +291,8 @@ class FileView(APIView):
                 "beanote_file": new_data.beanote_file,
                 "timestamp": datetime.datetime.now().isoformat(),
                 "clickup_task_notes": new_data.clickup_task_notes,
-                "eventID": new_data.event_id
+                "eventID": new_data.event_id,
+                "Account_info": new_data.Account_info
             },
             "update_field": {
                 "order_nos": 21
@@ -519,6 +520,13 @@ class FileView(APIView):
                 megadrive_record.merged_webcam_screen_file = merged_file_name
             except Exception as err:
                 print("Error while handling merged file: " + str(err))
+
+            # Get selected playlist
+            if 'Account_info' in request.data.keys():
+                Account_info = request.data['Account_info']
+                Account_info = json.loads(Account_info)
+                print("Account_info: ",Account_info)
+                megadrive_record.Account_info = Account_info
 
             
             # Get an event id

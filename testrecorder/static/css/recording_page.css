@@ -34,3 +34,10 @@ background-image:url('{{ STATIC_URL }}images/app-background.jpg');
 background-repeat:no-repeat;
 background-size:100%;
 }
+
+#radio-buttons-container{
+    /*height: 43vh;*/
+    /*overflow-x: auto;
+    overflow-y: auto;*/
+    max-height:43vh;
+}
