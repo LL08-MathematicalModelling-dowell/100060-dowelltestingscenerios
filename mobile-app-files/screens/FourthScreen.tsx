@@ -8,12 +8,26 @@ import {
   FlatList,
   Text,
 } from 'react-native';
-import EntypoIcon from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIconsIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import CupertinoFooter2 from '../components/CupertinoFooter2';
+import VideoPlayer from 'react-native-video-player';
 
-function ThirdScreen(props: any) {
+const Item = ({title}: {title: any}) => (
+  <View style={styles.item}>
+    <VideoPlayer
+      video={{
+        uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+      }}
+      videoWidth={1600}
+      videoHeight={900}
+      thumbnail={{uri: 'https://i.picsum.photos/id/866/1600/900.jpg'}}
+    />
+  </View>
+);
+
+function FourthScreen(props: any) {
+  const renderItem = ({item}: {item: any}) => <Item title={item.title} />;
   return (
     <View style={styles.container}>
       <View style={styles.buttonStack}>
@@ -29,6 +43,18 @@ function ThirdScreen(props: any) {
               placeholder="Search Playlist"
               textBreakStrategy="highQuality"
               style={styles.inputone}></TextInput>
+          </View>
+
+          <View style={styles.rect3}>
+            <View style={styles.rect4}></View>
+          </View>
+          <View style={styles.rect5}></View>
+          <View style={styles.rect6}></View>
+          <View style={styles.iconRow}>
+            <MaterialCommunityIconsIcon
+              name="message-processing"
+              style={styles.icon}></MaterialCommunityIconsIcon>
+            <FeatherIcon name="info" style={styles.icon2}></FeatherIcon>
           </View>
         </View>
       </View>
@@ -77,6 +103,7 @@ const styles = StyleSheet.create({
     marginLeft: 23,
   },
   flatv: {
+    height: '80%',
     position: 'absolute',
     top: 90,
     left: 2,
@@ -220,4 +247,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ThirdScreen;
+export default FourthScreen;

@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   TouchableOpacity,
+  Pressable,
   Image,
   TextInput,
   FlatList,
@@ -12,12 +13,24 @@ import EntypoIcon from 'react-native-vector-icons/Entypo';
 import MaterialCommunityIconsIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import CupertinoFooter2 from '../components/CupertinoFooter2';
-import {Thumbnail} from 'react-native-thumbnail-video';
-const productImage: string = '../assets/images/1.png';
+import VideoPlayer from 'react-native-video-player';
+const productImage: string = require('../assets/images/1.png');
 
 const DATA = [
   {
     id: '58694a0f-3da1-471f-bd96-145571e29d72',
+    title: 'Third Item',
+  },
+  {
+    id: 'bd7acbea-c1b1-46c2-aed5-3ad53bb28br',
+    title: 'First Item',
+  },
+  {
+    id: '3ac68afc-c605-48d3-a4f8-fbd91a97f6d',
+    title: 'Second Item',
+  },
+  {
+    id: '58694a0f-3da1-471f-b96-145571e29d72',
     title: 'Third Item',
   },
   {
@@ -40,18 +53,51 @@ const DATA = [
     id: '58694a0f-3da1-471f-bd96-1455719d7w',
     title: 'Third Item',
   },
+  {
+    id: '3ac68afc-c605-48d3-a4f8-fbd991aty97f6d',
+    title: 'Second Item',
+  },
+  {
+    id: '58694a0f-3da1-471f-bd96-145nb719d7w',
+    title: 'Third Item',
+  },
+  {
+    id: '3ac68afc-c605-48d3-a4f8-fbdn991aty97f6d',
+    title: 'Second Item',
+  },
+  {
+    id: '58694a0f-3da1-471f-bd96-145cnb719d7w',
+    title: 'Third Item',
+  },
+  {
+    id: '3ac68xafc-c605-48d3-a4f8-fbd991aty97f6d',
+    title: 'Second Item',
+  },
+  {
+    id: '58o694a0f-3da1-471f-bd96-145nb719d7w',
+    title: 'Third Item',
+  },
 ];
 
-const Item = ({title}: {title: any}) => (
+const Item = ({title, navigation}: {title: any; navigation: any}) => (
   <View style={styles.item}>
-    <Image
-      source={require('../assets/images/2.png')}
-      resizeMode="contain"></Image>
+    <TouchableOpacity onPress={() => navigation.navigate('FourthScreen')}>
+      <VideoPlayer
+        video={{
+          uri: 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        }}
+        videoWidth={1600}
+        videoHeight={900}
+        thumbnail={{uri: 'https://i.picsum.photos/id/866/1600/900.jpg'}}
+      />
+    </TouchableOpacity>
   </View>
 );
 
-function ThirdScreen(props: any) {
-  const renderItem = ({item}: {item: any}) => <Item title={item.title} />;
+function ThirdScreen({navigation}: {navigation: any}) {
+  const renderItem = ({item}: {item: any}) => (
+    <Item title={item.title} navigation />
+  );
   return (
     <View style={styles.container}>
       <View style={styles.buttonStack}>
@@ -76,10 +122,14 @@ function ThirdScreen(props: any) {
             <EntypoIcon name="chevron-down" style={styles.icon3}></EntypoIcon>
           </View>
           <FlatList
+            pagingEnabled={true}
+            showsHorizontalScrollIndicator={false}
+            legacyImplementation={false}
             key={DATA.length}
             numColumns={2}
             style={styles.flatv}
             data={DATA}
+            showsVerticalScrollIndicator={false}
             renderItem={renderItem}
             keyExtractor={item => item.id}
           />
@@ -142,6 +192,7 @@ const styles = StyleSheet.create({
     marginLeft: 23,
   },
   flatv: {
+    height: '80%',
     position: 'absolute',
     top: 90,
     left: 2,

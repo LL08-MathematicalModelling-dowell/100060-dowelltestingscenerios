@@ -21,6 +21,7 @@ import {
 import FirstScreen from './screens/firstscreen';
 import Secondscreen from './screens/Secondscreen';
 import ThirdScreen from './screens/ThirdScreen';
+import FourthScreen from './screens/FourthScreen';
 
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
@@ -37,7 +38,7 @@ const App = () => {
         <Stack.Screen name="firstScreen" component={FirstScreen} />
         <Stack.Screen name="Secondscreen" component={Secondscreen} />
         <Stack.Screen name="ThirdScreen" component={ThirdScreen} />
-        {/* <Stack.Screen name="firstScreen" component={FirstScreen} /> */}
+        <Stack.Screen name="FourthScreen" component={FourthScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
