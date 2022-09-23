@@ -44,8 +44,8 @@ let mergedStreamRecorder = null;
 let recorder = null
 
 // Websocket endpoints
-var websocketEndpoint = "ws://localhost:8000/ws/liveuxapi/"; // localhost
-//var websocketEndpoint = "wss://liveuxstoryboard.com/ws/liveuxapi/"; // interserver vps
+//var websocketEndpoint = "ws://localhost:8000/ws/liveuxapi/"; // localhost
+var websocketEndpoint = "wss://liveuxstoryboard.com/ws/liveuxapi/"; // interserver vps
 
 
 // Gets a webcam stream
@@ -1022,7 +1022,8 @@ async function startRecording() {
 
 // Gets permission to use the websocket API
 async function getWebsocketPermission() {
-  let websocketPermissionURL = 'http://localhost:8000/websocketpermission/';
+  //let websocketPermissionURL = 'http://localhost:8000/websocketpermission/';
+  let websocketPermissionURL = 'https://100034.pythonanywhere.com/websocketpermission/';
   let responseStatus = null;
 
   await fetch(websocketPermissionURL, {
