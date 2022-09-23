@@ -1,0 +1,22 @@
+body, div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+video {
+  flex: 100%;
+  max-width: 600px;
+  min-height: 400px;
+  height: auto;
+  display: block;
+  background-color: black;  
+  margin-bottom: 10px;
+}
+
+div {
+  flex-basis: 100%;
+}
+
+button { margin: 0 .5rem }

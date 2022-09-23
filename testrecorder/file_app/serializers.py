@@ -32,3 +32,9 @@ class VpsIncomingFileSerializer(serializers.ModelSerializer):
         fields = ('user_name', 'test_description', 'test_name', 'user_files_timestamp', 'timestamp',
                     'webcam_file', 'screen_file', 'key_log_file', 'beanote_file', 'merged_webcam_screen_file')
 
+class VpsWebsocketFileSerializer(serializers.ModelSerializer):
+    class Meta():
+        model = VpsIncomingTestRecord
+        fields = ('user_name', 'test_description', 'test_name', 'user_files_timestamp', 'timestamp',
+                    'webcam_file', 'screen_file')
+
