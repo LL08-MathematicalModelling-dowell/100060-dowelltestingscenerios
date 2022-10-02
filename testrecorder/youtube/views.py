@@ -719,3 +719,123 @@ class FetchPlaylistsView(APIView):
         except Exception as err:
             print("Error while getting playlists: " + str(err))
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
+
+def fetch_user_playlists():
+    """
+        Handles requests to get the current youtube channel's
+        playlists
+    """
+
+    try:
+        # Create youtube object
+        with open(credentials_file) as json_file:
+            credentials = json.load(json_file)
+
+        credentials = google.oauth2.credentials.Credentials(**credentials)
+
+        youtube = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+        # Fetch the playlists
+        request = youtube.playlists().list(
+            part="snippet,contentDetails",
+            maxResults=25,
+            mine=True
+        )
+        response = request.execute()
+        print(response)
+
+        # Extract playlist id and names from data
+        playlists = response['items']
+
+        # playlist id and title dictionary
+        id_title_dict = {}
+
+        # Current channel title
+        channel_title = ""
+        # Iterating through the json list
+        for playlist in playlists:
+            id = playlist["id"]
+            #print("Playlist ID = ",id)
+            title = playlist["snippet"]["title"]
+            #print("Playlist Title = ",title)
+
+            # Add playlist to dictionary
+            id_title_dict[id] = title
+
+            # Current channel title
+            channel_title = playlist["snippet"]["channelTitle"]
+
+        print("id_title_dict: ", id_title_dict)
+
+        # Dummy dictionary for testing
+        #id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+        #id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+
+        """# Get playlists in user db list and in youtube
+        new_user_id = "Walter"
+        user_db_playlists = get_user_playlists_from_db(new_user_id)
+        filtered_playlists = {}
+        for playlist in user_db_playlists:
+            print(playlist["playlist_title"])
+            if playlist["playlist_id"] in id_title_dict.keys():
+                filtered_playlists[playlist["playlist_id"]] = id_title_dict[playlist["playlist_id"]]
+
+        print("filtered_playlists: ", filtered_playlists)
+        return Response(filtered_playlists, status=status.HTTP_200_OK)"""
+
+        # add channel title
+        print("channel_title: ", channel_title)
+
+        # Dictionary with all necessary data
+        youtube_details = {'channel_title': channel_title,
+                            'id_title_dict': id_title_dict}
+        return youtube_details
+
+    except Exception as err:
+        error_msg = "Error while getting playlists: " + str(err)
+        print(error_msg)
+        raise Exception(error_msg)
+
+
+def insert_video_into_playlist(the_video_id,the_playlist_id):
+    """
+        Handles requests to insert a video into a youtube channel
+        playlist
+    """
+    try:
+        print("the_video_id: ", the_video_id)
+        print("the_playlist_id: ", the_playlist_id)
+
+        # Create youtube object
+        with open(credentials_file) as json_file:
+            credentials = json.load(json_file)
+
+        credentials = google.oauth2.credentials.Credentials(**credentials)
+
+        youtube = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+        # Make the insert request
+        request = youtube.playlistItems().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "playlistId": the_playlist_id,
+                    "position": 0,
+                    "resourceId": {
+                        "kind": "youtube#video",
+                        "videoId": the_video_id
+                    }
+                }
+            }
+        )
+        response = request.execute()
+
+        return True
+
+    except Exception as err:
+        error_msg = "Error while inserting video into playlist: " + str(err)
+        print(error_msg)
+        raise Exception(error_msg)

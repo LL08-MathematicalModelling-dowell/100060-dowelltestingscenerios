@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'app_websocket',
     'youtube',
     'corsheaders',
+    'voc_stories_websocket',
 ]
 
 MIDDLEWARE = [
