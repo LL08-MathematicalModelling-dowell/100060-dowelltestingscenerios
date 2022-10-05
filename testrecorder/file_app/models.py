@@ -43,6 +43,7 @@ class VpsTestRecord(models.Model):
     clickup_task_notes = models.TextField(default="")
     event_id = models.CharField(max_length=1024, default="")
     Account_info = models.CharField(max_length=1024, default="")
+    app_type = models.TextField(default="")
 
     class Meta:
         db_table = 'vps_test_records'

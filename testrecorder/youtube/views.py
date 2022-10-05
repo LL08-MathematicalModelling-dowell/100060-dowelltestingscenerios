@@ -790,7 +790,7 @@ def fetch_user_playlists():
 
         # Dictionary with all necessary data
         youtube_details = {'channel_title': channel_title,
-                            'id_title_dict': id_title_dict}
+                           'id_title_dict': id_title_dict}
         return youtube_details
 
     except Exception as err:
@@ -799,7 +799,7 @@ def fetch_user_playlists():
         raise Exception(error_msg)
 
 
-def insert_video_into_playlist(the_video_id,the_playlist_id):
+def insert_video_into_playlist(the_video_id, the_playlist_id):
     """
         Handles requests to insert a video into a youtube channel
         playlist
@@ -839,3 +839,79 @@ def insert_video_into_playlist(the_video_id,the_playlist_id):
         error_msg = "Error while inserting video into playlist: " + str(err)
         print(error_msg)
         raise Exception(error_msg)
+
+
+def create_playlist(playlist_title, playlist_description, playlist_privacy_status):
+    """
+        Handles requests to create a playlist
+    """
+    try:
+        print("playlist_title: ", playlist_title)
+        print("playlist_description: ", playlist_description)
+        print("playlist_privacy_status: ", playlist_privacy_status)
+
+        # Create youtube object
+        with open(credentials_file) as json_file:
+            credentials = json.load(json_file)
+
+        credentials = google.oauth2.credentials.Credentials(**credentials)
+
+        youtube = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+        # Make the insert request
+        request = youtube.playlists().insert(
+            part="snippet,status",
+            body={
+                "snippet": {
+                    "title": playlist_title,
+                    "description": playlist_description,
+                    "tags": [
+                        "sample playlist",
+                        "API call"
+                    ],
+                    "defaultLanguage": "en"
+                },
+                "status": {
+                    "privacyStatus": playlist_privacy_status
+                }
+            }
+        )
+        response = request.execute()
+
+        return True
+
+    except Exception as err:
+        error_msg = "Error while creating playlist: " + str(err)
+        print(error_msg)
+        raise Exception(error_msg)
+
+
+class CreatePlaylistView(APIView):
+    """
+        API to handles requests to create a playlists
+    """
+
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            # Get the new playlist information
+            title = request.data.get("new_playlist_title")
+            description = request.data.get("new_playlist_description")
+            privacy = request.data.get("new_playlist_privacy")
+
+            # create playlist
+            response = create_playlist(title, description, privacy)
+
+            if response:
+                msg = {'CreatePlaylistResponse': "Playlist created"}
+                return Response(msg, status=status.HTTP_200_OK)
+            else:
+                msg = {'CreatePlaylistResponse': "Failed to create playlist"}
+                return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as err:
+            error_msg = "Error while creating playlist: " + str(err)
+            print(error_msg)
+            return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)

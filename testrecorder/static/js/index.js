@@ -2261,3 +2261,137 @@ function confirmPlaylistSelection() {
     console.error("Error while showing confirm playlist selection modal: ", error)
   }
 }
+
+// Creating new playlist modal
+async function showCreatingNewPlaylistModal() {
+  // close modal if open
+  const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
+  btnCloseNewPlaylistDetailsModal.click();
+
+  // Show modal
+  const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
+  creatingNewPlaylistModal.show();
+}
+
+// On press handler for the create playlist button
+async function handleCreatePlaylistRequest() {
+  // disable button first
+  const btnCreatePlaylist = document.getElementById("create-playlist")
+  btnCreatePlaylist.disabled = true;
+
+  // Validate new playlist title
+  let docIsValid = true;
+  let newPlaylistTitle = document.getElementById("new-playlist-title").value;
+  // Remove leading and trailling white space
+  newPlaylistTitle = newPlaylistTitle.trim();
+  let msg = "";
+
+  // Check for empty string
+  if (newPlaylistTitle === "") {
+    msg = "Please fill in the playlist title";
+    docIsValid = false;
+  }
+
+  document.getElementById("new-playlist-title-error").innerHTML = msg;
+
+  // Get playlist description
+  let newPlaylistDescription = document.getElementById("new-playlist-description").value;
+
+  // Get playlist privacy status
+  let newPlaylistPrivacyStatus = document.getElementById("new-playlist-privacy-status").checked;
+  if (newPlaylistPrivacyStatus === true) {
+    newPlaylistPrivacyStatus = "public"
+  } else {
+    newPlaylistPrivacyStatus = "private"
+  }
+
+  if (docIsValid) {
+    // close create new playlist modal
+    const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
+    btnCloseNewPlaylistDetailsModal.click();
+
+    // Make request to create playlist
+    await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
+  }
+
+  // Enable create playlist button
+  btnCreatePlaylist.disabled = false;
+
+}
+
+
+// Makes api request to create playlist
+async function createNewPlaylist(title, description, privacyStatus) {
+  let createPlaylistURL = '/youtube/createplaylist/api/';
+  let responseStatus = null;
+  await fetch(createPlaylistURL, {
+    method: 'POST',
+    body: JSON.stringify({
+      new_playlist_title: title,
+      new_playlist_description: description,
+      new_playlist_privacy: privacyStatus
+    }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => {
+      console.log(response)
+      responseStatus = response.status;
+      console.log("Create playlist Response Status", responseStatus);
+      // Return json data
+      return response.json();
+    })
+    .then((json) => {
+      if (responseStatus == 200) {
+        msg = "STATUS: Playlist Created"
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Show playlist created modal
+        showPlaylistCreatedModal();
+
+        // clear modal input fields
+        document.getElementById("new-playlist-title").value = "";
+        document.getElementById("new-playlist-description").value = "";
+        document.getElementById("new-playlist-privacy-status").checked = false;
+      } else {
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Failed to create playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Show error modal
+        showPlaylistCreationErrorModal();
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to create playlist."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Show error modal
+      showPlaylistCreationErrorModal();
+    });
+}
+
+// Shows Playlist was created modal
+async function showPlaylistCreatedModal() {
+  // close modal if open
+  const btnClosePlaylistCreatedModal = document.getElementById('close-playlist-created-modal');
+  btnClosePlaylistCreatedModal.click();
+
+  // Show modal
+  const playlistCreatedModal = new bootstrap.Modal(document.getElementById('playlist-created-modal'));
+  playlistCreatedModal.show();
+}
+
+// Shows Playlist creation Error occurred modal
+async function showPlaylistCreationErrorModal() {
+  // close modal if open
+  const btnClosePlaylistCreationErrorModal = document.getElementById('close-playlist-creation-error-modal');
+  btnClosePlaylistCreationErrorModal.click();
+
+  // Show modal
+  const playlistCreationErrorModal = new bootstrap.Modal(document.getElementById('playlist-creation-error-modal'));
+  playlistCreationErrorModal.show();
+}

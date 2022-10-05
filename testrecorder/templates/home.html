@@ -118,11 +118,7 @@
                             <!--<div class="col-sm-4 mt-3">
                                 <button type="button" class="btn btn-secondary btn-sm w-100" id="pause"
                                     onClick="showSelectYoutubePlaylistModal()">Tests Button</button>
-                            </div>
-                            <div class="col-sm-4 mt-3">
-                                    <button type="button" class="btn btn-primary btn-sm w-100" id="resume"
-                                        onClick="resumeRecording()">Resume Recording</button>
-                                </div>-->
+                            </div>-->
                             <div class="col-sm-4 mt-3">
                                 <form action="{% url 'view_records' %}" method="POST" target="_blank">
                                     <!--<form action="https://liveuxstoryboard.com/recordings/" method="POST" target="_blank">
@@ -144,6 +140,11 @@
                                     User Settings
                                 </button>
                             </div>
+
+                            <div class="col-sm-4 mt-3">
+                                <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
+                                    onClick="showCreatingNewPlaylistModal()">Create Playlist</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -160,7 +161,7 @@
     </div>
 
     <!-- Test Details Modal -->
-    <div class="modal" id="test-details-modal">
+    <div class="modal" id="test-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -271,12 +272,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Setting up recording</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btnCloseCreatingBroadcastModal" hidden></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                        id="btnCloseCreatingBroadcastModal" hidden></button>
                 </div>
                 <div class="modal-body">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border" role="status">
-                          <span class="visually-hidden">Loading...</span>
+                            <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                 </div>
@@ -582,12 +584,13 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-success" onClick="playlistSelected()">Okay</button>
-                    <!--<button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Refresh List</button>-->
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="sendRTMPURL()"
                         id="cancel-playlist-selection">
                         Use Default Playlist
                     </button>
+                    <button type="button" class="btn btn-success" onClick="playlistSelected()">Okay</button>
+                    <!--<button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Refresh List</button>-->
+
                 </div>
             </div>
             <!-- Shown initially when getting the playlists -->
@@ -646,7 +649,8 @@
                 </p>
                 <ol>
                     <li>Click on the retry button to try again.</li>
-                    <li>Click on the Use Default Playlist button to proceed without inserting the video into a playlist.</li>
+                    <li>Click on the Use Default Playlist button to proceed without inserting the video into a playlist.
+                    </li>
                 </ol>
             </div>
             <div class="modal-footer">
@@ -667,7 +671,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Confirm Playlist Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="btn-close-confirm-playlist-selection-modal" hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btn-close-confirm-playlist-selection-modal" hidden></button>
             </div>
             <div class="modal-body">
                 <p id="playlist-confirmation-message">
@@ -675,9 +680,94 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-success" onclick="insertVideoIntoPlaylist()" data-bs-dismiss="modal">Start Live</button>
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal()"
-                >Cancel</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    onclick="showSelectYoutubePlaylistModal()">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="insertVideoIntoPlaylist()"
+                    data-bs-dismiss="modal">Start Live</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Playlist Details Modal -->
+<div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="close-new-playlist-details-modal"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Playlist Title</strong></label>
+                        <input type="text" class="form-control" id="new-playlist-title">
+                        <p style="color:red;" id="new-playlist-title-error"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Playlist Description</strong></label>
+                        <textarea class="form-control" id="new-playlist-description"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Privacy Status</strong></label>
+                        <div>
+                            <input type="checkbox" id="new-playlist-privacy-status" name="new-playlist-privacy-status">
+                            <label for="new-playlist-privacy-status">Make Playlist Public</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onClick="handleCreatePlaylistRequest()">Create</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist created modal-->
+<div class="modal" id="playlist-created-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Created</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-playlist-created-modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 2rem; color: rgb(0, 255, 0);">
+                    The New Playlist was Created!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist creation Error occurred modal -->
+<div class="modal" id="playlist-creation-error-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Creation Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-creation-error-modal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>An error has occurred while creating the new playlist, please do the following:
+                </p>
+                <ol>
+                    <li>Close this modal.</li>
+                    <li>Try to create the playlist again.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
             </div>
         </div>
     </div>
