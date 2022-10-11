@@ -662,7 +662,7 @@ class FetchPlaylistsView(APIView):
             # Fetch the playlists
             request = youtube.playlists().list(
                 part="snippet,contentDetails",
-                maxResults=25,
+                maxResults=50,
                 mine=True
             )
             response = request.execute()
@@ -740,7 +740,7 @@ def fetch_user_playlists():
         # Fetch the playlists
         request = youtube.playlists().list(
             part="snippet,contentDetails",
-            maxResults=25,
+            maxResults=50,
             mine=True
         )
         response = request.execute()
