@@ -63,6 +63,16 @@ let currentRadioButtonID = null;
 let userPlaylists = null;
 let userPlaylistSelection = null;
 let channelTitle = null;
+let todaysPlaylistId = null;
+let tablePlaylists = [];
+
+// Initialize the playlist table
+let playlistTable = $('#playlist-table').DataTable({
+  data: tablePlaylists,
+  columns: [
+    { title: 'Playlists Titles' },
+  ],
+});
 
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
@@ -1986,11 +1996,8 @@ async function showSelectYoutubePlaylistModal() {
 // creates a list of radio buttons
 async function createRadioButtons(id_title_dict) {
 
-  // HTML element to hold radio buttons
-  var container = document.getElementById('radio-buttons-container');
-
-  // Remove all children first
-  container.innerHTML = '';
+  // clear the table's playlist array
+  tablePlaylists = [];
 
   // Create and add radio buttons to their HTML container
   for (const key in id_title_dict) {
@@ -2017,30 +2024,26 @@ async function createRadioButtons(id_title_dict) {
 
     var newline = document.createElement('br');
 
-    container.appendChild(radiobox);
-    container.appendChild(label);
-    container.appendChild(newline);
+    let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedRadioButton(event);" />');
+    let oneRow = radiboxString + label.outerHTML + newline.outerHTML
+    let tempArray = [];
+    tempArray.push(oneRow);
+
+    //console.log(tempArray)
+    tablePlaylists.push(tempArray)
   }
 }
 
 // Checks which radio button was pressed
-function getSelectedRadioButton() {
-  // Container holding radio buttons
-  const radioButtonContainer = document.getElementById('radio-buttons-container');
-
+function getSelectedRadioButton(event) {
+  //console.log(event);
   currentRadioButtonID = null;
 
-  // Check which radio buttons was selected
-  for (let i = 0; i < radioButtonContainer.children.length; i++) {
-    let currentRadioButton = radioButtonContainer.children[i];
-
-    if (currentRadioButton.checked && currentRadioButton.type == "radio") {
-      console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id)
-      currentRadioButtonID = currentRadioButton.id;
-      userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
-      console.log("userPlaylistSelection: ", userPlaylistSelection);
-    }
-  }
+  let currentRadioButton = event.currentTarget;
+  //console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
+  currentRadioButtonID = currentRadioButton.id;
+  userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
+  console.log("userPlaylistSelection: ", userPlaylistSelection);
 }
 
 // fetches the playlists
@@ -2073,6 +2076,12 @@ async function fetchPlaylists() {
         // set global plalist value
         userPlaylists = json.id_title_dict;
 
+        // Get today's playlist id
+        let todaysPlaylistObject = json.todays_playlist_dict
+        //console.log("todaysPlaylistObject: ", todaysPlaylistObject);
+        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
+        console.log("todaysPlaylistId: ", todaysPlaylistId);
+
         // Use data to display radio buttons
         channelTitle = json.channel_title;
         console.log("Received playlists Information: ", json)
@@ -2085,6 +2094,10 @@ async function fetchPlaylists() {
         receivedPlaylistsDiv.hidden = false;
         loadingPlaylistsDiv.hidden = true;
         failedToReceivePlaylistsDiv.hidden = true;
+
+        // Refresh the playlist selection table
+        $('#playlist-table').DataTable().clear().rows.add(tablePlaylists).draw();
+        //console.log("tablePlaylists: ", tablePlaylists);
 
       } else {
         // Server error message
@@ -2133,22 +2146,26 @@ async function insertVideoIntoPlaylist() {
     .then(response => {
       console.log(response)
       responseStatus = response.status;
-      console.log("Insert video into playlist Response Status", responseStatus);
+      console.log("Insert video into user playlist Response Status", responseStatus);
       // Return json data
       return response.json();
     })
     .then((json) => {
       if (responseStatus == 200) {
-        msg = "STATUS: Video Inserted Into Playlist."
+        msg = "STATUS: Video Inserted Into User Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
-        // Proceed to send RTMP URL
-        sendRTMPURL();
+        // Insert video into daily playlist
+        if (todaysPlaylistId != null) {
+          insertVideoIntoTodaysPlaylist();
+        } else {
+          sendRTMPURL();
+        }
 
       } else {
         // Server error message
         console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to Insert Video Into Playlist."
+        msg = "STATUS: Failed to Insert Video Into User Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
         // Show error modal
@@ -2157,7 +2174,56 @@ async function insertVideoIntoPlaylist() {
     })
     .catch(error => {
       console.error(error);
-      msg = "STATUS: Failed to Insert Video Into Playlist."
+      msg = "STATUS: Failed to Insert Video Into User Playlist."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Show error modal
+      playlistInsertVideoErrorModal();
+    });
+}
+
+// Inserts a video into the current day's youtube playlist
+async function insertVideoIntoTodaysPlaylist() {
+  let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let responseStatus = null;
+  await fetch(playlistItemsInsertURL, {
+    method: 'POST',
+    body: JSON.stringify({
+      videoId: newBroadcastID,
+      playlistId: todaysPlaylistId
+    }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => {
+      console.log(response)
+      responseStatus = response.status;
+      console.log("Insert video into daily playlist Response Status", responseStatus);
+      // Return json data
+      return response.json();
+    })
+    .then((json) => {
+      if (responseStatus == 200) {
+        msg = "STATUS: Video Inserted Into Daily Playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Proceed to send RTMP URL
+        sendRTMPURL();
+
+      } else {
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Failed to Insert Video Into Daily Playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Show error modal
+        playlistInsertVideoErrorModal();
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to Insert Video Into Daily Playlist."
       document.getElementById("app-status").innerHTML = msg;
 
       // Show error modal

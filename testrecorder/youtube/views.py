@@ -638,6 +638,57 @@ def get_user_playlists_from_db(current_user_id):
     return playlists_documents
 
 
+def get_todays_playlist_title():
+    """
+        Creates the title of current day's playlist.
+    """
+    # Construct playlist title using date
+    current_date_and_time = datetime.now()
+
+    date_string = current_date_and_time.strftime('%d %B %Y')
+    #print("date_string: ",date_string)
+
+    playlist_title = date_string + " Daily Playlist"
+    #print("playlist_title: ",playlist_title)
+
+    return playlist_title
+
+def fetch_playlists_with_pagination(youtube_object):
+    """
+        Fetches playlists with the help of pagination
+    """
+    fetch_playlists = True
+    playlists = []
+    page_token=""
+    #count = 0
+
+    # Fetch the playlists
+    while fetch_playlists:
+        request = youtube_object.playlists().list(
+            part="snippet,contentDetails",
+            maxResults=50,
+            mine=True,
+            pageToken=page_token
+        )
+        response = request.execute()
+        #print("FetchPlaylistsView response: ", response)
+        #print("FetchPlaylistsView response: ", count)
+        #count = count + 1
+
+        # Get next page token
+        if "nextPageToken" in response.keys():
+            page_token = response['nextPageToken']
+        else:
+            fetch_playlists = False
+
+        # Add current page's playlists
+        playlists.extend(response['items'])
+
+
+    # Return fetched playlists
+    return playlists
+
+
 class FetchPlaylistsView(APIView):
     """
         Handles requests to get the current youtube channel's
@@ -659,20 +710,28 @@ class FetchPlaylistsView(APIView):
             youtube = googleapiclient.discovery.build(
                 API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-            # Fetch the playlists
+            """# Fetch the playlists
             request = youtube.playlists().list(
                 part="snippet,contentDetails",
-                maxResults=50,
-                mine=True
+                maxResults=5,
+                mine=True,
+                pageToken=""
             )
             response = request.execute()
-            print(response)
+            print("FetchPlaylistsView response: ", response)
 
             # Extract playlist id and names from data
-            playlists = response['items']
+            playlists = response['items']"""
+
+            # Fetch all playlists with pagination
+            playlists = fetch_playlists_with_pagination(youtube)
 
             # playlist id and title dictionary
             id_title_dict = {}
+            todays_playlist_dict = {}
+
+            # today's playlist title
+            todays_playlist_title = get_todays_playlist_title()
 
             # Current channel title
             channel_title = ""
@@ -684,7 +743,14 @@ class FetchPlaylistsView(APIView):
                 #print("Playlist Title = ",title)
 
                 # Add playlist to dictionary
-                id_title_dict[id] = title
+                #id_title_dict[id] = title
+
+                # Filter out daily playlists
+                if "Daily Playlist" not in title:
+                    id_title_dict[id] = title
+                elif todays_playlist_title == title:
+                    todays_playlist_dict["todays_playlist_id"] = id
+                    todays_playlist_dict["todays_playlist_title"] = title
 
                 # Current channel title
                 channel_title = playlist["snippet"]["channelTitle"]
@@ -710,9 +776,12 @@ class FetchPlaylistsView(APIView):
             # add channel title
             print("channel_title: ", channel_title)
 
+            # get daily playlist information from db
+
             # Dictionary with all necessary data
             youtube_details = {'channel_title': channel_title,
-                               'id_title_dict': id_title_dict}
+                               'id_title_dict': id_title_dict,
+                               'todays_playlist_dict': todays_playlist_dict}
             return Response(youtube_details, status=status.HTTP_200_OK)
 
             # return Response(id_title_dict, status=status.HTTP_200_OK)
@@ -737,20 +806,26 @@ def fetch_user_playlists():
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-        # Fetch the playlists
+        """# Fetch the playlists
         request = youtube.playlists().list(
             part="snippet,contentDetails",
-            maxResults=50,
+            maxResults=25,
             mine=True
         )
         response = request.execute()
         print(response)
 
         # Extract playlist id and names from data
-        playlists = response['items']
+        playlists = response['items']"""
+
+        # Fetch all playlists with pagination
+        playlists = fetch_playlists_with_pagination(youtube)
 
         # playlist id and title dictionary
         id_title_dict = {}
+        todays_playlist_dict = {}
+        # today's playlist title
+        todays_playlist_title = get_todays_playlist_title()
 
         # Current channel title
         channel_title = ""
@@ -762,7 +837,13 @@ def fetch_user_playlists():
             #print("Playlist Title = ",title)
 
             # Add playlist to dictionary
-            id_title_dict[id] = title
+            #id_title_dict[id] = title
+            # Filter out daily playlists
+            if "Daily Playlist" not in title:
+                id_title_dict[id] = title
+            elif todays_playlist_title == title:
+                todays_playlist_dict["todays_playlist_id"] = id
+                todays_playlist_dict["todays_playlist_title"] = title
 
             # Current channel title
             channel_title = playlist["snippet"]["channelTitle"]
@@ -790,7 +871,8 @@ def fetch_user_playlists():
 
         # Dictionary with all necessary data
         youtube_details = {'channel_title': channel_title,
-                           'id_title_dict': id_title_dict}
+                           'id_title_dict': id_title_dict,
+                            'todays_playlist_dict': todays_playlist_dict}
         return youtube_details
 
     except Exception as err:
@@ -879,7 +961,8 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
         )
         response = request.execute()
 
-        return True
+        #return True
+        return response
 
     except Exception as err:
         error_msg = "Error while creating playlist: " + str(err)
@@ -903,6 +986,7 @@ class CreatePlaylistView(APIView):
 
             # create playlist
             response = create_playlist(title, description, privacy)
+            #print("Playlist creation response: ",response)
 
             if response:
                 msg = {'CreatePlaylistResponse': "Playlist created"}
