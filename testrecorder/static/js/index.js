@@ -149,10 +149,14 @@ async function recordStream() {
   video.srcObject = webCamStream
   video.muted = true
 
-  webcamRecorder = new MediaRecorder(webCamStream, {
-    mimeType: 'video/webm;codecs=h264',
-    videoBitsPerSecond: 3000000
-  });
+  let options = await getSupportedMediaType();
+
+  if (options === null) {
+    alert("None of the required codecs was found!\n - Please update your browser and try again.");
+    document.location.reload();
+  }
+
+  webcamRecorder = new MediaRecorder(webCamStream, options);
 
   webcamRecorder.ondataavailable = event => {
     if (recordinginProgress == true) {
@@ -224,10 +228,14 @@ async function recordMergedStream() {
 
     // We now have a merged MediaStream!
     const mergedStream = merger.result
-    mergedStreamRecorder = new MediaRecorder(mergedStream, {
-      mimeType: 'video/webm;codecs=h264',
-      videoBitsPerSecond: 3000000
-    });
+    let options = await getSupportedMediaType();
+
+    if (options === null) {
+      alert("None of the required codecs was found!\n - Please update your browser and try again.");
+      document.location.reload();
+    }
+
+    mergedStreamRecorder = new MediaRecorder(mergedStream, options);
 
     mergedStreamRecorder.ondataavailable = event => {
       if (recordinginProgress == true) {
@@ -408,10 +416,13 @@ async function recordScreenAndAudio() {
     video.muted = true
   }
 
-  screenRecorder = new MediaRecorder(stream, {
-    mimeType: 'video/webm;codecs=h264',
-    videoBitsPerSecond: 3000000
-  });
+  let options = await getSupportedMediaType();
+  if (options === null) {
+    alert("None of the required codecs was found!\n - Please update your browser and try again.");
+    document.location.reload();
+  }
+
+  screenRecorder = new MediaRecorder(stream, options);
 
   screenRecorder.ondataavailable = event => {
     //console.log("Data available");
@@ -2420,7 +2431,15 @@ async function createNewPlaylist(title, description, privacyStatus) {
         document.getElementById("new-playlist-title").value = "";
         document.getElementById("new-playlist-description").value = "";
         document.getElementById("new-playlist-privacy-status").checked = false;
-      } else {
+      } else if(responseStatus == 409){
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Playlist Already Exists."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Show error modal
+        showPlaylistAlreadyExistsModal();
+      }else {
         // Server error message
         console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to create playlist."
@@ -2460,4 +2479,35 @@ async function showPlaylistCreationErrorModal() {
   // Show modal
   const playlistCreationErrorModal = new bootstrap.Modal(document.getElementById('playlist-creation-error-modal'));
   playlistCreationErrorModal.show();
+}
+
+
+async function getSupportedMediaType() {
+  let options;
+  if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+    options = {
+      mimeType: 'video/webm; codecs=vp9',
+      videoBitsPerSecond: 3000000
+    };
+    return options;
+  } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+    options = {
+      mimeType: 'video/webm; codecs=vp8,opus',
+      videoBitsPerSecond: 3000000
+    };
+    return options;
+  } else {
+    return null;
+  }
+}
+
+// Shows the playlists already exists modal
+async function showPlaylistAlreadyExistsModal() {
+  // close modal if open
+  const btnClosePlaylistAlreadyExistsModal = document.getElementById('close-playlist-already-exists-modal');
+  btnClosePlaylistAlreadyExistsModal.click();
+
+  // Show modal
+  const playlistAlreadyExistsModal = new bootstrap.Modal(document.getElementById('playlist-already-exists-modal'));
+  playlistAlreadyExistsModal.show();
 }

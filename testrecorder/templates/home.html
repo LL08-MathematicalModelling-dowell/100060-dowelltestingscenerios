@@ -773,6 +773,33 @@
     </div>
 </div>
 
+<!-- Playlist already exists modal -->
+<div class="modal" id="playlist-already-exists-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Already Exists Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-already-exists-modal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>A playlist with the title you provided already exists, please do the following:
+                </p>
+                <ol>
+                    <li>Close this modal.</li>
+                    <li>Try to create the playlist again, with a different title.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"

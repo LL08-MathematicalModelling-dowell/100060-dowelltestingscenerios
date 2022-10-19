@@ -941,6 +941,20 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
+
+        # Check if a playlist with provided title exists
+        # Fetch all playlists with pagination
+        playlists = fetch_playlists_with_pagination(youtube)
+        # Iterating through the json list
+        for playlist in playlists:
+            title = playlist["snippet"]["title"]
+
+            if playlist_title.lower() == title.lower():
+                # Duplicate record was found
+                message = "A playlist with the title "+playlist_title+" already exists!"
+                raise Exception(message)
+
+
         # Make the insert request
         request = youtube.playlists().insert(
             part="snippet,status",
@@ -984,6 +998,8 @@ class CreatePlaylistView(APIView):
             description = request.data.get("new_playlist_description")
             privacy = request.data.get("new_playlist_privacy")
 
+            # Check if playlist already exists
+
             # create playlist
             response = create_playlist(title, description, privacy)
             #print("Playlist creation response: ",response)
@@ -998,4 +1014,91 @@ class CreatePlaylistView(APIView):
         except Exception as err:
             error_msg = "Error while creating playlist: " + str(err)
             print(error_msg)
-            return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+
+            if "already exists!" in error_msg:
+                return Response(error_msg, status=status.HTTP_409_CONFLICT)
+            else:
+                return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+
+class FetchPlaylistsViewV2(APIView):
+    """
+        Handles requests to get the current youtube channel's
+        playlists,sends the playlists as a list, earlier version
+        sends a dictionary
+    """
+
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            print("Request: ", request)
+
+            # Create youtube object
+            with open(credentials_file) as json_file:
+                credentials = json.load(json_file)
+
+            credentials = google.oauth2.credentials.Credentials(**credentials)
+
+            youtube = googleapiclient.discovery.build(
+                API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+            # Fetch all playlists with pagination
+            playlists = fetch_playlists_with_pagination(youtube)
+
+            # playlist id and title dictionary
+            id_title_dict = {}
+            todays_playlist_dict = {}
+            id_title_list = []
+
+            # today's playlist title
+            todays_playlist_title = get_todays_playlist_title()
+
+            # Current channel title
+            channel_title = ""
+            # Iterating through the json list
+            for playlist in playlists:
+                id = playlist["id"]
+                #print("Playlist ID = ",id)
+                title = playlist["snippet"]["title"]
+                #print("Playlist Title = ",title)
+
+
+                # Add playlist to dictionary
+                #id_title_dict[id] = title
+
+                # Filter out daily playlists
+                if "Daily Playlist" not in title:
+                    #id_title_dict[id] = title
+
+                    temp_dict = {}
+                    temp_dict["playlist_id"] = id
+                    temp_dict["playlist_title"] = title
+                    id_title_list.append(temp_dict)
+                elif todays_playlist_title == title:
+                    todays_playlist_dict["todays_playlist_id"] = id
+                    todays_playlist_dict["todays_playlist_title"] = title
+
+                # Current channel title
+                channel_title = playlist["snippet"]["channelTitle"]
+
+            print("id_title_dict: ", id_title_dict)
+
+            # Dummy dictionary for testing
+            #id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+            #id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+
+            # add channel title
+            print("channel_title: ", channel_title)
+
+            # get daily playlist information from db
+
+            # Dictionary with all necessary data
+            youtube_details = {'channel_title': channel_title,
+                               'id_title_list': id_title_list,
+                               'todays_playlist_dict': todays_playlist_dict}
+            return Response(youtube_details, status=status.HTTP_200_OK)
+
+            # return Response(id_title_dict, status=status.HTTP_200_OK)
+        except Exception as err:
+            print("Error while getting playlists: " + str(err))
+            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
