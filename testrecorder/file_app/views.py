@@ -296,7 +296,8 @@ class FileView(APIView):
                 "timestamp": datetime.datetime.now().isoformat(),
                 "clickup_task_notes": new_data.clickup_task_notes,
                 "eventID": new_data.event_id,
-                "Account_info": new_data.Account_info
+                "Account_info": new_data.Account_info,
+                "app_type": new_data.app_type
             },
             "update_field": {
                 "order_nos": 21
@@ -333,6 +334,9 @@ class FileView(APIView):
             megadrive_record.test_description = request.data['test_description']
             megadrive_record.test_name = request.data['test_name']
             megadrive_record.user_files_timestamp = request.data['user_files_timestamp']
+
+            # Process app type
+            megadrive_record.app_type = "UX_001"
 
             # Process Clickup Task
             try:
@@ -537,14 +541,14 @@ class FileView(APIView):
 
             # Get an event id
             event_id = self.get_event_id()
+            #event_id = "Testing"
             print("Dowell Event ID: ", event_id)
             megadrive_record.event_id = event_id
 
             # Save record in database
             # megadrive_record.save()
             # Dowell connection insertion of data
-            insert_response = self.dowell_connection_db_insert(
-                megadrive_record)
+            insert_response = self.dowell_connection_db_insert(megadrive_record)
 
             mega_file_serializer = VpsFileSerializer(megadrive_record)
             #print("settings.BASE_DIR: ",settings.BASE_DIR)
@@ -615,6 +619,9 @@ def save_recording_metadata(request):
         megadrive_record.test_description = request['test_description']
         megadrive_record.test_name = request['test_name']
         megadrive_record.user_files_timestamp = request['user_files_timestamp']
+
+        # Process app type
+        megadrive_record.app_type = "UX_002"
 
         # Process Clickup Task
         try:
@@ -844,8 +851,7 @@ def save_recording_metadata(request):
             target=megadrive_record.save, args=())
         db_save_thread.start()"""
         # Dowell connection insertion of data
-        insert_response = file_view.dowell_connection_db_insert(
-            megadrive_record)
+        insert_response = file_view.dowell_connection_db_insert(megadrive_record)
 
         mega_file_serializer = VpsFileSerializer(megadrive_record)
         #print("settings.BASE_DIR: ",settings.BASE_DIR)

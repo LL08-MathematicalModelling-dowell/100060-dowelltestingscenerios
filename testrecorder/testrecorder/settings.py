@@ -170,3 +170,23 @@ STATIC_URL = '/static/'
 # Temporary files directory
 TEMP_FILES_ROOT = os.path.join(BASE_DIR, "temp")
 PERMANENT_FILES_ROOT = os.path.join(BASE_DIR, "media/UXLivingLab/UX_LIVE")
+LOGS_FILES_ROOT = os.path.join(BASE_DIR, "logs/logs.log")
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOGS_FILES_ROOT,
+        },
+    },
+    'loggers': {
+        'playlists': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

@@ -63,6 +63,17 @@ let currentRadioButtonID = null;
 let userPlaylists = null;
 let userPlaylistSelection = null;
 let channelTitle = null;
+let todaysPlaylistId = null;
+let tablePlaylists = [];
+let showNotificationPermission = 'default';
+
+// Initialize the playlist table
+let playlistTable = $('#playlist-table').DataTable({
+  data: tablePlaylists,
+  columns: [
+    { title: 'Playlists Titles' },
+  ],
+});
 
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
@@ -139,10 +150,14 @@ async function recordStream() {
   video.srcObject = webCamStream
   video.muted = true
 
-  webcamRecorder = new MediaRecorder(webCamStream, {
-    mimeType: 'video/webm;codecs=h264',
-    videoBitsPerSecond: 3000000
-  });
+  let options = await getSupportedMediaType();
+
+  if (options === null) {
+    alert("None of the required codecs was found!\n - Please update your browser and try again.");
+    document.location.reload();
+  }
+
+  webcamRecorder = new MediaRecorder(webCamStream, options);
 
   webcamRecorder.ondataavailable = event => {
     if (recordinginProgress == true) {
@@ -214,10 +229,14 @@ async function recordMergedStream() {
 
     // We now have a merged MediaStream!
     const mergedStream = merger.result
-    mergedStreamRecorder = new MediaRecorder(mergedStream, {
-      mimeType: 'video/webm;codecs=h264',
-      videoBitsPerSecond: 3000000
-    });
+    let options = await getSupportedMediaType();
+
+    if (options === null) {
+      alert("None of the required codecs was found!\n - Please update your browser and try again.");
+      document.location.reload();
+    }
+
+    mergedStreamRecorder = new MediaRecorder(mergedStream, options);
 
     mergedStreamRecorder.ondataavailable = event => {
       if (recordinginProgress == true) {
@@ -398,10 +417,13 @@ async function recordScreenAndAudio() {
     video.muted = true
   }
 
-  screenRecorder = new MediaRecorder(stream, {
-    mimeType: 'video/webm;codecs=h264',
-    videoBitsPerSecond: 3000000
-  });
+  let options = await getSupportedMediaType();
+  if (options === null) {
+    alert("None of the required codecs was found!\n - Please update your browser and try again.");
+    document.location.reload();
+  }
+
+  screenRecorder = new MediaRecorder(stream, options);
 
   screenRecorder.ondataavailable = event => {
     //console.log("Data available");
@@ -638,7 +660,7 @@ async function validateModal() {
   // All test details are available now
   if ((docIsValid == true) && (testNameIsValid == true)) {
     // Click on close modal button
-    document.getElementById("close-modal").click();
+    document.getElementById("close-test-details-modal").click();
 
     // Disable start recording button
     document.getElementById("start").disabled = true;
@@ -1348,8 +1370,11 @@ async function checkNetworkStatus() {
       stopStreams();
       resetStateOnError();
       //alert("Recording stopped due to network problem");
-      let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-      errorModal.show();
+      //let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
+      //errorModal.show();
+
+      // Show system tray notification and alert
+      showNetworkErrorOccurredModal();
     }
 
   }
@@ -1986,11 +2011,8 @@ async function showSelectYoutubePlaylistModal() {
 // creates a list of radio buttons
 async function createRadioButtons(id_title_dict) {
 
-  // HTML element to hold radio buttons
-  var container = document.getElementById('radio-buttons-container');
-
-  // Remove all children first
-  container.innerHTML = '';
+  // clear the table's playlist array
+  tablePlaylists = [];
 
   // Create and add radio buttons to their HTML container
   for (const key in id_title_dict) {
@@ -2017,30 +2039,26 @@ async function createRadioButtons(id_title_dict) {
 
     var newline = document.createElement('br');
 
-    container.appendChild(radiobox);
-    container.appendChild(label);
-    container.appendChild(newline);
+    let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedRadioButton(event);" />');
+    let oneRow = radiboxString + label.outerHTML + newline.outerHTML
+    let tempArray = [];
+    tempArray.push(oneRow);
+
+    //console.log(tempArray)
+    tablePlaylists.push(tempArray)
   }
 }
 
 // Checks which radio button was pressed
-function getSelectedRadioButton() {
-  // Container holding radio buttons
-  const radioButtonContainer = document.getElementById('radio-buttons-container');
-
+function getSelectedRadioButton(event) {
+  //console.log(event);
   currentRadioButtonID = null;
 
-  // Check which radio buttons was selected
-  for (let i = 0; i < radioButtonContainer.children.length; i++) {
-    let currentRadioButton = radioButtonContainer.children[i];
-
-    if (currentRadioButton.checked && currentRadioButton.type == "radio") {
-      console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id)
-      currentRadioButtonID = currentRadioButton.id;
-      userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
-      console.log("userPlaylistSelection: ", userPlaylistSelection);
-    }
-  }
+  let currentRadioButton = event.currentTarget;
+  //console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
+  currentRadioButtonID = currentRadioButton.id;
+  userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
+  console.log("userPlaylistSelection: ", userPlaylistSelection);
 }
 
 // fetches the playlists
@@ -2073,6 +2091,12 @@ async function fetchPlaylists() {
         // set global plalist value
         userPlaylists = json.id_title_dict;
 
+        // Get today's playlist id
+        let todaysPlaylistObject = json.todays_playlist_dict
+        //console.log("todaysPlaylistObject: ", todaysPlaylistObject);
+        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
+        console.log("todaysPlaylistId: ", todaysPlaylistId);
+
         // Use data to display radio buttons
         channelTitle = json.channel_title;
         console.log("Received playlists Information: ", json)
@@ -2085,6 +2109,10 @@ async function fetchPlaylists() {
         receivedPlaylistsDiv.hidden = false;
         loadingPlaylistsDiv.hidden = true;
         failedToReceivePlaylistsDiv.hidden = true;
+
+        // Refresh the playlist selection table
+        $('#playlist-table').DataTable().clear().rows.add(tablePlaylists).draw();
+        //console.log("tablePlaylists: ", tablePlaylists);
 
       } else {
         // Server error message
@@ -2133,22 +2161,26 @@ async function insertVideoIntoPlaylist() {
     .then(response => {
       console.log(response)
       responseStatus = response.status;
-      console.log("Insert video into playlist Response Status", responseStatus);
+      console.log("Insert video into user playlist Response Status", responseStatus);
       // Return json data
       return response.json();
     })
     .then((json) => {
       if (responseStatus == 200) {
-        msg = "STATUS: Video Inserted Into Playlist."
+        msg = "STATUS: Video Inserted Into User Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
-        // Proceed to send RTMP URL
-        sendRTMPURL();
+        // Insert video into daily playlist
+        if (todaysPlaylistId != null) {
+          insertVideoIntoTodaysPlaylist();
+        } else {
+          sendRTMPURL();
+        }
 
       } else {
         // Server error message
         console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to Insert Video Into Playlist."
+        msg = "STATUS: Failed to Insert Video Into User Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
         // Show error modal
@@ -2157,7 +2189,56 @@ async function insertVideoIntoPlaylist() {
     })
     .catch(error => {
       console.error(error);
-      msg = "STATUS: Failed to Insert Video Into Playlist."
+      msg = "STATUS: Failed to Insert Video Into User Playlist."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Show error modal
+      playlistInsertVideoErrorModal();
+    });
+}
+
+// Inserts a video into the current day's youtube playlist
+async function insertVideoIntoTodaysPlaylist() {
+  let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let responseStatus = null;
+  await fetch(playlistItemsInsertURL, {
+    method: 'POST',
+    body: JSON.stringify({
+      videoId: newBroadcastID,
+      playlistId: todaysPlaylistId
+    }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => {
+      console.log(response)
+      responseStatus = response.status;
+      console.log("Insert video into daily playlist Response Status", responseStatus);
+      // Return json data
+      return response.json();
+    })
+    .then((json) => {
+      if (responseStatus == 200) {
+        msg = "STATUS: Video Inserted Into Daily Playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Proceed to send RTMP URL
+        sendRTMPURL();
+
+      } else {
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Failed to Insert Video Into Daily Playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Show error modal
+        playlistInsertVideoErrorModal();
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to Insert Video Into Daily Playlist."
       document.getElementById("app-status").innerHTML = msg;
 
       // Show error modal
@@ -2259,5 +2340,265 @@ function confirmPlaylistSelection() {
     confirmPlaylistSelectionModal.show();
   } catch (error) {
     console.error("Error while showing confirm playlist selection modal: ", error)
+  }
+}
+
+// Creating new playlist modal
+async function showCreatingNewPlaylistModal() {
+  // close modal if open
+  const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
+  btnCloseNewPlaylistDetailsModal.click();
+
+  // Show modal
+  const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
+  creatingNewPlaylistModal.show();
+}
+
+// On press handler for the create playlist button
+async function handleCreatePlaylistRequest() {
+  // disable button first
+  const btnCreatePlaylist = document.getElementById("create-playlist")
+  btnCreatePlaylist.disabled = true;
+
+  // Validate new playlist title
+  let docIsValid = true;
+  let newPlaylistTitle = document.getElementById("new-playlist-title").value;
+  // Remove leading and trailling white space
+  newPlaylistTitle = newPlaylistTitle.trim();
+  let msg = "";
+
+  // Check for empty string
+  if (newPlaylistTitle === "") {
+    msg = "Please fill in the playlist title";
+    docIsValid = false;
+  }
+
+  document.getElementById("new-playlist-title-error").innerHTML = msg;
+
+  // Get playlist description
+  let newPlaylistDescription = document.getElementById("new-playlist-description").value;
+
+  // Get playlist privacy status
+  let newPlaylistPrivacyStatus = document.getElementById("new-playlist-privacy-status").checked;
+  if (newPlaylistPrivacyStatus === true) {
+    newPlaylistPrivacyStatus = "public"
+  } else {
+    newPlaylistPrivacyStatus = "private"
+  }
+
+  if (docIsValid) {
+    // close create new playlist modal
+    const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
+    btnCloseNewPlaylistDetailsModal.click();
+
+    // Show creating playlist spinner
+    showCreatingPlaylistModal(true);
+
+    // Make request to create playlist
+    await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
+  }
+
+  // Enable create playlist button
+  btnCreatePlaylist.disabled = false;
+
+}
+
+
+// Makes api request to create playlist
+async function createNewPlaylist(title, description, privacyStatus) {
+  let createPlaylistURL = '/youtube/createplaylist/api/';
+  let responseStatus = null;
+  await fetch(createPlaylistURL, {
+    method: 'POST',
+    body: JSON.stringify({
+      new_playlist_title: title,
+      new_playlist_description: description,
+      new_playlist_privacy: privacyStatus
+    }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => {
+      console.log(response)
+      responseStatus = response.status;
+      console.log("Create playlist Response Status", responseStatus);
+      // Return json data
+      return response.json();
+    })
+    .then((json) => {
+      if (responseStatus == 200) {
+        msg = "STATUS: Playlist Created"
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
+
+        // Show playlist created modal
+        showPlaylistCreatedModal();
+
+        // clear modal input fields
+        document.getElementById("new-playlist-title").value = "";
+        document.getElementById("new-playlist-description").value = "";
+        document.getElementById("new-playlist-privacy-status").checked = false;
+      } else if (responseStatus == 409) {
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Playlist Already Exists."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
+
+        // Show error modal
+        showPlaylistAlreadyExistsModal();
+      } else {
+        // Server error message
+        console.log("Server Error Message: ", json)
+        msg = "STATUS: Failed to create playlist."
+        document.getElementById("app-status").innerHTML = msg;
+
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
+        // Show error modal
+        showPlaylistCreationErrorModal();
+      }
+    })
+    .catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to create playlist."
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Hide creating playlist spinner
+      showCreatingPlaylistModal(false);
+      // Show error modal
+      showPlaylistCreationErrorModal();
+    });
+}
+
+// Shows Playlist was created modal
+async function showPlaylistCreatedModal() {
+  // close modal if open
+  const btnClosePlaylistCreatedModal = document.getElementById('close-playlist-created-modal');
+  btnClosePlaylistCreatedModal.click();
+
+  // Show modal
+  const playlistCreatedModal = new bootstrap.Modal(document.getElementById('playlist-created-modal'));
+  playlistCreatedModal.show();
+}
+
+// Shows Playlist creation Error occurred modal
+async function showPlaylistCreationErrorModal() {
+  // close modal if open
+  const btnClosePlaylistCreationErrorModal = document.getElementById('close-playlist-creation-error-modal');
+  btnClosePlaylistCreationErrorModal.click();
+
+  // Show modal
+  const playlistCreationErrorModal = new bootstrap.Modal(document.getElementById('playlist-creation-error-modal'));
+  playlistCreationErrorModal.show();
+}
+
+
+async function getSupportedMediaType() {
+  let options;
+  if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+    options = {
+      mimeType: 'video/webm; codecs=vp9',
+      videoBitsPerSecond: 3000000
+    };
+    return options;
+  } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+    options = {
+      mimeType: 'video/webm; codecs=vp8,opus',
+      videoBitsPerSecond: 3000000
+    };
+    return options;
+  } else {
+    return null;
+  }
+}
+
+// Shows the playlists already exists modal
+async function showPlaylistAlreadyExistsModal() {
+  // close modal if open
+  const btnClosePlaylistAlreadyExistsModal = document.getElementById('close-playlist-already-exists-modal');
+  btnClosePlaylistAlreadyExistsModal.click();
+
+  // Show modal
+  const playlistAlreadyExistsModal = new bootstrap.Modal(document.getElementById('playlist-already-exists-modal'));
+  playlistAlreadyExistsModal.show();
+}
+
+// Shows the test details modal
+async function showTestDetailsModal() {
+
+  // close modal if open
+  const btnCloseTestDetailsModal = document.getElementById('close-test-details-modal');
+  btnCloseTestDetailsModal.click();
+
+  // Get permission to show notifications in system tray
+  showNotificationPermission = await Notification.requestPermission();
+  console.log("showNotificationPermission: ", showNotificationPermission);
+
+  // Show modal
+  const testDetailsModal = new bootstrap.Modal(document.getElementById('test-details-modal'));
+  testDetailsModal.show();
+}
+
+// show network error system tray notification
+async function showNetworkErrorSystemTrayNotification() {
+  // check for permission first
+  if (showNotificationPermission === 'granted') {
+    const errorNotification = new Notification('Recording stopped due to network error!', {
+      body: '1. Check your internet connection.\n2. Start the recording process again.',
+    });
+  }
+}
+
+// Shows the network error occurred modal
+async function showNetworkErrorOccurredModal() {
+
+  // Show network error system tray notification
+  showNetworkErrorSystemTrayNotification();
+
+  // Show an alert instead of a modal, with small delay
+  setTimeout(showNetworkErrorAlert, 50);
+
+  /*// close modal if open
+  const btnCloseNetworkErrorOccurredModal = document.getElementById('close-network-error-occurred-modal');
+  btnCloseNetworkErrorOccurredModal.click();
+
+  // Show modal
+  const networkErrorOccurredModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
+  networkErrorOccurredModal.show();*/
+}
+
+// Shows a network error alert
+function showNetworkErrorAlert() {
+  let msg1 = "Recording stopped due to network error, please do the following.\n";
+  let msg2 = " 1. Check your internet connection.\n";
+  let msg3 = " 2. Refresh the page on your browser.\n";
+  let msg4 = " 3. Start the recording process again.";
+  let msg = msg1 + msg2 + msg3 + msg4;
+
+  alert(msg);
+}
+
+
+// Shows creating playlist modal
+async function showCreatingPlaylistModal(status) {
+
+  if (status === true) {
+    // close modal if open
+    const btnCloseCreatingPlaylistModal = document.getElementById('btnCloseCreatingPlaylistModal');
+    btnCloseCreatingPlaylistModal.click();
+
+    // Show modal
+    const creatingPlaylistModal = new bootstrap.Modal(document.getElementById('creatingPlaylistModal'));
+    creatingPlaylistModal.show();
+  } else {
+    // close modal if open
+    const btnCloseCreatingPlaylistModal = document.getElementById('btnCloseCreatingPlaylistModal');
+    btnCloseCreatingPlaylistModal.click();
   }
 }
