@@ -95,9 +95,13 @@
                         </div>
                         <div class="row">
                             <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-danger btn-sm w-100" id="start"
+                                <!--<button type="button" class="btn btn-danger btn-sm w-100" id="start"
                                     data-bs-toggle="modal" data-bs-target="#test-details-modal">Start
-                                    Recording</button>
+                                    Recording</button> -->
+
+                                <button type="button" class="btn btn-danger btn-sm w-100" id="start"
+                                    onClick="showTestDetailsModal()">Start Recording
+                                </button>
                             </div>
 
                             <div class="col-sm-4 mt-3">
@@ -166,7 +170,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Test Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="close-test-details-modal"></button>
                 </div>
                 <div class="modal-body">
                     <form>
@@ -433,7 +438,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Network Error Modal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-network-error-occurred-modal"></button>
             </div>
             <div class="modal-body">
                 <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
@@ -732,7 +738,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Playlist Created</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="close-playlist-created-modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-created-modal"></button>
             </div>
             <div class="modal-body">
                 <p style="font-size: 2rem; color: rgb(0, 255, 0);">
@@ -765,7 +772,8 @@
                 </ol>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
             </div>
@@ -792,9 +800,30 @@
                 </ol>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Creating playlist in progress-->
+<div class="modal" id="creatingPlaylistModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Creating Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btnCloseCreatingPlaylistModal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

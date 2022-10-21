@@ -65,6 +65,7 @@ let userPlaylistSelection = null;
 let channelTitle = null;
 let todaysPlaylistId = null;
 let tablePlaylists = [];
+let showNotificationPermission = 'default';
 
 // Initialize the playlist table
 let playlistTable = $('#playlist-table').DataTable({
@@ -659,7 +660,7 @@ async function validateModal() {
   // All test details are available now
   if ((docIsValid == true) && (testNameIsValid == true)) {
     // Click on close modal button
-    document.getElementById("close-modal").click();
+    document.getElementById("close-test-details-modal").click();
 
     // Disable start recording button
     document.getElementById("start").disabled = true;
@@ -1369,8 +1370,11 @@ async function checkNetworkStatus() {
       stopStreams();
       resetStateOnError();
       //alert("Recording stopped due to network problem");
-      let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-      errorModal.show();
+      //let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
+      //errorModal.show();
+
+      // Show system tray notification and alert
+      showNetworkErrorOccurredModal();
     }
 
   }
@@ -2387,6 +2391,9 @@ async function handleCreatePlaylistRequest() {
     const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
     btnCloseNewPlaylistDetailsModal.click();
 
+    // Show creating playlist spinner
+    showCreatingPlaylistModal(true);
+
     // Make request to create playlist
     await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
   }
@@ -2424,6 +2431,9 @@ async function createNewPlaylist(title, description, privacyStatus) {
         msg = "STATUS: Playlist Created"
         document.getElementById("app-status").innerHTML = msg;
 
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
+
         // Show playlist created modal
         showPlaylistCreatedModal();
 
@@ -2431,20 +2441,25 @@ async function createNewPlaylist(title, description, privacyStatus) {
         document.getElementById("new-playlist-title").value = "";
         document.getElementById("new-playlist-description").value = "";
         document.getElementById("new-playlist-privacy-status").checked = false;
-      } else if(responseStatus == 409){
+      } else if (responseStatus == 409) {
         // Server error message
         console.log("Server Error Message: ", json)
         msg = "STATUS: Playlist Already Exists."
         document.getElementById("app-status").innerHTML = msg;
 
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
+
         // Show error modal
         showPlaylistAlreadyExistsModal();
-      }else {
+      } else {
         // Server error message
         console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to create playlist."
         document.getElementById("app-status").innerHTML = msg;
 
+        // Hide creating playlist spinner
+        showCreatingPlaylistModal(false);
         // Show error modal
         showPlaylistCreationErrorModal();
       }
@@ -2454,6 +2469,8 @@ async function createNewPlaylist(title, description, privacyStatus) {
       msg = "STATUS: Failed to create playlist."
       document.getElementById("app-status").innerHTML = msg;
 
+      // Hide creating playlist spinner
+      showCreatingPlaylistModal(false);
       // Show error modal
       showPlaylistCreationErrorModal();
     });
@@ -2510,4 +2527,78 @@ async function showPlaylistAlreadyExistsModal() {
   // Show modal
   const playlistAlreadyExistsModal = new bootstrap.Modal(document.getElementById('playlist-already-exists-modal'));
   playlistAlreadyExistsModal.show();
+}
+
+// Shows the test details modal
+async function showTestDetailsModal() {
+
+  // close modal if open
+  const btnCloseTestDetailsModal = document.getElementById('close-test-details-modal');
+  btnCloseTestDetailsModal.click();
+
+  // Get permission to show notifications in system tray
+  showNotificationPermission = await Notification.requestPermission();
+  console.log("showNotificationPermission: ", showNotificationPermission);
+
+  // Show modal
+  const testDetailsModal = new bootstrap.Modal(document.getElementById('test-details-modal'));
+  testDetailsModal.show();
+}
+
+// show network error system tray notification
+async function showNetworkErrorSystemTrayNotification() {
+  // check for permission first
+  if (showNotificationPermission === 'granted') {
+    const errorNotification = new Notification('Recording stopped due to network error!', {
+      body: '1. Check your internet connection.\n2. Start the recording process again.',
+    });
+  }
+}
+
+// Shows the network error occurred modal
+async function showNetworkErrorOccurredModal() {
+
+  // Show network error system tray notification
+  showNetworkErrorSystemTrayNotification();
+
+  // Show an alert instead of a modal, with small delay
+  setTimeout(showNetworkErrorAlert, 50);
+
+  /*// close modal if open
+  const btnCloseNetworkErrorOccurredModal = document.getElementById('close-network-error-occurred-modal');
+  btnCloseNetworkErrorOccurredModal.click();
+
+  // Show modal
+  const networkErrorOccurredModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
+  networkErrorOccurredModal.show();*/
+}
+
+// Shows a network error alert
+function showNetworkErrorAlert() {
+  let msg1 = "Recording stopped due to network error, please do the following.\n";
+  let msg2 = " 1. Check your internet connection.\n";
+  let msg3 = " 2. Refresh the page on your browser.\n";
+  let msg4 = " 3. Start the recording process again.";
+  let msg = msg1 + msg2 + msg3 + msg4;
+
+  alert(msg);
+}
+
+
+// Shows creating playlist modal
+async function showCreatingPlaylistModal(status) {
+
+  if (status === true) {
+    // close modal if open
+    const btnCloseCreatingPlaylistModal = document.getElementById('btnCloseCreatingPlaylistModal');
+    btnCloseCreatingPlaylistModal.click();
+
+    // Show modal
+    const creatingPlaylistModal = new bootstrap.Modal(document.getElementById('creatingPlaylistModal'));
+    creatingPlaylistModal.show();
+  } else {
+    // close modal if open
+    const btnCloseCreatingPlaylistModal = document.getElementById('btnCloseCreatingPlaylistModal');
+    btnCloseCreatingPlaylistModal.click();
+  }
 }
