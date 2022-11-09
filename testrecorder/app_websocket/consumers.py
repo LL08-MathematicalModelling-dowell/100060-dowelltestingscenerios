@@ -65,7 +65,8 @@ class VideoConsumer(AsyncConsumer):
                            # so that we don't waste any CPU and quality with unnecessary transcoding.
                            # If the browser doesn't support H.264, set the video codec to 'libx264'
                            # or similar to transcode it to H.264 here on the server.
-                           '-vcodec', 'libx264',
+                           # '-vcodec', 'libx264',
+                           '-vcodec', 'copy',
 
                            # AAC audio is required for Facebook Live.  No browser currently supports
                            # encoding AAC, so we must transcode the audio to AAC here on the server.
@@ -111,7 +112,8 @@ class VideoConsumer(AsyncConsumer):
                            # so that we don't waste any CPU and quality with unnecessary transcoding.
                            # If the browser doesn't support H.264, set the video codec to 'libx264'
                            # or similar to transcode it to H.264 here on the server.
-                           '-vcodec', 'libx264',
+                           # '-vcodec', 'libx264',
+                           '-vcodec', 'copy',
 
                            # AAC audio is required for Facebook Live.  No browser currently supports
                            # encoding AAC, so we must transcode the audio to AAC here on the server.
@@ -338,7 +340,8 @@ class MultiPurposeConsumer(AsyncConsumer):
                                        # so that we don't waste any CPU and quality with unnecessary transcoding.
                                        # If the browser doesn't support H.264, set the video codec to 'libx264'
                                        # or similar to transcode it to H.264 here on the server.
-                                       '-vcodec', 'libx264',
+                                       # '-vcodec', 'libx264',
+                                       '-vcodec', 'copy',
 
                                        # AAC audio is required for Facebook Live.  No browser currently supports
                                        # encoding AAC, so we must transcode the audio to AAC here on the server.

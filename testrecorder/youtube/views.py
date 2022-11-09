@@ -21,6 +21,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 import pymongo
+from youtube.models import ChannelsRecord
 
 
 # When running locally, disable OAuthlib's HTTPs verification.
@@ -41,6 +42,22 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl', 'openid', 'https:
           'https://www.googleapis.com/auth/youtube.force-ssl', 'https://www.googleapis.com/auth/userinfo.email', "https://www.googleapis.com/auth/youtube.readonly"]
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
+
+
+def get_channel_details(the_channel_title):
+    """
+        Gets the channel details using the channel title
+    """
+    # Check if the new plalist title already exists
+    queryset = ChannelsRecord.objects.filter(
+        channel_title = the_channel_title)
+    if queryset.exists():
+        fetched_channel = queryset.first()
+        print("Channel id: ", fetched_channel.channel_id)
+        print("Channel title: ", fetched_channel.channel_title)
+        print("Channel credentials: ", fetched_channel.channel_credentials)
+    else:
+        pass
 
 
 def index(request):
@@ -1097,6 +1114,28 @@ class FetchPlaylistsViewV2(APIView):
                                'id_title_list': id_title_list,
                                'todays_playlist_dict': todays_playlist_dict}
             return Response(youtube_details, status=status.HTTP_200_OK)
+
+            # return Response(id_title_dict, status=status.HTTP_200_OK)
+        except Exception as err:
+            print("Error while getting playlists: " + str(err))
+            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class FetchChannels(APIView):
+    """
+        Handles Channels information
+    """
+
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            print("Request: ", request)
+            get_channel_details("Walter maina")
+
+            channel_details = {'channel_title': "Hello"}
+            return Response(channel_details, status=status.HTTP_200_OK)
 
             # return Response(id_title_dict, status=status.HTTP_200_OK)
         except Exception as err:

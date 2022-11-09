@@ -1355,6 +1355,7 @@ async function checkNetworkStatus() {
   //console.log("The current date time in seconds is as follows:")
   //console.log(resultInSeconds);
   let timeNow = resultInSeconds;
+  //console.log("Disconnect time count: ", (timeNow - lastMsgRcvTime));
 
   if (msgRcvdFlag == true) {
     lastMsgRcvTime = timeNow;
@@ -1366,7 +1367,7 @@ async function checkNetworkStatus() {
       msgRcvdFlag = false;
       lastMsgRcvTime = timeNow;
       // Stop recording due to network problem
-      clearInterval(networkTimer);
+      //clearInterval(networkTimer);
       stopStreams();
       resetStateOnError();
       //alert("Recording stopped due to network problem");
@@ -2500,8 +2501,8 @@ async function showPlaylistCreationErrorModal() {
 
 
 async function getSupportedMediaType() {
-  let options;
-  if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+  let options = null;
+  /*if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
     options = {
       mimeType: 'video/webm; codecs=vp9',
       videoBitsPerSecond: 3000000
@@ -2515,7 +2516,15 @@ async function getSupportedMediaType() {
     return options;
   } else {
     return null;
-  }
+  }*/
+
+  // Rolling back the mime type feature
+  options = {
+    mimeType: 'video/webm; codecs=h264',
+    //videoBitsPerSecond: 3000000
+    videoBitsPerSecond: 1200000
+  };
+  return options;
 }
 
 // Shows the playlists already exists modal
@@ -2551,6 +2560,7 @@ async function showNetworkErrorSystemTrayNotification() {
   if (showNotificationPermission === 'granted') {
     const errorNotification = new Notification('Recording stopped due to network error!', {
       body: '1. Check your internet connection.\n2. Start the recording process again.',
+      icon: '/static/images/favicon.jpg'
     });
   }
 }
