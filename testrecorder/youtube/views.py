@@ -44,20 +44,69 @@ API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
 
-def get_channel_details(the_channel_title):
+def get_channel_credentials(request, the_channel_title):
     """
         Gets the channel details using the channel title
     """
-    # Check if the new plalist title already exists
-    queryset = ChannelsRecord.objects.filter(
-        channel_title = the_channel_title)
-    if queryset.exists():
-        fetched_channel = queryset.first()
-        print("Channel id: ", fetched_channel.channel_id)
-        print("Channel title: ", fetched_channel.channel_title)
-        print("Channel credentials: ", fetched_channel.channel_credentials)
+    # Check if session has channel information
+    if not request.session.get('channel_details'):
+        # Fetch credentials and add to session
+        queryset = ChannelsRecord.objects.filter(
+            channel_title = the_channel_title)
+        if queryset.exists():
+            fetched_channel = queryset.first()
+            print("Channel id: ", fetched_channel.channel_id)
+            print("Channel title: ", fetched_channel.channel_title)
+            #print("Channel credentials: ", fetched_channel.channel_credentials)
+            request.session['channel_details'] = {
+                "channel_id":fetched_channel.channel_id,
+                "channel_title":fetched_channel.channel_title,
+                "channel_credentials": fetched_channel.channel_credentials
+            }
+
+            # Test session channel information
+            """session_channel = request.session.get('channel_details')
+            print("Session Channel id: ", session_channel["channel_id"])
+            print("Session Channel title: ", session_channel["channel_title"])
+            print("Session Channel credentials: ", session_channel["channel_credentials"])"""
+        else:
+            msg = "A channel with the title "+the_channel_title+" does not exist!"
+            raise Exception(msg)
     else:
-        pass
+        print("session has credentials")
+
+    # Check if the channel is session is same as the one we need
+    session_channel = request.session.get('channel_details')
+    if the_channel_title != session_channel["channel_title"]:
+        print("session has different credentials")
+                # Fetch credentials and add to session
+        queryset = ChannelsRecord.objects.filter(
+            channel_title = the_channel_title)
+        if queryset.exists():
+            fetched_channel = queryset.first()
+            print("Channel id: ", fetched_channel.channel_id)
+            print("Channel title: ", fetched_channel.channel_title)
+            #print("Channel credentials: ", fetched_channel.channel_credentials)
+            request.session['channel_details'] = {
+                "channel_id":fetched_channel.channel_id,
+                "channel_title":fetched_channel.channel_title,
+                "channel_credentials": fetched_channel.channel_credentials
+            }
+
+            # Test session channel information
+            """print("Session Channel id: ", session_channel["channel_id"])
+            print("Session Channel title: ", session_channel["channel_title"])
+            print("Session Channel credentials: ", session_channel["channel_credentials"])"""
+        else:
+            msg = "A channel with the title "+the_channel_title+" does not exist!"
+            raise Exception(msg)
+    else:
+        print("session has the credentials we need")
+
+    # Return current credentials
+    session_channel = request.session.get('channel_details')
+    current_channel_credentials = session_channel["channel_credentials"]
+    return current_channel_credentials
 
 
 def index(request):
@@ -475,14 +524,18 @@ def insert_stream(youtube):
     return stream_dict
 
 
-def create_broadcast(videoPrivacyStatus, testNameValue):
+def create_broadcast(videoPrivacyStatus, testNameValue, request):
     """
         Creates a broadcast with a livestream bound
     """
 
     # Opening JSON file
-    with open(credentials_file) as json_file:
-        credentials = json.load(json_file)
+    """with open(credentials_file) as json_file:
+        credentials = json.load(json_file)"""
+
+    # Get current channel credetials
+    channel_title = request.data.get("channel_title")
+    credentials = json.loads(get_channel_credentials(request, channel_title))
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -528,7 +581,7 @@ class CreateBroadcastView(APIView):
         print("videoPrivacyStatus: ", videoPrivacyStatus)
         print("testNameValue: ", testNameValue)
 
-        stream_dict = create_broadcast(videoPrivacyStatus, testNameValue)
+        stream_dict = create_broadcast(videoPrivacyStatus, testNameValue,request)
         #stream_dict = {"Hello":"Testing for now!"}
         print("stream_dict: ", stream_dict)
 
@@ -536,11 +589,15 @@ class CreateBroadcastView(APIView):
 
 
 # Transitions a broadcast to complete status
-def transition_broadcast(the_broadcast_id):
+def transition_broadcast(the_broadcast_id,request):
 
     # Opening JSON file
-    with open(credentials_file) as json_file:
-        credentials = json.load(json_file)
+    """with open(credentials_file) as json_file:
+        credentials = json.load(json_file)"""
+
+    # Get current channel credetials
+    channel_title = request.data.get("channel_title")
+    credentials = json.loads(get_channel_credentials(request, channel_title))
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -576,7 +633,7 @@ class TransitionBroadcastView(APIView):
         the_broadcast_id = request.data.get("the_broadcast_id")
         print("the_broadcast_id: ", the_broadcast_id)
 
-        transition_response = transition_broadcast(the_broadcast_id)
+        transition_response = transition_broadcast(the_broadcast_id,request)
         #transition_response = {"Hello":"Testing for now!"}
         print("transition_response: ", transition_response)
 
@@ -602,8 +659,12 @@ class PlaylistItemsInsertView(APIView):
             print("the_playlist_id: ", the_playlist_id)
 
             # Create youtube object
-            with open(credentials_file) as json_file:
-                credentials = json.load(json_file)
+            """with open(credentials_file) as json_file:
+                credentials = json.load(json_file)"""
+
+            # Get current channel credetials
+            channel_title = request.data.get("channel_title")
+            credentials = json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -719,8 +780,12 @@ class FetchPlaylistsView(APIView):
             print("Request: ", request)
 
             # Create youtube object
-            with open(credentials_file) as json_file:
-                credentials = json.load(json_file)
+            """with open(credentials_file) as json_file:
+                credentials = json.load(json_file)"""
+
+            # Get current channel credetials
+            channel_title = request.data.get("channel_title")
+            credentials = json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -940,7 +1005,7 @@ def insert_video_into_playlist(the_video_id, the_playlist_id):
         raise Exception(error_msg)
 
 
-def create_playlist(playlist_title, playlist_description, playlist_privacy_status):
+def create_playlist(playlist_title, playlist_description, playlist_privacy_status, request):
     """
         Handles requests to create a playlist
     """
@@ -950,8 +1015,12 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
         print("playlist_privacy_status: ", playlist_privacy_status)
 
         # Create youtube object
-        with open(credentials_file) as json_file:
-            credentials = json.load(json_file)
+        """with open(credentials_file) as json_file:
+            credentials = json.load(json_file)"""
+
+        # Get current channel credetials
+        channel_title = request.data.get("channel_title")
+        credentials = json.loads(get_channel_credentials(request, channel_title))
 
         credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -1018,7 +1087,7 @@ class CreatePlaylistView(APIView):
             # Check if playlist already exists
 
             # create playlist
-            response = create_playlist(title, description, privacy)
+            response = create_playlist(title, description, privacy,request)
             #print("Playlist creation response: ",response)
 
             if response:
@@ -1051,8 +1120,12 @@ class FetchPlaylistsViewV2(APIView):
             print("Request: ", request)
 
             # Create youtube object
-            with open(credentials_file) as json_file:
-                credentials = json.load(json_file)
+            """with open(credentials_file) as json_file:
+                credentials = json.load(json_file)"""
+
+            # Get current channel credetials
+            channel_title = request.data.get("channel_title")
+            credentials = json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -1121,23 +1194,35 @@ class FetchPlaylistsViewV2(APIView):
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class FetchChannels(APIView):
     """
-        Handles Channels information
+        Gets Channels information
     """
 
     renderer_classes = [JSONRenderer]
 
     def post(self, request, *args, **kwargs):
         try:
-            print("Request: ", request)
-            get_channel_details("Walter maina")
+            #get_channel_details(request, "UX Live from uxlivinglab")
+            """current_credentials = get_channel_credentials(request, "UX Live from uxlivinglab")
+            print("current_credentials: ",current_credentials)"""
 
-            channel_details = {'channel_title': "Hello"}
-            return Response(channel_details, status=status.HTTP_200_OK)
+            all_channels = ChannelsRecord.objects.all()
+            channels_list = []
 
-            # return Response(id_title_dict, status=status.HTTP_200_OK)
+            for channel in all_channels.iterator():
+                print("Channel id: ", channel.channel_id)
+                print("Channel title: ", channel.channel_title)
+                #print("Channel credentials: ", channel.channel_credentials)
+                temp_dict = {}
+                temp_dict["channel_id"] = channel.channel_id
+                temp_dict["channel_title"] = channel.channel_title
+                channels_list.append(temp_dict)
+
+            # Dictionary with all necessary data
+            channels_details = {'channels_list': channels_list}
+
+            return Response(channels_details, status=status.HTTP_200_OK)
         except Exception as err:
-            print("Error while getting playlists: " + str(err))
+            print("Error while getting channels: " + str(err))
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
