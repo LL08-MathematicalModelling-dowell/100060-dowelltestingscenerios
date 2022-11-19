@@ -1,6 +1,6 @@
 # youtube/urls.py
 from django.urls import path
-from .views import index, test_api_request, create_broadcast, authorize, oauth2callback, revoke, clear_credentials, CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2
+from .views import index, test_api_request, create_broadcast, authorize, oauth2callback, revoke, clear_credentials, CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2,FetchChannels
 
 
 urlpatterns = [
@@ -21,4 +21,5 @@ urlpatterns = [
     path('fetchplaylists/api/', FetchPlaylistsView.as_view(), name='fetch-playlists'),
     path('createplaylist/api/', CreatePlaylistView.as_view(), name='create-playlist'),
     path('fetchplaylists/api/v2', FetchPlaylistsViewV2.as_view(), name='fetch-playlists-v2'),
+    path('fetchchannels/api/', FetchChannels.as_view(), name='fetch-channels'),
 ]

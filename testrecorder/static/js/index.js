@@ -66,6 +66,8 @@ let channelTitle = null;
 let todaysPlaylistId = null;
 let tablePlaylists = [];
 let showNotificationPermission = 'default';
+let currentChannelTitle = 'UX Live from uxlivinglab';
+//let currentChannelTitle = 'Walter maina';
 
 // Initialize the playlist table
 let playlistTable = $('#playlist-table').DataTable({
@@ -1224,6 +1226,7 @@ async function createBroadcast() {
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
   broadcast_data.testNameValue = testNameValue;
+  broadcast_data.channel_title = currentChannelTitle;
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   //headers: {"Content-type":"application/json;charset=UTF-8"}
@@ -1274,6 +1277,7 @@ async function endBroadcast() {
   url = "youtube/transitionbroadcast/api/";
   let broadcast_data = new Object();
   broadcast_data.the_broadcast_id = newBroadcastID;
+  broadcast_data.channel_title = currentChannelTitle;
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   //headers: {"Content-type":"application/json;charset=UTF-8"}
@@ -1355,6 +1359,7 @@ async function checkNetworkStatus() {
   //console.log("The current date time in seconds is as follows:")
   //console.log(resultInSeconds);
   let timeNow = resultInSeconds;
+  //console.log("Disconnect time count: ", ((timeNow - lastMsgRcvTime)*1000));
 
   if (msgRcvdFlag == true) {
     lastMsgRcvTime = timeNow;
@@ -1366,7 +1371,7 @@ async function checkNetworkStatus() {
       msgRcvdFlag = false;
       lastMsgRcvTime = timeNow;
       // Stop recording due to network problem
-      clearInterval(networkTimer);
+      //clearInterval(networkTimer);
       stopStreams();
       resetStateOnError();
       //alert("Recording stopped due to network problem");
@@ -2071,10 +2076,21 @@ async function fetchPlaylists() {
   loadingPlaylistsDiv.hidden = false;
   failedToReceivePlaylistsDiv.hidden = true;
 
+  let broadcast_data = new Object();
+  broadcast_data.channel_title = currentChannelTitle;
+  json_broadcast_data = JSON.stringify(broadcast_data);
+  let csrftoken = await getCookie('csrftoken');
+  const myHeaders = new Headers();
+  myHeaders.append('Accept', 'application/json');
+  myHeaders.append('Content-type', 'application/json');
+  myHeaders.append('X-CSRFToken', csrftoken);
+
   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
   let responseStatus = null;
   await fetch(fetchPlaylistsApiUrl, {
     method: 'POST',
+    body: json_broadcast_data, 
+    headers: myHeaders 
   })
     .then(response => {
       console.log(response)
@@ -2152,7 +2168,8 @@ async function insertVideoIntoPlaylist() {
     method: 'POST',
     body: JSON.stringify({
       videoId: newBroadcastID,
-      playlistId: currentRadioButtonID
+      playlistId: currentRadioButtonID,
+      channel_title: currentChannelTitle
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
@@ -2205,7 +2222,8 @@ async function insertVideoIntoTodaysPlaylist() {
     method: 'POST',
     body: JSON.stringify({
       videoId: newBroadcastID,
-      playlistId: todaysPlaylistId
+      playlistId: todaysPlaylistId,
+      channel_title: currentChannelTitle
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
@@ -2413,7 +2431,8 @@ async function createNewPlaylist(title, description, privacyStatus) {
     body: JSON.stringify({
       new_playlist_title: title,
       new_playlist_description: description,
-      new_playlist_privacy: privacyStatus
+      new_playlist_privacy: privacyStatus,
+      channel_title: currentChannelTitle
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
@@ -2500,8 +2519,8 @@ async function showPlaylistCreationErrorModal() {
 
 
 async function getSupportedMediaType() {
-  let options;
-  if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+  let options = null;
+  /*if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
     options = {
       mimeType: 'video/webm; codecs=vp9',
       videoBitsPerSecond: 3000000
@@ -2515,7 +2534,15 @@ async function getSupportedMediaType() {
     return options;
   } else {
     return null;
-  }
+  }*/
+
+  // Rolling back the mime type feature
+  options = {
+    mimeType: 'video/webm; codecs=h264',
+    //videoBitsPerSecond: 3000000
+    videoBitsPerSecond: 1200000
+  };
+  return options;
 }
 
 // Shows the playlists already exists modal
@@ -2551,6 +2578,7 @@ async function showNetworkErrorSystemTrayNotification() {
   if (showNotificationPermission === 'granted') {
     const errorNotification = new Notification('Recording stopped due to network error!', {
       body: '1. Check your internet connection.\n2. Start the recording process again.',
+      icon: '/static/images/favicon.jpg'
     });
   }
 }
