@@ -62,21 +62,21 @@
                         <label for="keys">Audio</label>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <input type="checkbox" id="key-logging" name="keys">
                         <label for="keys">Key Logging</label>
-                    </div>
+                    </div> -->
 
                     <div>
                         <input type="checkbox" id="public-videos" name="public">
                         <label for="public">Make Stream Public</label>
                     </div>
 
-                    <div>
+                    <!-- <div>
                         <input type="checkbox" id="clickupTaskNotesCheckbox" name="gettaskid"
                             onchange="handleTaskIdCheckbox(event)">
                         <label for="gettaskid">Clickup Task Notes</label>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
@@ -123,10 +123,8 @@
                                 <button type="button" class="btn btn-secondary btn-sm w-100" id="pause"
                                     onClick="showSelectYoutubePlaylistModal()">Tests Button</button>
                             </div>-->
-                            <div class="col-sm-4 mt-3">
+                            <!-- <<div class="col-sm-4 mt-3">
                                 <form action="{% url 'view_records' %}" method="POST" target="_blank">
-                                    <!--<form action="https://liveuxstoryboard.com/recordings/" method="POST" target="_blank">
-                                    <form action="http://localhost:8080/recordings/" method="POST" target="_blank">-->
                                     {% csrf_token %}
                                     <input id="webcam_link" name="webcam_link" value="" type="hidden">
                                     <input id="screen_link" name="screen_link" value="" type="hidden">
@@ -134,16 +132,16 @@
                                     <input id="beanote_file_link" name="beanote_file_link" value="" type="hidden">
                                     <input id="key_log_file_link" name="key_log_file_link" value="" type="hidden">
                                     <button type="submit" class="btn btn-dark btn-sm w-100" id="view_vps_files">View VPS
-                                        Files</button>
-                                </form>
-                            </div>
+                                        Files</button> 
+                                </form> 
+                            </div> -->
 
-                            <div class="col-sm-4 mt-3">
+                            <!-- <div class="col-sm-4 mt-3">
                                 <button type="button" class="btn btn-secondary btn-sm w-100" id="btnUserSettings"
                                     data-bs-toggle="modal" data-bs-target="#user-settings-modal">
                                     User Settings
                                 </button>
-                            </div>
+                            </div> -->
 
                             <div class="col-sm-4 mt-3">
                                 <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"

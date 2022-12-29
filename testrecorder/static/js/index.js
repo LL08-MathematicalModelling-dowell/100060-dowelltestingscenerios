@@ -2,10 +2,10 @@
 const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
-const keyLogCheckbox = document.getElementById('key-logging')
+//const keyLogCheckbox = document.getElementById('key-logging')
 const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
-const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
+//const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 let btnViewRecords = document.getElementById('view_records');
 
 // App global variables
@@ -306,7 +306,8 @@ async function stopRecording() {
   // Check the settings
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
-  let logKeyboard = keyLogCheckbox.checked;
+  //let logKeyboard = keyLogCheckbox.checked;
+  let logKeyboard = false;
 
   // Initialize upload data object if null
   if (testRecordingData == null) {
@@ -884,7 +885,8 @@ async function uploadSeleniumIdeFile() {
 async function keyLogFileCheck() {
   try {
 
-    let logKeyboard = keyLogCheckbox.checked;
+    //let logKeyboard = keyLogCheckbox.checked;
+    let logKeyboard = false;
 
     if (logKeyboard == true) {
       let msg = "STATUS: Getting key log file."
@@ -1210,11 +1212,11 @@ async function createWebsocket() {
       document.getElementById("app-status").innerHTML = msg;
 
       // Start the task id websocket
-      let getClickupTaskIDs = clickupTaskNotesCheckbox.checked;
+      /*let getClickupTaskIDs = clickupTaskNotesCheckbox.checked;
       if (getClickupTaskIDs == true) {
         console.log("Creating Task ID websocket connection")
         createTaskidWebsocket();
-      }
+      }*/
     } else {
       //console.error('RTMP url ACK not received');
     }
@@ -1400,7 +1402,8 @@ async function setVideoPrivacyStatus() {
 async function showBeanoteFileUploadModal() {
   // Synchronized recording stop
   recordingSynched = false;
-  let logKeyboard = keyLogCheckbox.checked;
+  //let logKeyboard = keyLogCheckbox.checked;
+  let logKeyboard = false;
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
 
@@ -1443,7 +1446,8 @@ async function showBeanoteFileUploadModal() {
 async function stopStreams() {
   // Synchronized recording stop
   recordingSynched = false;
-  let logKeyboard = keyLogCheckbox.checked;
+  //let logKeyboard = keyLogCheckbox.checked;
+  let logKeyboard = false;
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
 
@@ -1855,7 +1859,8 @@ async function showGetTaskIdFromUserModal() {
     }
 
     // Check if we need to show modal first
-    let getClickupTaskNotes = clickupTaskNotesCheckbox.checked;
+    //let getClickupTaskNotes = clickupTaskNotesCheckbox.checked;
+    let getClickupTaskNotes = false;
     if ((getClickupTaskNotes == true) && (receivedTaskID.length <= 0)) {
       // Get task id from user
       let msg = "STATUS: Getting Task ID from user..."
