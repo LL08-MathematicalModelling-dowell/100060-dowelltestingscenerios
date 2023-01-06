@@ -166,7 +166,7 @@ img {
   width: 90%;
   height: 90%;
   /* background: white; */
-  top: 5%;
+  top: 3%;
   left: 5%;
   transform: tranlate(-50%, -50%);
 }
@@ -255,7 +255,7 @@ img {
   .video-component video {
     width: 70%;
     height: 70%;
-    top: 15%;
+    top: 10%;
     left: 15%;
   }
 }
