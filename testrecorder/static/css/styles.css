@@ -60,10 +60,12 @@ img {
   justify-content: space-between;
   align-items: center;
   text-align: center;
+
 }
 .six-content{
   font-size: 0.8rem;
   line-height: 0.3 !important;
+
 
   /* margin-right: 2px; */
 }
@@ -71,6 +73,8 @@ img {
   border: 2px solid var(--dark-white-clr);
   border-radius: 0.5rem;
   margin-right: 5px;
+  /* font-size: 1.2rem; */
+
 }
 .upper-nav-icon img{
   width: 40px;
@@ -300,7 +304,7 @@ footer{
 .plus{
   position: absolute;
   color: var(--light-primary_clr);
-  top: 28%;
+  top: 20%;
   left: 43%;
   transform: translate(-50%, -50%);
   /* font-size: 1.5rem; */
@@ -312,7 +316,7 @@ footer{
     font-size: 2rem;
   }
 .plus {
-  top: 35%;
+  top: 20%;
   left: 40%;
   font-size: 1.5rem!important;
 }
