@@ -46,7 +46,7 @@ img {
   background: var(--primary_clr);
   display: flex;
   justify-content: space-evenly;
-  align-items: center;
+  align-items: center !important;
   padding: 1rem 0;
 }
 .upper-nav-icon{
@@ -64,50 +64,19 @@ img {
 }
 .six-content{
   font-size: 0.8rem;
-  line-height: 0.3 !important;
-
-
-  /* margin-right: 2px; */
 }
 .six-icon{
   border: 2px solid var(--dark-white-clr);
   border-radius: 0.5rem;
   margin-right: 5px;
-  /* font-size: 1.2rem; */
-
+  text-align: center;
 }
 .upper-nav-icon img{
   width: 40px;
-  height: 30px;
+  height: 25px;
   border-radius: 0.5rem;
 }
-.dowell-logo-icon{
-  position: relative;
-  color: var(--white-clr);
-}
-.dowell-logo-icon p{
-  position: absolute;
-  top: 50%;
-  left: 40%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  color: var(--primary_clr);
-  font-size: 0.5rem;
-  font-weight: bolder;
-} 
-.dowell-logo{
-  position: relative;
-}
-.dowell-logo-icon {
-  position: absolute;
-  top: 60%;
-  left: 70%;
-  transform: translate(-50%, -50%);
-  font-size: 0.8rem;
-  background: var(--primary_clr);
-  padding: 0.1rem 0.2rem;
-  border-radius: 50%;
-}
+
 @media screen and (min-width: 768px) {
   .upper-nav-icon{
     font-size: 2rem;
@@ -116,6 +85,9 @@ img {
     width: 70px;
     height: 50px;
     border-radius: 0.5rem;
+  }
+  .six-content {
+    font-size: 1rem;
   }
 }
 /* lower nav */
@@ -214,6 +186,43 @@ img {
 .setting-icon input[type="checkbox"] {
   display: none;
 }
+
+@media screen and (min-width: 768px) {
+  .setting-icon label {
+    font-size: 1.7rem;
+  }
+
+  .setting-icon label p {
+    font-size: 1.4rem;
+  }
+}
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip-text {
+  position: absolute;
+  background: var(--dark-clr);
+  bottom: 150%;
+  left: 30%;
+  text-align: center;
+  width: 120px;
+  margin-left: -60px;
+  visibility: hidden;
+}
+.tooltip-text::after{
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+.tooltip-container:hover .tooltip-text{
+  visibility: visible;
+}
 .create-playlist-btn button {
   background: var(--gray-clr);
   padding: 0.3rem 0.6rem;
@@ -226,7 +235,7 @@ img {
   border: none;
 }
 .record-btn button{
-  background: var(--primary_clr);
+  background: green;
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
   margin-right: 0.5rem;
@@ -237,7 +246,7 @@ img {
   border: none;
 }
 .stop-btn button{
-  background: green;
+  background: var(--primary_clr);
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
   border-radius: 0.5rem;
@@ -246,6 +255,8 @@ img {
   outline: none;
   border: none;
 }
+
+
 @media screen and (min-width:768px) {
   .input-start-record-btn {
     position: absolute;
@@ -276,15 +287,13 @@ img {
   padding: 0.3rem 2rem;
 }
 /* lower-footer */
-footer{
-  background: var(--light-primary_clr);
-}
+
 .footer{
-  /* position: fixed; */
+  background: var(--light-primary_clr);
   display: flex;
   justify-content: space-evenly;
-  align-items: center;
-  padding: 1rem;
+  align-items: center!important;
+  padding: 1.5rem 1rem 0.5rem;
   text-align: center;
 
   
@@ -304,7 +313,7 @@ footer{
 .plus{
   position: absolute;
   color: var(--light-primary_clr);
-  top: 20%;
+  top: 25%;
   left: 43%;
   transform: translate(-50%, -50%);
   /* font-size: 1.5rem; */
@@ -316,8 +325,8 @@ footer{
     font-size: 2rem;
   }
 .plus {
-  top: 20%;
-  left: 40%;
+  top: 30%;
+  left: 42%;
   font-size: 1.5rem!important;
 }
 .footer-nav-icon p {

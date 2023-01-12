@@ -2366,6 +2366,13 @@ function confirmPlaylistSelection() {
   }
 }
 
+
+// close youtube list selection modal
+async function closeYoutubePlaylistSelectionModal(){
+  showTestDetailsModal()
+  resetStateOnError()
+}
+
 // Creating new playlist modal
 async function showCreatingNewPlaylistModal() {
   // close modal if open

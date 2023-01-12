@@ -66,28 +66,32 @@
             </form>
         </div>
         <div class="main-content-btns">
-            <div class="create-playlist-btn">
+            <div class="create-playlist-btn tooltip-container">
                 <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
                     <i class="fas fa-save"></i>
                 </button>
+                <span class="tooltip-text">Create Play List</span>
                  {% comment %} <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
                     <i class="fas fa-save"></i>
                 </button> {% endcomment %}
             </div>
-            <div class="record-btn">
+            <div class="record-btn tooltip-container">
                 <button id="start" onClick="showTestDetailsModal()">
                     <i class="fas fa-record-vinyl"></i>
                 </button>
+                <span class="tooltip-text">Start Recording</span>
             </div>
-            <div class="stop-btn">
+            <div class="stop-btn tooltip-container">
                 <button id="stop" onClick="showGetTaskIdFromUserModal()">
                     <i class="fas fa-stop-circle"></i>
                 </button>
+                <span class="tooltip-text">Stop Recording</span>
             </div>
-            <div class="stop-btn" style="display:none">
+            <div class="stop-btn tooltip-container" style="display:none">
                 <button id="view_records" onClick="goToPage(event)" disabled>
                     <i class="fas fa-stop-circle"></i>
                 </button>
+                <span class="tooltip-text">View Records</span>
             </div>
         </div>
         </div>
@@ -621,8 +625,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">YouTube Playlist Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal"
-                    hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal" hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"></button>
             </div>
             <!-- Shown when playlists are received -->
             <div id="received-playlists">
