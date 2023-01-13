@@ -459,6 +459,9 @@ async function startRecording() {
   // Remove focus from start recording button
   document.getElementById('start').blur();
 
+  // Enable stop recording button
+  document.getElementById("stop").disabled = false;
+
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
     fileRandomString = randomString;
@@ -950,6 +953,9 @@ async function resetStateOnError() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
+// Enable stop recording button
+  document.getElementById("stop").disabled = true;
+
   // Stop the webcam stream
   if (recordWebcam == true) {
     try {
@@ -979,6 +985,7 @@ async function resetStateOnError() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
+  
 
   // Close any open websocket
   try {
@@ -2370,7 +2377,108 @@ function confirmPlaylistSelection() {
 // close youtube list selection modal
 async function closeYoutubePlaylistSelectionModal(){
   showTestDetailsModal()
-  resetStateOnError()
+  resetStateOnClosingPlaylistModal()
+}
+
+// reset state on closing youtube playlist modal
+async function resetStateOnClosingPlaylistModal() {
+  // console.error("Reseting state due to error");
+  let recordWebcam = cameraCheckbox.checked;
+  let recordScreen = screenCheckbox.checked;
+
+  // Update application status
+  let msg = "STATUS: Youtube Playlist Selection Modal Closed."
+  document.getElementById("app-status").innerHTML = msg;
+
+  // Stop video display tracks
+  stopVideoElemTracks(video);
+
+// Enable stop recording button
+  document.getElementById("stop").disabled = true;
+
+  // Stop the webcam stream
+  if (recordWebcam == true) {
+    try {
+      webcamRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping webcam recorder: " + err.message);
+    }
+  }
+
+  // Stop screen stream
+  if (recordScreen == true) {
+    try {
+      screenRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping screen recorder: " + err.message);
+    }
+  }
+
+  // Stop screen and webcam merged stream
+  if ((recordScreen == true) && (recordWebcam == true)) {
+    try {
+      mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+    } catch (err) {
+      console.error("Error while stopping merged stream recorder: " + err.message);
+    }
+  }
+
+  // Enable start recording button
+  document.getElementById("start").disabled = false;
+  
+
+  // Close any open websocket
+  try {
+    appWebsocket.close();
+  } catch (error) {
+    console.error("Error while closing appWebsocket");
+  }
+  try {
+    webcamWebSocket.close();
+  } catch (error) {
+    console.error("Error while closing webcamWebSocket");
+  }
+  try {
+    screenWebSocket.close();
+  } catch (error) {
+    console.error("Error while closing screenWebSocket");
+  }
+
+  // Reset App global variables
+  usernameValue = null;
+  testNameValue = null;
+  testDescriptionValue = null;
+  screenRecorderChunks = [];
+  webcamChunks = [];
+  mergedStreamChunks = [];
+  testRecordingData = null;
+  screenRecorder = null;
+  mergedStreamRecorder = null;
+  webCamStream = null;
+  screenStream = null;
+  audioStream = null;
+  recordinginProgress = false;
+  //websocketReconnect = false;
+  webcamMediaConstraints = {
+    video: true, audio: true
+  };
+  screenAudioConstraints = {
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      sampleRate: 44100
+    },
+    video: false
+  };
+
+  taskIdWebSocket = null;
+  receivedTaskID = [];
+  taskIDwasRreceived = false;
+  // clear playlist selection
+  userPlaylistSelection = null;
+  channelTitle = null;
+  // hide the creating broadcast modal
+  showCreatingBroadcastModal(false);
 }
 
 // Creating new playlist modal

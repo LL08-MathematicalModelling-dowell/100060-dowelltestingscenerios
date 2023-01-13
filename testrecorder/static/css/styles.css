@@ -41,6 +41,15 @@ img {
   color: var(--primary_clr);
 }
 
+.section{
+  width: 90%;
+  margin: 0 auto;
+}
+.about-content{
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
 /* upper nav */
 .upper-nav{
   background: var(--primary_clr);
@@ -254,6 +263,10 @@ img {
   color: var(--white-clr);
   outline: none;
   border: none;
+}
+
+.stop-btn button:disabled{
+  background: var(--light-primary_clr);
 }
 
 
