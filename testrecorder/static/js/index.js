@@ -691,6 +691,9 @@ async function sendAvailableData(prevProgress) {
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
+  // Enable stop recording button
+  document.getElementById("stop").disabled = true;
+
   // Send data
   if ((usernameValue != null) && (testRecordingData != null)) {
     setProgressBarValue(50);
