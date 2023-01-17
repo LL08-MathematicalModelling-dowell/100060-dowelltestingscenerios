@@ -184,6 +184,12 @@
                                 <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
                                     onClick="showCreatingNewPlaylistModal()">Create Playlist</button>
                             </div>
+<!-- ============================================================================================================================ -->
+                            <div class="col-sm-4 mt-3">
+                                <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
+                                    onClick="showAddChannelModal()">Add Channel</button>
+                            </div>
+<!-- ===================================================================================================================== -->
                         </div>
                     </div>
                 </div>
@@ -863,6 +869,47 @@
         </div>
     </div>
 </div>
+<!-- ============================================================= -->
+<!-- Add Channel Modal-->
+<div class="modal" id="add-channel-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Channel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="close-add-channel-modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-channel">
+                    {% csrf_token %}
+                    <p style="font-size: 1em; width: 100%; text-align: center; font-style: italic; font-weight: 400;" id="add-status"></p>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Channel ID</strong></label>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="id-error"></p>
+                        {{ form.channel_id }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Channel Title</strong></label>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="title-error"></p>
+                        {{ form.channel_title }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Channel Credential</strong></label>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="credential-error"></p>
+                        {{ form.channel_credentials }}                       
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
+                        <button type="submit" class="btn btn-success" id="add-channel-btn" >Add</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+          
+        </div>
+    </div>
+</div>
+
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

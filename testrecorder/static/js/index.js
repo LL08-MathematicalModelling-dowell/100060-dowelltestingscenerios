@@ -2395,7 +2395,6 @@ function confirmPlaylistSelection() {
   }
 }
 
-
 // close youtube list selection modal
 async function closeYoutubePlaylistSelectionModal(){
   showTestDetailsModal()
@@ -2507,6 +2506,7 @@ async function resetStateOnClosingPlaylistModal() {
   showCreatingBroadcastModal(false);
 }
 
+<<<<<<< HEAD
 // hide stop button by default, show only when recording start
 // async function toggleStartStopBtn(){
 // }
@@ -2516,6 +2516,8 @@ async function resetStateOnClosingPlaylistModal() {
 //   document.querySelector('.stop-btn').style.display = 'none';
   
 // }
+=======
+>>>>>>> e412452f902d9489f27c2a64b6e7cb2fa2d5236e
 
 // Creating new playlist modal
 async function showCreatingNewPlaylistModal() {
@@ -2768,7 +2770,6 @@ function showNetworkErrorAlert() {
   alert(msg);
 }
 
-
 // Shows creating playlist modal
 async function showCreatingPlaylistModal(status) {
 
@@ -2786,3 +2787,95 @@ async function showCreatingPlaylistModal(status) {
     btnCloseCreatingPlaylistModal.click();
   }
 }
+//      Adding A Channel
+// ============================================================================================
+async function showAddChannelModal() {
+  // close modal if open
+  const btnCloseAddNewChannelModal = document.getElementById('close-add-channel-modal');
+  btnCloseAddNewChannelModal.click();
+
+  // Show the Add Channel Modal
+  const createChannelModal = new bootstrap.Modal(document.getElementById('add-channel-modal'));
+  createChannelModal.show();
+}
+let channel_id = document.querySelector('input[name=channel_id');
+channel_id.addEventListener('keyup', () =>{
+  document.getElementById('id-error').innerText = '';
+})
+// Confiqure error display 
+let channel_title = document.querySelector('input[name=channel_title]');
+channel_title.addEventListener('keyup', () =>{
+  document.getElementById('title-error').innerText = '';
+});
+let channel_credential = document.querySelector('textarea[name=channel_credentials]');
+channel_credential.addEventListener('keyup', () =>{
+  document.getElementById('credential-error').innerText = '';
+});
+// Checks if a string is JSON serializable
+const isJSON = (str) => {
+  try {
+    JSON.parse(str);
+  } catch (e) {
+    return false;
+  }
+  return true;
+}
+document.getElementById("add-channel-btn").addEventListener("click", async function(event){
+  event.preventDefault();
+  
+  const idMsg = 'Invalid channel ID format'
+  const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
+  const credentialMsg = 'Invalid credential format';
+  let channelId = document.getElementById("channel_id_modal").value;
+  let channelTitle = document.getElementById("channel_title_modal").value;
+  let channelCredentials = document.getElementById("channel_credentials_modal").value;
+  const idError = document.getElementById('id-error');
+  const titleError = document.getElementById('title-error');
+  const credentialError = document.getElementById('credential-error');  
+  let valid_input = true; 
+
+  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) { 
+      idError.innerText = idMsg;
+      valid_input = false;
+  } 
+  if (!channelTitle.match(/^[a-zA-Z0-9_ -]{3,50}$/)) {
+      titleError.innerText = titleMsg;
+      valid_input = false;
+  } 
+  if (!isJSON(channelCredentials)) { 
+      credentialError.innerText = credentialMsg;
+      valid_input = false;
+  } 
+  if (valid_input) {
+    const form = document.getElementById("add-channel");
+    const formData = new FormData(form);
+    fetch("http://127.0.0.1:8000/", {
+      method: 'POST',
+      body: formData
+    })
+    .then(async response => {
+      const resp = await response.json()
+      const { channel_id, channel_title, channel_credential} = resp;
+      if (channel_id) {
+        idError.innerText = channel_id[0]
+      }
+      if (channel_title) {
+        titleError.innerText = channel_title[0]
+      }
+      if (channel_credential) {
+        credentialError.innerText = channel_credential[0]
+      }
+      if ('message' in resp) {
+        if (resp['message'] === 'Invalid channel!'){
+          document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
+          document.getElementById('add-status').innerText = resp['message'];
+        } else {
+          document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';   
+          document.getElementById('add-status').innerText = resp['message'];
+        }
+        console.log(resp['message'])
+      }
+    })
+  }
+})
+// ============================================================================================
