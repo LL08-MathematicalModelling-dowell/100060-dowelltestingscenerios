@@ -29,8 +29,8 @@ class ChannelsRecord(models.Model):
     """
         Stores YouTube channels information.
     """
-    channel_id = models.CharField(max_length=1024, blank=False,unique=True)
-    channel_title = models.CharField(max_length=1024, blank=False,unique=True)
+    channel_id = models.CharField(max_length=24, blank=False,unique=True)
+    channel_title = models.CharField(max_length=50, blank=False,unique=True)
     channel_credentials = models.TextField(default="")
     timestamp = models.DateTimeField(auto_now_add=True)
 
