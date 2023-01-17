@@ -137,7 +137,7 @@ img {
   position: absolute;
   display: flex;
   top: 20%;
-  left: 65%;
+  left: 50%;
 }
 .main-contents{
   height: 70vh;
@@ -258,6 +258,7 @@ img {
   background: var(--primary_clr);
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
+  margin-right: 0.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
   color: var(--white-clr);
@@ -275,27 +276,10 @@ img {
   border: none;
 }
 
-.view-record-btn button {
-  background: #1b6dd8;
-  padding: 0.3rem 0.6rem;
-  font-size: 1.4rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  color: var(--white-clr);
-  outline: none;
-  border: none;
-}
 
-
-@media screen and (min-width:576px) {
-  .main-content-btns {
-    left: 70%;
-  }
-}
 
 .add-channel-btn button {
   background: black;
-  margin-left: 0.5rem;
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
   border-radius: 0.5rem;
@@ -304,6 +288,12 @@ img {
   outline: none;
   border: none;
 }
+@media screen and (min-width:500px) {
+  .main-content-btns {
+    left: 60%;
+  }
+}
+
 /* .stop-btn button:disabled{
   background: var(--light-primary_clr);
 } */
@@ -318,7 +308,7 @@ img {
     width: 60%;
   }
   .main-content-btns {
-    left: 75%;
+    left: 65%;
   }
   .video-component video {
     width: 70%;
@@ -329,12 +319,12 @@ img {
 }
 @media screen and (min-width:996px) {
   .main-content-btns {
-    left: 80%;
+    left: 70%;
   }
 }
 @media screen and (min-width:1200px) {
   .main-content-btns {
-    left: 85%;
+    left: 80%;
   }
 }
 
