@@ -275,15 +275,40 @@ img {
   border: none;
 }
 
-.stop-btn button:disabled{
-  background: var(--light-primary_clr);
+.view-record-btn button {
+  background: #1b6dd8;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
 }
+
 
 @media screen and (min-width:576px) {
   .main-content-btns {
     left: 70%;
   }
 }
+
+.add-channel-btn button {
+  background: black;
+  margin-left: 0.5rem;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+/* .stop-btn button:disabled{
+  background: var(--light-primary_clr);
+} */
+
+
 
 @media screen and (min-width:768px) {
   .input-start-record-btn {
@@ -358,7 +383,7 @@ img {
     font-size: 2rem;
   }
 .plus {
-  top: 30%;
+  top: 32%;
   left: 42%;
   font-size: 1.5rem!important;
 }
@@ -372,3 +397,4 @@ img {
 .active {
   color: var(--white-clr);
 }
+

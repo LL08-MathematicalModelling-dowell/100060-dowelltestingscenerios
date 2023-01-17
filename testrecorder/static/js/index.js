@@ -691,7 +691,8 @@ async function validateModal() {
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
 
-  // show stop button
+
+   // show stop button
   document.querySelector('.record-btn').style.display = 'block';
 
 
@@ -963,11 +964,13 @@ async function resetStateOnError() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-// Enable stop recording button
-  // document.getElementById("stop").disabled = true;
 
   // show stop button
   document.querySelector('.record-btn').style.display = 'block';
+
+// show stop button
+  document.querySelector('.record-btn').style.display = 'block';
+
 
   // Stop the webcam stream
   if (recordWebcam == true) {
@@ -2190,7 +2193,7 @@ async function insertVideoIntoPlaylist() {
 
   // show stop button
   document.querySelector('.stop-btn').style.display = 'block';
-  
+
 
   // show stop button
   document.querySelector('.record-btn').style.display = 'none';
@@ -2414,11 +2417,10 @@ async function resetStateOnClosingPlaylistModal() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-// Enable stop recording button
-  // document.getElementById("stop").disabled = true;
 
 
-  // show stop button
+
+// show stop button
   document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
@@ -2506,18 +2508,6 @@ async function resetStateOnClosingPlaylistModal() {
   showCreatingBroadcastModal(false);
 }
 
-<<<<<<< HEAD
-// hide stop button by default, show only when recording start
-// async function toggleStartStopBtn(){
-// }
-// if (showTestDetailsModal) {
-//   document.querySelector('.record-btn').style.display = 'none';
-// } else {
-//   document.querySelector('.stop-btn').style.display = 'none';
-  
-// }
-=======
->>>>>>> e412452f902d9489f27c2a64b6e7cb2fa2d5236e
 
 // Creating new playlist modal
 async function showCreatingNewPlaylistModal() {
