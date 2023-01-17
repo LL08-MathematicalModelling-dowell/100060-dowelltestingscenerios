@@ -1,0 +1,70 @@
+{% load static %}
+  <!-- header -->
+  <header>
+    <nav>
+      <!-- upper nav -->
+      <div class="upper-nav">
+        <!-- upper nav icon -->
+        <a href="{% url 'home' %}"><div class="upper-nav-icon active">
+          <i class="fas fa-home"></i>
+        </div></a>
+        <a href="#"><div class="upper-nav-icon">
+          <i class="fas fa-sign-in"></i>
+        </div></a>
+        <a href="#"><div class="upper-nav-icon">
+          <!-- <i class="fas fa-"></i> -->
+          <div class="six-icon-flex">
+            <div class="six-icon">
+              6
+            </div>
+            <div class="six-content">
+              <div class="">Learning</div>
+              <div class="">Mode</div>
+            </div>
+          </div>
+        </div></a>
+        <a href="#"><div class="upper-nav-icon">
+          <i class="fa-solid fa-shield-alt"></i>
+        </div></a>
+        <a href="#"><div class="upper-nav-icon">
+          <i class="fas fa-cog"></i>
+        </div></a>
+        <a href="#"><div class="upper-nav-icon">
+          <!-- <i class="fas fa-"></i> -->
+          <!-- ai picture -->
+          <img src="{% static 'images/Ai.jpeg' %}" alt="">
+        </div></a>
+        <a href="{% url 'about' %}"><div class="upper-nav-icon dowell-logo">
+          <!-- <i class="fas fa-"></i> -->
+          <!-- dowell logo -->
+          <img src="{% static 'images/favicon.jpg' %}" alt="">
+        </div></a>
+        <!-- end upper nav icon -->
+      </div>
+      <!-- end upper nav -->
+      <!-- lower nav -->
+      {% comment %} <div class="lower-nav">
+        <!-- single select -->
+        <select name="" id="">
+            <option value="">Products</option>
+            <option value="">Products</option>
+            <option value="">Products</option>
+          </select>
+        <!-- end single select -->
+        <!-- single select -->
+          <select name="Brands" id="">
+            <option value="">Brands</option>
+            <option value="">Brands</option>
+            <option value="">Brands</option>
+          </select>
+        <!-- end single select -->
+        <!-- Story Name -->
+        <div class="story-name">
+          <input type="text" name="" id="" placeholder="Story Name">
+        </div> 
+        <!-- Story Name -->
+      </div> {% endcomment %}
+      <!-- end lower nav -->
+    </nav>
+  </header>
+  <!-- header -->

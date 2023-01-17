@@ -2,13 +2,13 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'css/recording_page.css' %}">
+{% comment %} <link rel="stylesheet" href="{% static 'css/recording_page.css' %}">
 <style type="text/css">
     body {
         background: url({% static "images/app-background3.png" %});
         background-size: cover;
     }
-</style>
+</style> {% endcomment %}
 {% endblock css %}
 
 {% block title %}
@@ -19,28 +19,86 @@
 {% block body %}
 
 <!-- Main container -->
-<div class="container">
-    <!-- App heading -->
-    <div class="row justify-content-center align-items-center">
-        <div class="col-sm-6 d-flex justify-content-center">
-            <div class="p-1 white-text">
-                <h1>Live UX Storyboard</h1>
-            </div>
-        </div>
-    </div>
+<div class="contain">
 
+    <!-- status in lower nav -->
+<div class="lower-nav">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
     <!-- Video component -->
-    <div class="row justify-content-center align-items-center">
+    {% comment %} <div class="row justify-content-center align-items-center">
         <div class="col-sm-9 d-flex justify-content-center">
             <div class="p-1 bg-dark">
                 <video class="centered" id="video" autoplay muted>
                 </video>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
+    <main class="main-contents">
+        <div class="video-component">
+        <video id="video" autoplay muted></video>
+        </div>
+        <!-- Settings and controls -->
+                <div class="main-content-check-boxes">
+        <div class="setting-icon">
+            <input type="checkbox" name="webcam" id="webcam-recording">
+            <label for="webcam-recording"><i class="fas fa-camera"></i><p>Webcam</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="screen" id="screen-recording" checked>
+            <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="audio" id="audio-settings" checked>
+            <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="public" id="public-videos">
+            <label for="public-videos"><i class="fas fa-globe"></i><p>Public</p></label>
+        </div>
+        </div>
+                <div class="input-start-record-btn">
+        <!-- main content inputs -->
+        <div class="main-content-input">
+            <form>
+            <input type="text" name="" id="new-playlist-title" placeholder="Play List Title">
+            <div style="color:red;" id="new-playlist-title-error"></div>
+            </form>
+        </div>
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
+                    <i class="fas fa-save"></i>
+                </button>
+                <span class="tooltip-text">Create Play List</span>
+                 {% comment %} <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
+                    <i class="fas fa-save"></i>
+                </button> {% endcomment %}
+            </div>
+            <div class="record-btn tooltip-container">
+                <button id="start" onClick="showTestDetailsModal()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>
+                <span class="tooltip-text">Start Recording</span>
+            </div>
+            <div class="stop-btn tooltip-container">
+                <button id="stop" onClick="showGetTaskIdFromUserModal()" disabled>
+                    <i class="fas fa-stop-circle"></i>
+                </button>
+                <span class="tooltip-text">Stop Recording</span>
+            </div>
+            <div class="stop-btn tooltip-container" style="display:none">
+                <button id="view_records" onClick="goToPage(event)" disabled>
+                    <i class="fas fa-stop-circle"></i>
+                </button>
+                <span class="tooltip-text">View Records</span>
+            </div>
+        </div>
+        </div>
+    </main>
 
     <!-- Settings and controls -->
-    <div class="row my-custom-row justify-content-center mt-3" style="--bs-bg-opacity: .5;">
+    {% comment %} <div class="row my-custom-row justify-content-center mt-3" style="--bs-bg-opacity: .5;">
 
         <!-- Settings -->
         <div class="col-sm-4">
@@ -86,13 +144,6 @@
             <div class="row">
                 <div class="row ">
                     <div class="col-sm-12 ">
-                        <div class="row">
-                            <div class="col-sm-12 d-flex justify-content-center">
-                                <div class="white-text">
-                                    <h6>Controls</h6>
-                                </div>
-                            </div>
-                        </div>
                         <div class="row">
                             <div class="col-sm-4 mt-3">
                                 <!--<button type="button" class="btn btn-danger btn-sm w-100" id="start"
@@ -158,15 +209,15 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <!-- Status bar -->
-    <div class="row border bg-light mt-3">
+    {% comment %} <div class="row border bg-light mt-3">
         <!--<div class="col-sm-6" id="app-status">Status:</div>
             <div class="col-sm-6">Time:</div>-->
 
         <div class="col-sm-12" id="app-status">STATUS: Waiting to Record.</div>
-    </div>
+    </div> {% endcomment %}
 
     <!-- Test Details Modal -->
     <div class="modal" id="test-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -580,8 +631,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">YouTube Playlist Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal"
-                    hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal" hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"></button>
             </div>
             <!-- Shown when playlists are received -->
             <div id="received-playlists">
