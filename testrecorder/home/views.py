@@ -20,7 +20,10 @@ def validate_youtube_channel(channel_credentials,channel_id):
 
     try:
         # Build the credentials object
-        credentials = Credentials(**channel_credentials)    
+        credentials = Credentials(**channel_credentials)
+    except Exception:
+        return False
+    try:
         # Build the YouTube API client
         youtube = build('youtube', 'v3', credentials=credentials)
         # Send a GET request to the API to retrieve information about the channel
