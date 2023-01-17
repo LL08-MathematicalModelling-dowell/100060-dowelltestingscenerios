@@ -31,24 +31,6 @@ class AddChannelRecord(forms.ModelForm):
     channel_title = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_title_modal'}))
     channel_credentials = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'id':'channel_credentials_modal', 'rows': '10'}))
 
-    # def clean_channel_id(self):
-    #     """
-    #     A validator method to validate channel id 
-    #     """
-    #     channel_id = self.cleaned_data.get('channel_id')
-    #     if not re.match(r'^UC[a-zA-Z0-9-_]{22}$', channel_id):
-    #         raise forms.ValidationError('wrong id format')
-    #     return channel_id
-    
-    # def clean_channel_tile(self):
-    #     """
-    #     A validator method to validate channel title 
-    #     """
-    #     channel_title = self.cleaned_data.get('channel_title')    
-    #     if not re.match('^[a-zA-Z0-9._-]{3,50}$', channel_title):
-    #         raise forms.ValidationError('title should be atleast 3 and atmost 50 characters')
-    #     return channel_title
-
     class Meta:
         """
         Overriden Meta class to define model class and form field 
