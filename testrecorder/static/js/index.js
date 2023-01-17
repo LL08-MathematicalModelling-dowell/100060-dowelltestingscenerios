@@ -460,7 +460,9 @@ async function startRecording() {
   document.getElementById('start').blur();
 
   // Enable stop recording button
-  document.getElementById("stop").disabled = false;
+  // document.getElementById("stop").disabled = false;
+
+
 
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
@@ -688,6 +690,7 @@ async function validateModal() {
 
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
+
 
    // show stop button
   document.querySelector('.record-btn').style.display = 'block';
@@ -960,6 +963,10 @@ async function resetStateOnError() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
+
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'block';
 
 // show stop button
   document.querySelector('.record-btn').style.display = 'block';
@@ -2183,12 +2190,14 @@ async function fetchPlaylists() {
 
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
+
   // show stop button
   document.querySelector('.stop-btn').style.display = 'block';
 
 
   // show stop button
   document.querySelector('.record-btn').style.display = 'none';
+
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2365,6 +2374,7 @@ function confirmPlaylistSelection1() {
 }
 
 function confirmPlaylistSelection() {
+
   try {
     // close playlist selection modal
     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
@@ -2406,6 +2416,9 @@ async function resetStateOnClosingPlaylistModal() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
+
+
+
 
 // show stop button
   document.querySelector('.record-btn').style.display = 'block';

@@ -2,13 +2,7 @@
 {% load static %}
 
 {% block css %}
-{% comment %} <link rel="stylesheet" href="{% static 'css/recording_page.css' %}">
-<style type="text/css">
-    body {
-        background: url({% static "images/app-background3.png" %});
-        background-size: cover;
-    }
-</style> {% endcomment %}
+
 {% endblock css %}
 
 {% block title %}
@@ -25,16 +19,8 @@
 <div class="lower-nav">
     <div id="app-status">STATUS: Waiting to Record.</div>
 </div>
-    <!-- Video component -->
-    {% comment %} <div class="row justify-content-center align-items-center">
-        <div class="col-sm-9 d-flex justify-content-center">
-            <div class="p-1 bg-dark">
-                <video class="centered" id="video" autoplay muted>
-                </video>
-            </div>
-        </div>
-    </div> {% endcomment %}
-    <main class="main-contents">
+<main class="main-contents">
+        <!-- Video component -->
         <div class="video-component">
         <video id="video" autoplay muted></video>
         </div>
