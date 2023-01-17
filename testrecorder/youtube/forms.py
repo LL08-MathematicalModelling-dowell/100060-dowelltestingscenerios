@@ -29,7 +29,7 @@ class AddChannelRecord(forms.ModelForm):
     """
     channel_id = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_id_modal'}))
     channel_title = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_title_modal'}))
-    channel_credentials = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'id':'channel_credentials_modal', 'rows': '10'}))
+    channel_credentials = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'id':'channel_credentials_modal', 'rows': '5'}))
 
     class Meta:
         """
