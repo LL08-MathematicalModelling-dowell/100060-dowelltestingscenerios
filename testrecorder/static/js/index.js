@@ -460,7 +460,9 @@ async function startRecording() {
   document.getElementById('start').blur();
 
   // Enable stop recording button
-  document.getElementById("stop").disabled = false;
+  // document.getElementById("stop").disabled = false;
+
+
 
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
@@ -688,11 +690,16 @@ async function validateModal() {
 
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'block';
+
+
+  // show stop button
+  document.querySelector('.stop-btn').style.display = 'none';
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
-  // Enable stop recording button
-  document.getElementById("stop").disabled = true;
 
   // Send data
   if ((usernameValue != null) && (testRecordingData != null)) {
@@ -957,7 +964,10 @@ async function resetStateOnError() {
   stopVideoElemTracks(video);
 
 // Enable stop recording button
-  document.getElementById("stop").disabled = true;
+  // document.getElementById("stop").disabled = true;
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
   if (recordWebcam == true) {
@@ -2177,6 +2187,14 @@ async function fetchPlaylists() {
 
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
+
+  // show stop button
+  document.querySelector('.stop-btn').style.display = 'block';
+  
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'none';
+
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2353,6 +2371,7 @@ function confirmPlaylistSelection1() {
 }
 
 function confirmPlaylistSelection() {
+
   try {
     // close playlist selection modal
     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
@@ -2397,7 +2416,11 @@ async function resetStateOnClosingPlaylistModal() {
   stopVideoElemTracks(video);
 
 // Enable stop recording button
-  document.getElementById("stop").disabled = true;
+  // document.getElementById("stop").disabled = true;
+
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
   if (recordWebcam == true) {
@@ -2483,6 +2506,16 @@ async function resetStateOnClosingPlaylistModal() {
   // hide the creating broadcast modal
   showCreatingBroadcastModal(false);
 }
+
+// hide stop button by default, show only when recording start
+// async function toggleStartStopBtn(){
+// }
+// if (showTestDetailsModal) {
+//   document.querySelector('.record-btn').style.display = 'none';
+// } else {
+//   document.querySelector('.stop-btn').style.display = 'none';
+  
+// }
 
 // Creating new playlist modal
 async function showCreatingNewPlaylistModal() {

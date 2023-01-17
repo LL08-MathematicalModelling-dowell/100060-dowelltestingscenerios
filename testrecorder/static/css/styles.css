@@ -137,7 +137,7 @@ img {
   position: absolute;
   display: flex;
   top: 20%;
-  left: 50%;
+  left: 65%;
 }
 .main-contents{
   height: 70vh;
@@ -198,11 +198,11 @@ img {
 
 @media screen and (min-width: 768px) {
   .setting-icon label {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
   }
 
   .setting-icon label p {
-    font-size: 1.4rem;
+    font-size: 1rem;
   }
 }
 .tooltip-container {
@@ -264,11 +264,26 @@ img {
   outline: none;
   border: none;
 }
+.view-record-btn button {
+  background: #1b6dd8;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
 
 .stop-btn button:disabled{
   background: var(--light-primary_clr);
 }
 
+@media screen and (min-width:576px) {
+  .main-content-btns {
+    left: 70%;
+  }
+}
 
 @media screen and (min-width:768px) {
   .input-start-record-btn {
@@ -278,7 +293,7 @@ img {
     width: 60%;
   }
   .main-content-btns {
-    left: 68%;
+    left: 75%;
   }
   .video-component video {
     width: 70%;
@@ -289,7 +304,12 @@ img {
 }
 @media screen and (min-width:996px) {
   .main-content-btns {
-    left: 75%;
+    left: 80%;
+  }
+}
+@media screen and (min-width:1200px) {
+  .main-content-btns {
+    left: 85%;
   }
 }
 
