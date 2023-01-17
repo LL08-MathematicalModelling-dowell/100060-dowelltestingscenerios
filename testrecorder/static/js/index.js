@@ -688,11 +688,16 @@ async function validateModal() {
 
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
+
+   // show stop button
+  document.querySelector('.record-btn').style.display = 'block';
+
+
+  // show stop button
+  document.querySelector('.stop-btn').style.display = 'none';
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
-  // Enable stop recording button
-  document.getElementById("stop").disabled = true;
 
   // Send data
   if ((usernameValue != null) && (testRecordingData != null)) {
@@ -956,8 +961,9 @@ async function resetStateOnError() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-// Enable stop recording button
-  document.getElementById("stop").disabled = true;
+// show stop button
+  document.querySelector('.record-btn').style.display = 'block';
+
 
   // Stop the webcam stream
   if (recordWebcam == true) {
@@ -2177,6 +2183,12 @@ async function fetchPlaylists() {
 
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
+  // show stop button
+  document.querySelector('.stop-btn').style.display = 'block';
+
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'none';
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2395,8 +2407,8 @@ async function resetStateOnClosingPlaylistModal() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-// Enable stop recording button
-  document.getElementById("stop").disabled = true;
+// show stop button
+  document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
   if (recordWebcam == true) {
