@@ -1201,7 +1201,7 @@ class FetchChannels(APIView):
 
     renderer_classes = [JSONRenderer]
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
             #get_channel_details(request, "UX Live from uxlivinglab")
             """current_credentials = get_channel_credentials(request, "UX Live from uxlivinglab")

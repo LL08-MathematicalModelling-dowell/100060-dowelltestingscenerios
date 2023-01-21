@@ -19,6 +19,9 @@ from file_app.views import save_recording_metadata
 
 class VideoConsumer(AsyncConsumer):
 
+    def __init__(self):
+        self.process = ''
+
     async def websocket_connect(self, event):
         # when websocket connects
         print("connected", event)
