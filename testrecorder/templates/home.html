@@ -190,12 +190,6 @@
                                 <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
                                     onClick="showCreatingNewPlaylistModal()">Create Playlist</button>
                             </div>
-<!-- ============================================================================================================================ -->
-                            <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
-                                    onClick="showAddChannelModal()">Add Channel</button>
-                            </div>
-<!-- ===================================================================================================================== -->
                         </div>
                     </div>
                 </div>
@@ -649,7 +643,7 @@
             <!-- Shown initially when getting the playlists -->
             <div id="loading-playlists">
                 <div class="modal-body">
-                    <p style="font-size: 2rem; color: rgb(0, 0, 0);">
+                    <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
                         <i class="bi-x"></i>Loading Playlists...
                     </p>
                 </div>
@@ -657,10 +651,15 @@
             <!-- Shown when failure to receive playlists occurs -->
             <div id="failed-to-receive-playlists">
                 <div class="modal-body">
-                    <p style="font-size: 2rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>Failed to get playlists!
+                    <p style="font-size: 1rem; color: rgb(255, 0, 0);">
+                        <i class="bi-x"></i>Failed to get playlists for the selected channel!
                     </p>
                     <ol>
+                        <li>
+                            <p>
+                                Make sure the chanel is valid.
+                            </p>
+                        </li>
                         <li>
                             <p>
                                 Click on the retry button to try fetching the playlists again.
@@ -915,6 +914,79 @@
         </div>
     </div>
 </div>
+<!-- ====================================================================== -->
+<!-- Select Channel Modal -->
+<!-- YouTube channels Selection Modal -->
+<div class="modal" id="channels-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">YouTube Channel Selection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-channels-selection-modal" hidden></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"></button>
+            </div>
+            <!-- Shown when channels are received -->
+            <div id="received-channels">
+                <div class="modal-body">
+                    <p>
+                        <strong>Please select a Channel</strong>
+                    </p>
+                    <div id="radio-buttons-container" class="form-check overflow-auto">
+                        <table id="channels-table" class="display" width="100%"></table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal();"
+                        id="cancel-channels-selection">
+                        Use Default Channel
+                    </button>
+                    <button type="button" class="btn btn-success" onClick="channelSelected()">Okay</button>
+                </div>
+            </div>
+            <!-- Shown initially when getting the playlists -->
+            <div id="loading-channels">
+                <div class="modal-body">
+                    <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
+                        <i class="bi-x"></i>Loading channels...
+                    </p>
+                </div>
+            </div>
+            <!-- Shown when failure to receive channels occurs -->
+            <div id="failed-to-receive-channels">
+                <div class="modal-body">
+                    <p style="font-size: 1rem; color: rgb(255, 0, 0);">
+                        <i class="bi-x"></i>Failed to get channels!
+                    </p>
+                    <ol>
+                        <li>
+                            <p>
+                                Make sure channel exists.
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                Click on the retry button to try fetching the channels again.
+                            </p>
+                        </li>
+                        <li>
+                            <p>
+                                Click on the Use Default Channel button to proceed without selecting a channel.
+                            </p>
+                        </li>
+                    </ol>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onClick="fetchChannels()">Retry</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal();"
+                        id="cancel-channels-fetching">
+                        Use Default Channel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!-- Bootstrap Bundle with Popper -->
