@@ -20,6 +20,8 @@
     <div id="app-status">STATUS: Waiting to Record.</div>
 </div>
 <main class="main-contents">
+    <!--display video title-->
+    <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
         <div class="video-component">
         <video id="video" autoplay muted></video>
@@ -47,19 +49,21 @@
         <!-- main content inputs -->
         <div class="main-content-input">
             <form>
-            <input type="text" name="" id="new-playlist-title" placeholder="Play List Title">
+            <input type="text" name="" id="new-playlist-tit" placeholder="Play List Title">
+            {% comment %} <input type="text" name="" id="new-playlist-title" placeholder="Play List Title"> {% endcomment %}
             <div style="color:red;" id="new-playlist-title-error"></div>
             </form>
         </div>
         <div class="main-content-btns">
             <div class="create-playlist-btn tooltip-container">
-                <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
+                {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
+                    <i class="fas fa-save"></i>
+                </button> {% endcomment %}
+                <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
                     <i class="fas fa-save"></i>
                 </button>
                 <span class="tooltip-text">Create Play List</span>
-                 {% comment %} <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
-                    <i class="fas fa-save"></i>
-                </button> {% endcomment %}
+
             </div>
             <div class="record-btn tooltip-container">
                 <button id="start" onClick="showTestDetailsModal()">
@@ -741,6 +745,7 @@
     </div>
 </div>
 
+<!-- Ojophilip -->
 <!-- New Playlist Details Modal -->
 <div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -761,12 +766,22 @@
                         <label class="form-label"><strong>Playlist Description</strong></label>
                         <textarea class="form-control" id="new-playlist-description"></textarea>
                     </div>
+                    <!-- select channel-->
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Select your channel</strong></label>
+                        <div>
+                            <div id="radio-buttons-container">
+                        <table id="select-channels-table" class="display" width="100%"></table>
+                    </div>
+                        </div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label"><strong>Privacy Status</strong></label>
                         <div>
                             <input type="checkbox" id="new-playlist-privacy-status" name="new-playlist-privacy-status">
                             <label for="new-playlist-privacy-status">Make Playlist Public</label>
                         </div>
+                       
                     </div>
                 </form>
             </div>
@@ -923,7 +938,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">YouTube Channel Selection</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-channels-selection-modal" hidden></button>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubeChannelSelectionModal()"></button>
             </div>
             <!-- Shown when channels are received -->
             <div id="received-channels">

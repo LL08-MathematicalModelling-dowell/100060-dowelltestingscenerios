@@ -68,6 +68,7 @@ let tablePlaylists = [];
 // channels global Variables
 let userChannelSelection = null;
 let tableChannels = [];
+let selectTableChannel = [];
 let defaultChannel = 'UX Live from uxlivinglab';
 let currentChannelTitle = defaultChannel;
 let showNotificationPermission = 'default';
@@ -79,11 +80,23 @@ let playlistTable = $('#playlist-table').DataTable({
     { title: 'Playlists Titles' },
   ],
 });
-// Initialize the playlist table
+// Initialize the channel table
 let ChannelsTable = $('#channels-table').DataTable({
   data: tableChannels,
   columns: [
     { title: 'Channels Titles' },
+  ],
+});
+
+
+// Ojophilip
+// Initialize the channel table
+let selectChannelsTable = $('#select-channels-table').DataTable({
+  data: selectTableChannel,
+  info: false,
+  paging: false,
+  columns: [
+    { title: '' },
   ],
 });
 
@@ -624,6 +637,7 @@ async function startRecording() {
 
 // Validates test details
 async function validateModal() {
+
   // Clear previous test data
   usernameValue = null;
   testNameValue = null;
@@ -666,7 +680,7 @@ async function validateModal() {
 
   // Check for space inside string
   if (/\s/.test(testNameValue)) {
-    testNameErrorMsg = "Please replace the space with an underscor for example hi_you";
+    testNameErrorMsg = "Please replace the space with an underscore for example hi_you";
     testNameIsValid = false;
   }
 
@@ -708,6 +722,9 @@ async function sendAvailableData(prevProgress) {
 
   // show stop button
   document.querySelector('.stop-btn').style.display = 'none';
+
+  // reset video title
+  document.querySelector(".video-title").innerHTML = ""
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
@@ -980,6 +997,9 @@ async function resetStateOnError() {
 
 // show stop button
   document.querySelector('.record-btn').style.display = 'block';
+
+// reset video title 
+  document.querySelector(".video-title").innerHTML = ""
 
 
   // Stop the webcam stream
@@ -2217,6 +2237,14 @@ async function insertVideoIntoPlaylist() {
   // show stop button
   document.querySelector('.record-btn').style.display = 'none';
 
+
+// ojohilip
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
+
+
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2416,10 +2444,14 @@ function confirmPlaylistSelection() {
     console.error("Error while showing confirm playlist selection modal: ", error)
   }
 }
-// close youtube list selection modal
-async function closeYoutubePlaylistSelectionModal(){
+// close channel list selection modal
+async function closeYoutubeChannelSelectionModal(){
   showTestDetailsModal()
   resetStateOnClosingPlaylistModal()
+}
+// close youtube list selection modal
+async function closeYoutubePlaylistSelectionModal(){
+  showSelectYoutubeChannelModal()
 }
 
 // reset state on closing youtube playlist modal
@@ -2536,10 +2568,21 @@ async function showCreatingNewPlaylistModal() {
   // Show modal
   const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
   creatingNewPlaylistModal.show();
+
+  // Ojophilip
+  fetchChannelsforPlaylistCreation();
 }
 
 // On press handler for the create playlist button
 async function handleCreatePlaylistRequest() {
+  // ojophilip
+  // currentRadioButtonID = null;
+  // let currentRadioButton = event.currentTarget;
+
+  // // console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
+  // currentRadioButtonID = currentRadioButton.id;
+  // currentChannelTitle = currentRadioButton.value;
+
   // disable button first
   const btnCreatePlaylist = document.getElementById("create-playlist")
   btnCreatePlaylist.disabled = true;
@@ -2557,6 +2600,13 @@ async function handleCreatePlaylistRequest() {
     docIsValid = false;
   }
 
+  // ojophilip
+  // Check for empty string
+  // if (currentChannelTitle === "") {
+  //   msg = "Please Select Your Channel";
+  //   docIsValid = false;
+  // }
+
   document.getElementById("new-playlist-title-error").innerHTML = msg;
 
   // Get playlist description
@@ -2569,6 +2619,7 @@ async function handleCreatePlaylistRequest() {
   } else {
     newPlaylistPrivacyStatus = "private"
   }
+  
 
   if (docIsValid) {
     // close create new playlist modal
@@ -3082,5 +3133,56 @@ async function fetchChannels() {
     receivedPlaylistsDiv.hidden = true;
     loadingPlaylistsDiv.hidden = true;
     failedToReceivePlaylistsDiv.hidden = false;
+  });
+}
+
+// Ojophilip
+// fetch youtube channel for playlist creation
+async function fetchChannelsforPlaylistCreation() {
+
+  let channels = {};
+
+  let fetchChannelsApiUrl = 'youtube/fetchchannels/api/';
+  // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+  let status = null
+  await fetch(fetchChannelsApiUrl, {
+    method: 'GET',
+  })
+    .then(response =>{
+      status = response.status;
+      return response.json()
+    }
+  )
+  .then((data) => {
+    // console.log('ssssssssssssssssss  ', status);
+    let channels_list = data.channels_list;
+    console.log(channels_list);
+    channels_list.map(obj =>{
+      channels[obj.channel_id] = obj.channel_title;
+      console.log('obj id ',obj.channel_id);
+    })
+    console.log('channels: ', channels)
+    if (status == 200) {
+      msg = "STATUS: Channels Received."
+      document.getElementById("app-status").innerHTML = msg;
+
+  
+      createchannelRadioButtons(channels);
+
+      // Refresh the channel selection table
+      $('#select-channels-table').DataTable().clear().rows.add(tableChannels).draw();
+      // console.log("tableChannels:  ", tableChannels);
+    }
+    else {
+      // Server error message
+      console.log("Server Error Message: ", json)
+      msg = "STATUS: Failed to Fetch channel."
+      document.getElementById("app-status").innerHTML = msg;
+    }    
+  })
+  .catch(error => {
+    // console.error(error)
+    msg = "STATUS: Failed to Fetch channel."
+    document.getElementById("app-status").innerHTML = msg;
   });
 }
