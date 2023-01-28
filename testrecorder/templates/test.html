@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <style>
+        body{
+            background-color: #F57F17;
+        }
+
+        .mt-100{
+
+            margin-top: 100px;
+
+        }
+
+        .modal {
+            background-image: linear-gradient(rgb(35, 79, 71) 0%, rgb(36, 121, 106) 100.2%)
+        }
+
+        .modal-title {
+            font-weight: 900;
+        }
+
+        .modal-content{
+             border-radius: 13px;
+        }
+
+        .modal-body {
+            color: #3b3b3b;
+        }
+
+        .img-thumbnail {
+            border-radius: 33px;
+            width: 61px;
+            height: 61px;
+        }
+
+        .fab:before {
+            position: relative;
+            top: 13px;
+        }
+
+        .smd {
+            width: 200px;
+            font-size: small;
+            text-align: center;
+        }
+
+        .modal-footer {
+            display: block;
+        }
+
+        .ur {
+            border: none;
+            background-color: #e6e2e2;
+            border-bottom-left-radius: 4px;
+            border-top-left-radius: 4px;
+        }
+
+        .cpy {
+            border: none;
+            background-color: #e6e2e2;
+            border-bottom-right-radius: 4px;
+            border-top-right-radius: 4px;
+            cursor: pointer;
+        }
+
+        button.focus,
+        button:focus {
+            outline: 0;
+            box-shadow: none !important;
+
+        }
+  
+        .ur.focus,
+        .ur:focus {
+            outline: 0;
+            box-shadow: none !important;
+        }
+
+        .message{
+                font-size: 11px;
+    color: #ee5535;
+        }
+    </style>
+    <script>
+        function myFunction() {
+            $(".message").text("link copied");
+        }
+    </script>
+</head>
+<body>
+    <div class='container d-flex justify-content-center mt-100'>
+        <button type="button" class="btn btn-primary mx-auto" data-toggle="modal" data-target="#exampleModal">
+            Share on social media
+        </button>
+    </div> 
+
+
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content col-12">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Share</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="icon-container1 d-flex">
+                            <div class="smd">
+                                <i class=" img-thumbnail fab fa-twitter fa-2x"
+                                    style="color:#4c6ef5;background-color: aliceblue"></i>
+                                <p>Twitter</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-facebook fa-2x"
+                                    style="color: #3b5998;background-color: #eceff5;"></i>
+                                <p>Facebook</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-reddit-alien fa-2x"
+                                    style="color: #FF5700;background-color: #fdd9ce;"></i>
+                                <p>Reddit</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-discord fa-2x "
+                                    style="color: #738ADB;background-color: #d8d8d8;"></i>
+                                <p>Discord</p>
+                            </div>
+                        </div>
+                        <div class="icon-container2 d-flex">
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-whatsapp fa-2x"
+                                    style="color:  #25D366;background-color: #cef5dc;"></i>
+                                <p>Whatsapp</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-facebook-messenger fa-2x"
+                                    style="color: #3b5998;background-color: #eceff5;"></i>
+                                <p>Messenger</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-telegram fa-2x"
+                                    style="color:  #4c6ef5;background-color: aliceblue"></i>
+                                <p>Telegram</p>
+                            </div>
+                            <div class="smd">
+                                <i class="img-thumbnail fab fa-weixin fa-2x"
+                                    style="color: #7bb32e;background-color: #daf1bc;"></i>
+                                <p>WeChat</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <label style="font-weight: 600">Page Link <span class="message"></span></label><br />
+                        <div class="row">
+                            <input class="col-10 ur" type="url" placeholder="https://www.arcardio.app/acodyseyy"
+                                id="myInput" aria-describedby="inputGroup-sizing-default" style="height: 40px;">
+                            <button class="cpy" onclick="myFunction()"><i class="far fa-clone"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="{% static '/js/test.js' %}"></script>
+
+
+        <button id="shareButton">Share</button>
+        <button id="copyButton">Copy</button>
+
+<script>
+    // Get the share and copy buttons
+    var shareButton = document.getElementById("shareButton");
+    var copyButton = document.getElementById("copyButton");
+    // Set the link you want to share or copy
+    var link = "https://www.example.com";
+    
+    // Share link when share button is clicked
+    shareButton.addEventListener("click", function() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Example',
+                url: link
+            })
+            .then(() => console.log('Link shared successfully.'))
+            .catch((error) => console.log('Error sharing link: ', error));
+        } else {
+            alert("Sorry, your browser does not support the Web Share API");
+        }
+    });
+    
+    // Copy link when copy button is clicked
+    copyButton.addEventListener("click", function() {
+        // Create a temporary input element to copy link
+        var tempInput = document.createElement("input");
+        tempInput.value = link;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+        alert("Link copied to clipboard");
+    });
+</script>
+
+</body>
+</html>
