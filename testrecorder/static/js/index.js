@@ -2663,7 +2663,7 @@ async function handleCreatePlaylistRequest() {
 
   // Validate new playlist title
   let docIsValid = true;
-  let newPlaylistTitle = document.getElementById("new-playlist-title").value;
+  let newPlaylistTitle = document.getElementById("playlist_title_modal").value;
   // Remove leading and trailling white space
   newPlaylistTitle = newPlaylistTitle.trim();
   let msg = "";
@@ -2681,13 +2681,13 @@ async function handleCreatePlaylistRequest() {
   //   docIsValid = false;
   // }
 
-  document.getElementById("new-playlist-title-error").innerHTML = msg;
+  document.getElementById("p_title-error").innerHTML = msg;
 
   // Get playlist description
-  let newPlaylistDescription = document.getElementById("new-playlist-description").value;
+  let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
 
   // Get playlist privacy status
-  let newPlaylistPrivacyStatus = document.getElementById("new-playlist-privacy-status").checked;
+  let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
   if (newPlaylistPrivacyStatus === true) {
     newPlaylistPrivacyStatus = "public"
   } else {
@@ -2704,7 +2704,8 @@ async function handleCreatePlaylistRequest() {
     showCreatingPlaylistModal(true);
 
     // Make request to create playlist
-    await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
+    // await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
+    await createNewPlaylist();
   }
 
   // Enable create playlist button
@@ -2714,16 +2715,23 @@ async function handleCreatePlaylistRequest() {
 
 
 // Makes api request to create playlist
-async function createNewPlaylist(title, description, privacyStatus) {
+async function createNewPlaylist() {
+// async function createNewPlaylist(title, description, privacyStatus) {
   let createPlaylistURL = '/youtube/createplaylist/api/';
   let responseStatus = null;
+  // const form = document.getElementById("create-playlist");
+  const channel = document.getElementById("playlist_channel_modal").value;
+  const description = document.getElementById("playlist_description_modal").value;
+  const title = document.getElementById("playlist_title_modal").value;
+  const privacy = document.getElementById("playlist_privacy_status_modal").value;
+  // const data = new FormData(form);
   await fetch(createPlaylistURL, {
     method: 'POST',
     body: JSON.stringify({
       new_playlist_title: title,
       new_playlist_description: description,
-      new_playlist_privacy: privacyStatus,
-      channel_title: currentChannelTitle
+      new_playlist_privacy: privacy,
+      channel_title: channel
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
@@ -2748,9 +2756,10 @@ async function createNewPlaylist(title, description, privacyStatus) {
         showPlaylistCreatedModal();
 
         // clear modal input fields
-        document.getElementById("new-playlist-title").value = "";
-        document.getElementById("new-playlist-description").value = "";
-        document.getElementById("new-playlist-privacy-status").checked = false;
+        document.getElementById("playlist_title_modal").value = "";
+        document.getElementById("playlist_description_modal").value = "";
+        document.getElementById("playlist_privacy_status_modal").value = "";
+        document.getElementById("playlist_channel_modal").value = "";
       } else if (responseStatus == 409) {
         // Server error message
         console.log("Server Error Message: ", json)
@@ -2943,7 +2952,8 @@ channel_id.addEventListener('keyup', () =>{
 let channel_title = document.querySelector('input[name=channel_title]');
 channel_title.addEventListener('keyup', () =>{
   document.getElementById('title-error').innerText = '';
-});
+  }
+);
 let channel_credential = document.querySelector('textarea[name=channel_credentials]');
 channel_credential.addEventListener('keyup', () =>{
   document.getElementById('credential-error').innerText = '';
@@ -3260,3 +3270,10 @@ async function fetchChannelsforPlaylistCreation() {
     document.getElementById("app-status").innerHTML = msg;
   });
 }
+
+// ============================Handle Create playlist====================================
+
+document.getElementById("create-playlist-btn").addEventListener("click", async function(event){
+  event.preventDefault();
+  handleCreatePlaylistRequest();
+})

@@ -10,7 +10,7 @@ from google.oauth2.credentials import Credentials
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from youtube.forms import AddChannelRecord
+from youtube.forms import AddChannelRecord, CreatePlaylist
 
 
 
@@ -46,7 +46,8 @@ class HomePageView(TemplateView):
         """Handles get requests to '/'"""
         # create he form object to render
         form = AddChannelRecord()
-        return render(request, self.template_name, {'form': form})
+        add_playlist = CreatePlaylist()
+        return render(request, self.template_name, {'form': form, 'add_playlist': add_playlist})
     
     def post(self, request, *args, **kwargs):
         """Handles POST requests to '/'"""

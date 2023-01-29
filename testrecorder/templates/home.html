@@ -12,6 +12,7 @@
 
 {% block body %}
 
+
 <!-- Main container -->
 <div class="contain">
 
@@ -778,43 +779,45 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Create New Playlist</h5>
+                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-new-playlist-details-modal"></button>
             </div>
             <div class="modal-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label required"><strong>Playlist Title</strong></label>
-                        <input type="text" class="form-control" id="new-playlist-title">
-                        <p style="color:red;" id="new-playlist-title-error"></p>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Playlist Description</strong></label>
-                        <textarea class="form-control" id="new-playlist-description"></textarea>
-                    </div>
-                    <!-- select channel-->
-                    <div class="mb-3">
-                        <label class="form-label required"><strong>Select your channel</strong></label>
-                        <div>
-                            <div id="radio-buttons-container">
-                        <table id="select-channels-table" class="display" width="100%"></table>
-                    </div>
+                <div class="modal-body">
+                    <form id="create-playlist">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Playlist Title</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_title-error"></p>
+                            {{ add_playlist.playlist_title }}
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label"><strong>Privacy Status</strong></label>
-                        <div>
-                            <input type="checkbox" id="new-playlist-privacy-status" name="new-playlist-privacy-status">
-                            <label for="new-playlist-privacy-status">Make Playlist Public</label>
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Select Channel</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_channel-error"></p>
+                            {{ add_playlist.channel }}
                         </div>
-                       
-                    </div>
-                </form>
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Description</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_description-error"></p>
+                            {{ add_playlist.playlist_description }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Privacy Status</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_privacy-error"></p>
+                            {{ add_playlist.privacy_status }}                       
+                        </div>
+                        
+                        <div class="modal-footer">
+                            <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit" value="Submit">
+                            <button type="submit" class="btn btn-success" id="create-playlist-btn" >Add</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>              
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" onClick="handleCreatePlaylistRequest()">Create</button>
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+            </div>
             </div>
         </div>
     </div>
@@ -1040,5 +1043,7 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
+</script>
 <script src="{% static '/js/index.js' %}"></script>
+
 {% endblock body %}

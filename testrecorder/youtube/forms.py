@@ -1,6 +1,7 @@
 import re
-from django import forms 
-from .models import ChannelsRecord
+from django import forms
+# from django_select2.forms import ModelSelect2Widget
+from .models import ChannelsRecord, PlaylistsRecord
 
 
 class AddChannelRecord(forms.ModelForm):
@@ -27,8 +28,8 @@ class AddChannelRecord(forms.ModelForm):
                     ]
                }
     """
-    channel_id = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_id_modal'}))
-    channel_title = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_title_modal'}))
+    channel_id = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_id_modal', 'placeholder': 'Enter Channel ID'}))
+    channel_title = forms.CharField(widget=forms.TextInput(attrs={'class':'form-control', 'id':'channel_title_modal', 'placeholder': 'Enter Channel Title'}))
     channel_credentials = forms.CharField(widget=forms.Textarea(attrs={'class':'form-control', 'id':'channel_credentials_modal', 'rows': '5'}))
 
     class Meta:
@@ -37,4 +38,48 @@ class AddChannelRecord(forms.ModelForm):
         """
         model = ChannelsRecord
         fields = ['channel_id', 'channel_title', 'channel_credentials']
+    
 
+class CreatePlaylist(forms.Form):
+    """
+    Form that Handles Playlist creation
+    args:
+        playlist_title(str): Playlist title
+        channel: A coresponding channel for the playlist. a dropdown for ha list all available channels
+        playlist_description: Description for he playlist
+        privacy_status: Two options, 'private/public'. sets the privacy status of the playlist
+    """
+    PRIVATE = 'private'
+    PUBLIC = 'Public'
+    PRIVACY_STATUS = [
+        (PRIVATE, 'private'),
+        (PUBLIC, 'public')
+    ]
+    
+    playlist_title = forms.CharField(widget=forms.TextInput(
+        attrs={'class':'form-control',
+               'id':'playlist_title_modal',
+               'placeholder': 'Enter Playlist Title'
+        }
+    ))
+    channel = forms.SearchableModelChoiceField(
+        queryset=ChannelsRecord.objects.all(),
+        widget=forms.Select(attrs={
+            'class': 'form-control select2 select2-hidden-accessible',
+            'id': 'playlist_channel_modal',
+            'style':'width: 100%;',
+            }),
+            to_field_name='channel_title',
+    )
+    playlist_description = forms.CharField(widget=forms.Textarea(
+        attrs={
+            'class':'form-control',
+            'id':'playlist_description_modal', 'rows': '5'}))
+    privacy_status = forms.ChoiceField(
+        choices=PRIVACY_STATUS, 
+        widget=forms.Select(attrs={
+            'class':'form-control',
+            'id':'playlist_privacy_status_modal',
+            'style':'width:100px;'
+        })
+    )
