@@ -84,7 +84,7 @@
                 </button>
                 <span class="tooltip-text">View Records</span>
             </div>-->
-            <div class="share-record-btn tooltip-container" style="display:non">
+            <div class="share-record-btn tooltip-container" >
                 <button id="share_records" onClick="shareLinkModal()">
                     <i class="fas fa-share-alt"></i>
                 </button>
@@ -788,12 +788,12 @@
                     <form id="create-playlist">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Playlist Title</strong></label>
+                            <label class="form-label plst required"><strong>Playlist title</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Select Channel</strong></label>
+                            <label class="form-label plst required"><strong>Select channel</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_channel-error"></p>
                             {{ add_playlist.channel }}
                         </div>
@@ -803,7 +803,7 @@
                             {{ add_playlist.playlist_description }}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Privacy Status</strong></label>
+                            <label class="form-label plst required"><strong>Select privacy status</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_privacy-error"></p>
                             {{ add_playlist.privacy_status }}                       
                         </div>
