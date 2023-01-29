@@ -2649,15 +2649,8 @@ async function showCreatingNewPlaylistModal() {
 
 // On press handler for the create playlist button
 async function handleCreatePlaylistRequest() {
-  // ojophilip
-  // currentRadioButtonID = null;
-  // let currentRadioButton = event.currentTarget;
 
-  // // console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
-  // currentRadioButtonID = currentRadioButton.id;
-  // currentChannelTitle = currentRadioButton.value;
-
-  // disable button first
+  // disable button first 
   const btnCreatePlaylist = document.getElementById("create-playlist")
   btnCreatePlaylist.disabled = true;
 
