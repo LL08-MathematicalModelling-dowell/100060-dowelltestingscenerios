@@ -74,7 +74,7 @@ class CreatePlaylist(forms.Form):
     playlist_description = forms.CharField(widget=forms.Textarea(
         attrs={
             'class':'form-control',
-            'id':'playlist_description_modal', 'rows': '5'}))
+            'id':'playlist_description_modal', 'rows': '3'}))
     privacy_status = forms.ChoiceField(
         choices=PRIVACY_STATUS, 
         widget=forms.Select(attrs={
