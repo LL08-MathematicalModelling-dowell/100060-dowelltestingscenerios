@@ -78,11 +78,17 @@
                 </button>
                 <span class="tooltip-text">Stop Recording</span>
             </div>
-            <div class="view-record-btn tooltip-container" style="display:none">
+            <!--<div class="view-record-btn tooltip-container" style="display:none">
                 <button id="view_records" onClick="goToPage(event)" disabled>
-                    <i class="fas fa-stop-circle"></i>
+                    <i class="fas fa-share-alt"></i>
                 </button>
                 <span class="tooltip-text">View Records</span>
+            </div>-->
+            <div class="share-record-btn tooltip-container" style="display:non">
+                <button id="share_records" onClick="shareLinkModal()">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <span class="tooltip-text">Share Video</span>
             </div>
             <div class="add-channel-btn tooltip-container">
                 <button id="view_records" onClick="showAddChannelModal()">
@@ -240,6 +246,27 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onClick="validateModal()">Submit</button>
                     <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share youtube link Modal -->
+    <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share Video on</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="close-share-link-modal"></button>
+                </div>
+                <div class="modal-body modal-link">
+                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook" onClick="shareToFacebook()"></i></a>
+                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin" onClick="shareToLinkedin()"></i></a>
+                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp" onClick="shareToWhatsapp()"></i></a>
+                    <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
         </div>

@@ -6,7 +6,7 @@ const screenCheckbox = document.getElementById('screen-recording')
 const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
-let btnViewRecords = document.getElementById('view_records');
+let btnShareRecords = document.getElementById('share_records');
 
 // App global variables
 let usernameValue = null;
@@ -99,6 +99,13 @@ let selectChannelsTable = $('#select-channels-table').DataTable({
     { title: '' },
   ],
 });
+
+// Enable share records button
+if (publicVideosCheckbox.checked) {
+  btnShareRecords.style.display = "block";
+} else {
+  btnShareRecords.style.display = "none";
+}
 
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
@@ -310,12 +317,12 @@ async function stopRecording() {
   // Enable start recording button
   document.getElementById("start").disabled = false;
 
-  // Enable view records button
-  if (publicVideosCheckbox.checked) {
-    btnViewRecords.disabled = false;
-  } else {
-    btnViewRecords.disabled = true;
-  }
+  // Enable share records button
+  // if (publicVideosCheckbox.checked) {
+  //   btnShareRecords.style.display = "block";
+  // } else {
+  //   btnShareRecords.style.display = "none";
+  // }
 
 
   // Show upload in progress modal
@@ -555,12 +562,12 @@ async function startRecording() {
       webcamRecorder.start(200);
       mergedStreamRecorder.start(200);*/
 
-      // Enable view records button
-      if (publicVideosCheckbox.checked) {
-        btnViewRecords.disabled = false;
-      } else {
-        btnViewRecords.disabled = true;
-      }
+      // Enable share records button
+      // if (publicVideosCheckbox.checked) {
+      //   btnShareRecords.style.display = "block";
+      // } else {
+      //   btnShareRecords.style.display = "none";
+      // }
 
       // Create websockets now
       createAllsockets();
@@ -587,12 +594,12 @@ async function startRecording() {
         streamMergedToYT = false;
         //webcamRecorder.start(200);
         streamWebcamToYT = true;
-        // Enable view records button
-        if (publicVideosCheckbox.checked) {
-          btnViewRecords.disabled = false;
-        } else {
-          btnViewRecords.disabled = true;
-        }
+        // Enable share records button
+        // if (publicVideosCheckbox.checked) {
+        //   btnShareRecords.style.display = "block";
+        // } else {
+        //   btnShareRecords.style.display = "none";
+        // }
 
         // Create websockets now
         createAllsockets();
@@ -616,12 +623,12 @@ async function startRecording() {
         streamScreenToYT = true;
         streamMergedToYT = false;
         //screenRecorder.start(200);
-        // Enable view records button
-        if (publicVideosCheckbox.checked) {
-          btnViewRecords.disabled = false;
-        } else {
-          btnViewRecords.disabled = true;
-        }
+        // Enable share records button
+        // if (publicVideosCheckbox.checked) {
+        //   btnShareRecords.style.display = "block";
+        // } else {
+        //   btnShareRecords.style.display = "none";
+        // }
 
         // Create websockets now
         createAllsockets();
@@ -716,7 +723,7 @@ async function validateModal() {
 async function sendAvailableData(prevProgress) {
 
 
-   // show stop button
+   // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
 
@@ -992,11 +999,9 @@ async function resetStateOnError() {
   stopVideoElemTracks(video);
 
 
-  // show stop button
+  // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
-// show stop button
-  document.querySelector('.record-btn').style.display = 'block';
 
 // reset video title 
   document.querySelector(".video-title").innerHTML = ""
@@ -1392,6 +1397,69 @@ async function goToPage(event) {
   window.open(youtubeLink, '_blank');
   return false;
 }
+// share youtube link
+async function shareToFacebook() {
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".facebook").href = `https://www.facebook.com/sharer/sharer.php?u=${youtubeLink}&t=${finalvideoTitle}`;
+}
+async function shareToTwitter() {
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".twitter").href = `https://twitter.com/share?text=${finalvideoTitle}&url=${youtubeLink}&hashtags=${finalvideoTitle}`;
+}
+async function shareToLinkedin() {
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  document.querySelector(".linkedin").href = `https://www.linkedin.com/sharing/share-offsite?url=${youtubeLink}`;
+}
+async function shareToEmail() {
+  //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".envelope").href = `mailto=?subject='Watch My Video'&amp;body=${finalvideoTitle}%20${youtubeLink}`;
+}
+async function shareToWhatsapp() {
+  //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".whatsapp").href = `https://api.whatsapp.com/send?text=${finalvideoTitle}%20${youtubeLink}`;
+}
+async function copyLink() {
+  let youtubeLink = "https://youtu.be/" + newBroadcastID;
+
+  // Create a temporary input element to copy link
+  var tempInput = document.createElement("input");
+  tempInput.value = youtubeLink;
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  document.execCommand("copy");
+  document.body.removeChild(tempInput);
+  alert("Link copied to clipboard");
+}
+
+
+async function shareLinkModal() {
+
+  // close modal if open
+  const btnCloseTestDetailsModal = document.getElementById('close-share-link-modal');
+  btnCloseTestDetailsModal.click();
+
+
+  // Show modal
+  const testDetailsModal = new bootstrap.Modal(document.getElementById('share-link-modal'));
+  testDetailsModal.show();
+}
+
 
 // Shows upload failed modal
 async function showErrorModal() {
@@ -2237,6 +2305,12 @@ async function insertVideoIntoPlaylist() {
   // show stop button
   document.querySelector('.record-btn').style.display = 'none';
 
+  // Enable share records button
+  if (publicVideosCheckbox.checked) {
+    btnShareRecords.style.display = "block";
+  } else {
+    btnShareRecords.style.display = "none";
+  }
 
 // ojohilip
   // Get name of the youtube video
@@ -2470,7 +2544,7 @@ async function resetStateOnClosingPlaylistModal() {
 
 
 
-// show stop button
+// show record button
   document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
