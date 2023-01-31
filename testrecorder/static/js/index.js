@@ -2253,27 +2253,8 @@ async function fetchPlaylists(Channel_title) {
 }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
-
-  // show stop button
-  document.querySelector('.stop-btn').style.display = 'block';
-
-
-  // show stop button
-  document.querySelector('.record-btn').style.display = 'none';
-
-  // Enable share records button
-  if (publicVideosCheckbox.checked) {
-    btnShareRecords.style.display = "block";
-  } else {
-    btnShareRecords.style.display = "none";
-  }
-
-  // Get name of the youtube video
-  let videoTitle = document.getElementById("test-name").value;
-  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
-  document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
-
-
+  // display some buttons and remove some
+  displayUtilities()
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2393,6 +2374,7 @@ async function playlistSelected() {
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
+
   // Check if we need to add audio stream
   let recordAudio = audioCheckbox.checked;
   if (recordAudio == true) {
@@ -2403,6 +2385,8 @@ function sendRTMPURL() {
     appWebsocket.send(newRtmpUrl)
     console.log("Sent RTMP URL: ", newRtmpUrl)
   }
+  // display some buttons and remove some
+  displayUtilities()
 }
 
 // Shows youtube playlist insert video error modal
@@ -3166,3 +3150,29 @@ document.getElementById("create-playlist-btn").addEventListener("click", async f
   event.preventDefault();
   handleCreatePlaylistRequest();
 })
+
+    // display some buttons and remove some
+function displayUtilities(){
+    // show stop button
+  document.querySelector('.stop-btn').style.display = 'block';
+
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'none';
+  // disable playlist button
+  document.querySelector('#create-playlist').disabled = true;
+  // disable channel button
+  document.querySelector('#view_records').disabled = true;
+
+  // Enable share records button
+  if (publicVideosCheckbox.checked) {
+    btnShareRecords.style.display = "block";
+  } else {
+    btnShareRecords.style.display = "none";
+  }
+
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
+}
