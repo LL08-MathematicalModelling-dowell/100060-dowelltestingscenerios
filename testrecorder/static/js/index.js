@@ -6,7 +6,8 @@ const screenCheckbox = document.getElementById('screen-recording')
 const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
-let btnShareRecords = document.getElementById('share_records');
+
+let btnShareRecords = document.querySelector('.share-record-btn');
 
 // App global variables
 let usernameValue = null;
@@ -68,7 +69,6 @@ let tablePlaylists = [];
 // channels global Variables
 let userChannelSelection = null;
 let tableChannels = [];
-let selectTableChannel = [];
 let defaultChannel = 'UX Live from uxlivinglab';
 let currentChannelTitle = defaultChannel;
 let showNotificationPermission = 'default';
@@ -88,24 +88,6 @@ let ChannelsTable = $('#channels-table').DataTable({
   ],
 });
 
-
-// Ojophilip
-// Initialize the channel table
-let selectChannelsTable = $('#select-channels-table').DataTable({
-  data: selectTableChannel,
-  info: false,
-  paging: false,
-  columns: [
-    { title: '' },
-  ],
-});
-
-// Enable share records button
-if (publicVideosCheckbox.checked) {
-  btnShareRecords.style.display = "block";
-} else {
-  btnShareRecords.style.display = "none";
-}
 
 // Show selenium IDE installation modal, if not disabled
 let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
@@ -316,13 +298,6 @@ async function stopRecording() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-
-  // Enable share records button
-  // if (publicVideosCheckbox.checked) {
-  //   btnShareRecords.style.display = "block";
-  // } else {
-  //   btnShareRecords.style.display = "none";
-  // }
 
 
   // Show upload in progress modal
@@ -562,13 +537,6 @@ async function startRecording() {
       webcamRecorder.start(200);
       mergedStreamRecorder.start(200);*/
 
-      // Enable share records button
-      // if (publicVideosCheckbox.checked) {
-      //   btnShareRecords.style.display = "block";
-      // } else {
-      //   btnShareRecords.style.display = "none";
-      // }
-
       // Create websockets now
       createAllsockets();
 
@@ -594,12 +562,6 @@ async function startRecording() {
         streamMergedToYT = false;
         //webcamRecorder.start(200);
         streamWebcamToYT = true;
-        // Enable share records button
-        // if (publicVideosCheckbox.checked) {
-        //   btnShareRecords.style.display = "block";
-        // } else {
-        //   btnShareRecords.style.display = "none";
-        // }
 
         // Create websockets now
         createAllsockets();
@@ -623,12 +585,6 @@ async function startRecording() {
         streamScreenToYT = true;
         streamMergedToYT = false;
         //screenRecorder.start(200);
-        // Enable share records button
-        // if (publicVideosCheckbox.checked) {
-        //   btnShareRecords.style.display = "block";
-        // } else {
-        //   btnShareRecords.style.display = "none";
-        // }
 
         // Create websockets now
         createAllsockets();
@@ -2297,28 +2253,8 @@ async function fetchPlaylists(Channel_title) {
 }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
-
-  // show stop button
-  document.querySelector('.stop-btn').style.display = 'block';
-
-
-  // show stop button
-  document.querySelector('.record-btn').style.display = 'none';
-
-  // Enable share records button
-  if (publicVideosCheckbox.checked) {
-    btnShareRecords.style.display = "block";
-  } else {
-    btnShareRecords.style.display = "none";
-  }
-
-// ojohilip
-  // Get name of the youtube video
-  let videoTitle = document.getElementById("test-name").value;
-  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
-  document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
-
-
+  // display some buttons and remove some
+  displayUtilities()
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2438,6 +2374,7 @@ async function playlistSelected() {
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
+
   // Check if we need to add audio stream
   let recordAudio = audioCheckbox.checked;
   if (recordAudio == true) {
@@ -2448,6 +2385,8 @@ function sendRTMPURL() {
     appWebsocket.send(newRtmpUrl)
     console.log("Sent RTMP URL: ", newRtmpUrl)
   }
+  // display some buttons and remove some
+  displayUtilities()
 }
 
 // Shows youtube playlist insert video error modal
@@ -2643,8 +2582,6 @@ async function showCreatingNewPlaylistModal() {
   const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
   creatingNewPlaylistModal.show();
 
-  // Ojophilip
-  fetchChannelsforPlaylistCreation();
 }
 
 // On press handler for the create playlist button
@@ -2667,12 +2604,6 @@ async function handleCreatePlaylistRequest() {
     docIsValid = false;
   }
 
-  // ojophilip
-  // Check for empty string
-  // if (currentChannelTitle === "") {
-  //   msg = "Please Select Your Channel";
-  //   docIsValid = false;
-  // }
 
   document.getElementById("p_title-error").innerHTML = msg;
 
@@ -3213,60 +3144,35 @@ async function fetchChannels() {
   });
 }
 
-// Ojophilip
-// fetch youtube channel for playlist creation
-async function fetchChannelsforPlaylistCreation() {
-
-  let channels = {};
-
-  let fetchChannelsApiUrl = 'youtube/fetchchannels/api/';
-  // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-  let status = null
-  await fetch(fetchChannelsApiUrl, {
-    method: 'GET',
-  })
-    .then(response =>{
-      status = response.status;
-      return response.json()
-    }
-  )
-  .then((data) => {
-    // console.log('ssssssssssssssssss  ', status);
-    let channels_list = data.channels_list;
-    console.log(channels_list);
-    channels_list.map(obj =>{
-      channels[obj.channel_id] = obj.channel_title;
-      console.log('obj id ',obj.channel_id);
-    })
-    console.log('channels: ', channels)
-    if (status == 200) {
-      msg = "STATUS: Channels Received."
-      document.getElementById("app-status").innerHTML = msg;
-
-  
-      createchannelRadioButtons(channels);
-
-      // Refresh the channel selection table
-      $('#select-channels-table').DataTable().clear().rows.add(tableChannels).draw();
-      // console.log("tableChannels:  ", tableChannels);
-    }
-    else {
-      // Server error message
-      console.log("Server Error Message: ", json)
-      msg = "STATUS: Failed to Fetch channel."
-      document.getElementById("app-status").innerHTML = msg;
-    }    
-  })
-  .catch(error => {
-    // console.error(error)
-    msg = "STATUS: Failed to Fetch channel."
-    document.getElementById("app-status").innerHTML = msg;
-  });
-}
-
 // ============================Handle Create playlist====================================
 
 document.getElementById("create-playlist-btn").addEventListener("click", async function(event){
   event.preventDefault();
   handleCreatePlaylistRequest();
 })
+
+    // display some buttons and remove some
+function displayUtilities(){
+    // show stop button
+  document.querySelector('.stop-btn').style.display = 'block';
+
+
+  // show stop button
+  document.querySelector('.record-btn').style.display = 'none';
+  // disable playlist button
+  document.querySelector('#create-playlist').disabled = true;
+  // disable channel button
+  document.querySelector('#view_records').disabled = true;
+
+  // Enable share records button
+  if (publicVideosCheckbox.checked) {
+    btnShareRecords.style.display = "block";
+  } else {
+    btnShareRecords.style.display = "none";
+  }
+
+  // Get name of the youtube video
+  let videoTitle = document.getElementById("test-name").value;
+  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
+}
