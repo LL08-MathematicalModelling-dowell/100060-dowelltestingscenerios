@@ -81,5 +81,6 @@ class CreatePlaylist(forms.Form):
             'class':'form-control',
             'id':'playlist_privacy_status_modal',
             'style':'width:100px;'
-        })
+        }),
+        initial=PUBLIC,
     )
