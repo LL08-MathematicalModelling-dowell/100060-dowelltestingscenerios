@@ -1,1 +1,12 @@
-client_secret.json
+testrecorder/.idea/
+testrecorder/media/
+testrecorder/temp/
+testrecorder/db.sqlite3
+__pycache__/
+*.pyc
+testrecorder/file_app/credentials.json
+testrecorder/youtube/client_secret.json
+testrecorder/youtube/credentials.json
+testrecorder/youtube/credentials-old.json
+testrecorder/.env
+env
