@@ -62,7 +62,7 @@ class CreatePlaylist(forms.Form):
                'placeholder': 'Enter Playlist Title'
         }
     ))
-    channel = forms.SearchableModelChoiceField(
+    channel = forms.ModelChoiceField(
         queryset=ChannelsRecord.objects.all(),
         widget=forms.Select(attrs={
             'class': 'form-control select2 select2-hidden-accessible',
