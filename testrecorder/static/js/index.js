@@ -8,7 +8,7 @@ const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
 let btnShareRecords = document.querySelector('.share-record-btn');
-
+let channelSelect = document.getElementById("selectChannel");
 // App global variables
 let usernameValue = null;
 let testNameValue = null;
@@ -70,8 +70,11 @@ let tablePlaylists = [];
 let userChannelSelection = null;
 let tableChannels = [];
 let defaultChannel = 'UX Live from uxlivinglab';
-let currentChannelTitle = defaultChannel;
+// let currentChannelTitle = defaultChannel;
+let currentChannelTitle = null;
 let showNotificationPermission = 'default';
+
+
 
 // Initialize the playlist table
 let playlistTable = $('#playlist-table').DataTable({
@@ -601,11 +604,31 @@ async function startRecording() {
 // Validates test details
 async function validateModal() {
 
+  // Get permission to show notifications in system tray
+  showNotificationPermission = await Notification.requestPermission();
+  console.log("showNotificationPermission: ", showNotificationPermission);
+
   // Clear previous test data
+  currentChannelTitle = null;
   usernameValue = null;
   testNameValue = null;
   testDescriptionValue = null;
   testRecordingData = null;
+
+  // validate channel name
+  let currentChannelTitleIsValid = true
+  currentChannelTitle = document.getElementById("selectChannel").value;
+  // Remove leading and trailling white space
+  currentChannelTitle = currentChannelTitle.trim();
+  let channelTitleErrorMsg = "";
+
+  console.log("currentChannelTitle:", currentChannelTitle);
+
+  if (currentChannelTitle === "") {
+    channelTitleErrorMsg = "Please select on channel";
+    currentChannelTitleIsValid = false;
+  }
+  document.getElementById("channelname-error").innerHTML = channelTitleErrorMsg;
 
   // Validate username
   let docIsValid = true;
@@ -613,6 +636,7 @@ async function validateModal() {
   // Remove leading and trailling white space
   usernameValue = usernameValue.trim();
   let msg = "";
+
 
   // Check for empty string
   if (usernameValue === "") {
@@ -650,12 +674,12 @@ async function validateModal() {
   document.getElementById("test-name-error").innerHTML = testNameErrorMsg;
 
   // Get test description
-  testDescriptionValue = document.getElementById("test-description").value;
+  // testDescriptionValue = document.getElementById("test-description").value;
 
   // All test details are available now
-  if ((docIsValid == true) && (testNameIsValid == true)) {
+  if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true)) {
     // Click on close modal button
-    document.getElementById("close-test-details-modal").click();
+    // document.getElementById("close-test-details-modal").click();
 
     // Disable start recording button
     document.getElementById("start").disabled = true;
@@ -1243,6 +1267,8 @@ async function createBroadcast() {
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
+  // broadcast_data.channel_title = channel_title;
+  console.log("Broadcast title:", currentChannelTitle);
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   //headers: {"Content-type":"application/json;charset=UTF-8"}
@@ -1285,7 +1311,8 @@ async function createBroadcast() {
 
   if (broadcastCreated == true) {
     // Request user to select a Channel
-    showSelectYoutubeChannelModal();
+    // showSelectYoutubeChannelModal();
+    showSelectYoutubePlaylistModal();
   }
 }
 
@@ -2074,9 +2101,9 @@ async function showSelectYoutubePlaylistModal(channel_title=null) {
   // hide the creating broadcast modal
   showCreatingBroadcastModal(false);
 
-  // close modal if open
-  const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
-  btnCloseChannelSelectionModal.click();
+  // close modal if open/////// deprecated
+  // const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
+  // btnCloseChannelSelectionModal.click();
 
   // Show loading playlists message
   const receivedPlaylistsDiv = document.getElementById('received-playlists');
@@ -2096,12 +2123,13 @@ async function showSelectYoutubePlaylistModal(channel_title=null) {
 
   // Make attempt to fetch playlist
   currentRadioButtonID = null;
-  if (!channel_title){
-    fetchPlaylists(defaultChannel)
-  }
-  else{
-    fetchPlaylists(channel_title);
-  }
+  // if (!channel_title){
+  //   fetchPlaylists(defaultChannel)
+  // }
+  // else{
+  //   fetchPlaylists(channel_title);
+  // }
+  fetchPlaylists();
 }
 
 // creates a list of radio buttons
@@ -2158,7 +2186,7 @@ function getSelectedRadioButton(event) {
 }
 
 // fetches the playlists
-async function fetchPlaylists(Channel_title) {
+async function fetchPlaylists() {
   // Show loading playlists message
   const receivedPlaylistsDiv = document.getElementById('received-playlists');
   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
@@ -2168,8 +2196,8 @@ async function fetchPlaylists(Channel_title) {
   failedToReceivePlaylistsDiv.hidden = true;
 
   let broadcast_data = new Object();
-  // broadcast_data.channel_title = currentChannelTitle;
-  broadcast_data.channel_title = Channel_title;
+  broadcast_data.channel_title = currentChannelTitle;
+  // broadcast_data.channel_title = Channel_title;
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
@@ -2253,8 +2281,6 @@ async function fetchPlaylists(Channel_title) {
 }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
-  // display some buttons and remove some
-  displayUtilities()
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2305,6 +2331,8 @@ async function insertVideoIntoPlaylist() {
       // Show error modal
       playlistInsertVideoErrorModal();
     });
+  // display some buttons and remove some
+  displayUtilities()
 }
 
 // Inserts a video into the current day's youtube playlist
@@ -2457,14 +2485,16 @@ function confirmPlaylistSelection() {
     console.error("Error while showing confirm playlist selection modal: ", error)
   }
 }
-// close channel list selection modal
-async function closeYoutubeChannelSelectionModal(){
-  showTestDetailsModal()
-  resetStateOnClosingPlaylistModal()
-}
+/* deprecated */
+// close channel list selection modal 
+// async function closeYoutubeChannelSelectionModal(){
+//   showTestDetailsModal()
+//   resetStateOnClosingPlaylistModal()
+// }
 // close youtube list selection modal
 async function closeYoutubePlaylistSelectionModal(){
-  showSelectYoutubeChannelModal()
+  // showSelectYoutubeChannelModal()
+  resetStateOnClosingPlaylistModal()
 }
 
 // reset state on closing youtube playlist modal
@@ -2780,21 +2810,23 @@ async function showPlaylistAlreadyExistsModal() {
   playlistAlreadyExistsModal.show();
 }
 
+/***************** deprecated ************************/
+/***************** deprecated ************************/
 // Shows the test details modal
-async function showTestDetailsModal() {
+// async function showTestDetailsModal() {
 
-  // close modal if open
-  const btnCloseTestDetailsModal = document.getElementById('close-test-details-modal');
-  btnCloseTestDetailsModal.click();
+//   // close modal if open
+//   const btnCloseTestDetailsModal = document.getElementById('close-test-details-modal');
+//   btnCloseTestDetailsModal.click();
 
-  // Get permission to show notifications in system tray
-  showNotificationPermission = await Notification.requestPermission();
-  console.log("showNotificationPermission: ", showNotificationPermission);
+//   // Get permission to show notifications in system tray
+//   showNotificationPermission = await Notification.requestPermission();
+//   console.log("showNotificationPermission: ", showNotificationPermission);
 
-  // Show modal
-  const testDetailsModal = new bootstrap.Modal(document.getElementById('test-details-modal'));
-  testDetailsModal.show();
-}
+//   // Show modal
+//   const testDetailsModal = new bootstrap.Modal(document.getElementById('test-details-modal'));
+//   testDetailsModal.show();
+// }
 
 // show network error system tray notification
 async function showNetworkErrorSystemTrayNotification() {
@@ -2953,32 +2985,32 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
 
 // ======================================= Selecting a channel ===============================================
 
-// Proceeds after channel is selected
-async function channelSelected() {
-  // Don't proceed if user has not selected a playlist
-  if (currentRadioButtonID == null) {
-    alert("Please select a channel!")
-  } else {
-    // Hide modal
-    const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
-    btnCloseChannelSelectionModal.click();
+// Proceeds after channel is selected////deprecated
+// async function channelSelected() {
+//   // Don't proceed if user has not selected a playlist
+//   if (currentRadioButtonID == null) {
+//     alert("Please select a channel!")
+//   } else {
+//     // Hide modal
+//     const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
+//     btnCloseChannelSelectionModal.click();
   
-    confirmChannelSelection();
-  }
-}
+//     confirmChannelSelection();
+//   }
+// }
 
-// confirm playlist selection
-async function confirmChannelSelection() {
-  try {
-    // close playlist selection modal
-    const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
-    btnClosePlaylistSelectionModal.click();
-    // Begins loading of playlists of the seleted channel
-    showSelectYoutubePlaylistModal(currentChannelTitle);
-  } catch (error) {
-    console.error("Error while showing confirm channel selection modal: ", error.message)
-  }
-}
+// confirm playlist selection////// deprecated
+// async function confirmChannelSelection() {
+//   try {
+//     // close playlist selection modal
+//     const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
+//     btnClosePlaylistSelectionModal.click();
+//     // Begins loading of playlists of the seleted channel
+//     showSelectYoutubePlaylistModal(currentChannelTitle);
+//   } catch (error) {
+//     console.error("Error while showing confirm channel selection modal: ", error.message)
+//   }
+// }
 
 // creates a list of CHANNEL radio buttons
 async function createchannelRadioButtons(id_title_dict) {
@@ -3032,117 +3064,118 @@ async function getSelectedChannelRadioButton(event) {
   // console.log("userChanelSelection: ", currentChannelTitle); 
 }
 
+/********************************** Deprecate ***************************/
 // Show modal window for user o select a channel
-async function showSelectYoutubeChannelModal() {
-  tableChannels = [];
-  // hide the creating broadcast modal
-  showCreatingBroadcastModal(false);
+// async function showSelectYoutubeChannelModal() {
+//   tableChannels = [];
+//   // hide the creating broadcast modal
+//   showCreatingBroadcastModal(false);
 
-  // Show loading playlists message
-  const receivedPlaylistsDiv = document.getElementById('received-channels');
-  const loadingPlaylistsDiv = document.getElementById('loading-channels');
-  const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-  receivedPlaylistsDiv.hidden = true;
-  loadingPlaylistsDiv.hidden = false;
-  failedToReceivePlaylistsDiv.hidden = true;
+//   // Show loading playlists message
+//   const receivedPlaylistsDiv = document.getElementById('received-channels');
+//   const loadingPlaylistsDiv = document.getElementById('loading-channels');
+//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
+//   receivedPlaylistsDiv.hidden = true;
+//   loadingPlaylistsDiv.hidden = false;
+//   failedToReceivePlaylistsDiv.hidden = true;
 
-  // close modal if open
-  const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
-  btnClosePlaylistSelectionModal.click();
+//   // close modal if open
+//   const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
+//   btnClosePlaylistSelectionModal.click();
 
-  // Show modal
-  const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('channels-selection-modal'));
-  playlistSelectionlModal.show();
+//   // Show modal
+//   const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('channels-selection-modal'));
+//   playlistSelectionlModal.show();
 
-  // Make attempt to fetch playlist
-  currentRadioButtonID = null;
-  // fetching the channels
-  fetchChannels();
-}
+//   // Make attempt to fetch playlist
+//   currentRadioButtonID = null;
+//   // fetching the channels
+//   fetchChannels();
+// }
 
-// fetches the channels
-async function fetchChannels() {
-  // Show loading playlists message
-  const receivedChannelDiv = document.getElementById('received-channels');
-  const loadingChannelDiv = document.getElementById('loading-channels');
-  const failedToRetrieveChannelDiv = document.getElementById('failed-to-receive-channels');
-  receivedChannelDiv.hidden = true;
-  loadingChannelDiv.hidden = false;
-  failedToRetrieveChannelDiv.hidden = true;
+// fetches the channels//// deprecated
+// async function fetchChannels() {
+//   // Show loading playlists message
+//   const receivedChannelDiv = document.getElementById('received-channels');
+//   const loadingChannelDiv = document.getElementById('loading-channels');
+//   const failedToRetrieveChannelDiv = document.getElementById('failed-to-receive-channels');
+//   receivedChannelDiv.hidden = true;
+//   loadingChannelDiv.hidden = false;
+//   failedToRetrieveChannelDiv.hidden = true;
 
-  let channels = {};
+//   let channels = {};
 
-  let fetchChannelsApiUrl = 'youtube/fetchchannels/api/';
-  // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-  let status = null
-  await fetch(fetchChannelsApiUrl, {
-    method: 'GET',
-  })
-    .then(response =>{
-      status = response.status;
-      return response.json()
-    }
-  )
-  .then((data) => {
-    // console.log('ssssssssssssssssss  ', status);
-    let channels_list = data.channels_list;
-    console.log(channels_list);
-    channels_list.map(obj =>{
-      channels[obj.channel_id] = obj.channel_title;
-      console.log('obj id ',obj.channel_id);
-    })
-    console.log('channels: ', channels)
-    if (status == 200) {
-      msg = "STATUS: Channels Received."
-      document.getElementById("app-status").innerHTML = msg;
+//   let fetchChannelsApiUrl = 'youtube/fetchchannels/api/';
+//   // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+//   let status = null
+//   await fetch(fetchChannelsApiUrl, {
+//     method: 'GET',
+//   })
+//     .then(response =>{
+//       status = response.status;
+//       return response.json()
+//     }
+//   )
+//   .then((data) => {
+//     // console.log('ssssssssssssssssss  ', status);
+//     let channels_list = data.channels_list;
+//     console.log(channels_list);
+//     channels_list.map(obj =>{
+//       channels[obj.channel_id] = obj.channel_title;
+//       console.log('obj id ',obj.channel_id);
+//     })
+//     console.log('channels: ', channels)
+//     if (status == 200) {
+//       msg = "STATUS: Channels Received."
+//       document.getElementById("app-status").innerHTML = msg;
 
-      // Use data to display radio buttons
-      // console.log("Received channels Information: ", data)
+//       // Use data to display radio buttons
+//       // console.log("Received channels Information: ", data)
 
-      // Create Radio butttions for reieved/fetched channels
-      createchannelRadioButtons(channels);
+//       // Create Radio butttions for reieved/fetched channels
+//       createchannelRadioButtons(channels);
 
-      // show the radio buttons
-      const receivedChannelsDiv = document.getElementById('received-channels');
-      const loadingChannelsDiv = document.getElementById('loading-channels');
-      const failedToReceiveChannelsDiv = document.getElementById('failed-to-receive-channels');
-      receivedChannelsDiv.hidden = false;
-      loadingChannelsDiv.hidden = true;
-      failedToReceiveChannelsDiv.hidden = true;
+//       // show the radio buttons
+//       const receivedChannelsDiv = document.getElementById('received-channels');
+//       const loadingChannelsDiv = document.getElementById('loading-channels');
+//       const failedToReceiveChannelsDiv = document.getElementById('failed-to-receive-channels');
+//       receivedChannelsDiv.hidden = false;
+//       loadingChannelsDiv.hidden = true;
+//       failedToReceiveChannelsDiv.hidden = true;
 
-      // Refresh the channel selection table
-      $('#channels-table').DataTable().clear().rows.add(tableChannels).draw();
-      // console.log("tableChannels:  ", tableChannels);
-    }
-    else {
-      // Server error message
-      console.log("Server Error Message: ", json)
-      msg = "STATUS: Failed to Fetch Playlists."
-      document.getElementById("app-status").innerHTML = msg;
+//       // Refresh the channel selection table
+//       $('#channels-table').DataTable().clear().rows.add(tableChannels).draw();
+//       // console.log("tableChannels:  ", tableChannels);
+//     }
+//     else {
+//       // Server error message
+//       console.log("Server Error Message: ", json)
+//       msg = "STATUS: Failed to Fetch Playlists."
+//       document.getElementById("app-status").innerHTML = msg;
 
-      // Show loading channels failed message
-      const receivedPlaylistsDiv = document.getElementById('received-channels');
-      const loadingPlaylistsDiv = document.getElementById('loading-channels');
-      const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-      receivedPlaylistsDiv.hidden = true;
-      loadingPlaylistsDiv.hidden = true;
-      failedToReceivePlaylistsDiv.hidden = false;
-    }    
-  })
-  .catch(error => {
-    // console.error(error)
-    msg = "STATUS: Failed to Fetch Playlists."
-    document.getElementById("app-status").innerHTML = msg;
+//       // Show loading channels failed message
+//       const receivedPlaylistsDiv = document.getElementById('received-channels');
+//       const loadingPlaylistsDiv = document.getElementById('loading-channels');
+//       const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
+//       receivedPlaylistsDiv.hidden = true;
+//       loadingPlaylistsDiv.hidden = true;
+//       failedToReceivePlaylistsDiv.hidden = false;
+//     }    
+//   })
+//   .catch(error => {
+//     // console.error(error)
+//     msg = "STATUS: Failed to Fetch Playlists."
+//     document.getElementById("app-status").innerHTML = msg;
 
-    //  Show loading channels failed message
-    const receivedPlaylistsDiv = document.getElementById('received-channels');
-    const loadingPlaylistsDiv = document.getElementById('loading-channels');
-    const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-    receivedPlaylistsDiv.hidden = true;
-    loadingPlaylistsDiv.hidden = true;
-    failedToReceivePlaylistsDiv.hidden = false;
-  });
-}
+//     //  Show loading channels failed message
+//     const receivedPlaylistsDiv = document.getElementById('received-channels');
+//     const loadingPlaylistsDiv = document.getElementById('loading-channels');
+//     const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
+//     receivedPlaylistsDiv.hidden = true;
+//     loadingPlaylistsDiv.hidden = true;
+//     failedToReceivePlaylistsDiv.hidden = false;
+//   });
+// }
 
 // ============================Handle Create playlist====================================
 
@@ -3164,6 +3197,10 @@ function displayUtilities(){
   // disable channel button
   document.querySelector('#view_records').disabled = true;
 
+  // clear navbar forms
+  document.getElementById("selectChannel").value = "";
+  document.getElementById("username").value = "";
+  document.getElementById("test-name").value = "";
   // Enable share records button
   if (publicVideosCheckbox.checked) {
     btnShareRecords.style.display = "block";
@@ -3172,7 +3209,99 @@ function displayUtilities(){
   }
 
   // Get name of the youtube video
-  let videoTitle = document.getElementById("test-name").value;
-  let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+  let finalvideoTitle = testNameValue.replace(/_/ig, " ");
   document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
 }
+
+/* fetch channels for navbar */
+async function fectchChannelForNav() {
+  let channelsApiUrl = 'youtube/fetchchannels/api/';
+
+  let status = null
+  await fetch(channelsApiUrl, {
+    method: 'GET',
+  })
+  .then(response=>{
+    status = response.status;
+    return response.json();
+  })
+  .then((data)=>{
+    let channel_list = data.channels_list;
+    // console.log(channel_list);
+    // let channelSelect = document.getElementById("selectChannel");
+    channel_list.map((obj)=>{
+      let opt = document.createElement("option");
+      let channel_id = obj.channel_id;
+      console.log(channel_id);
+      let channel_title = obj.channel_title;
+      console.log(channel_title);
+      // opt.value = channel_id;
+      opt.value = channel_title;
+      opt.innerHTML = channel_title;
+      channelSelect.append(opt);
+      console.log(opt);
+    })
+  })
+}
+fectchChannelForNav()
+
+
+
+
+// async function fetchPlaylistsOnChangeChannel(Channel_title){
+//   let broadcast_data = new Object();
+//   broadcast_data.channel_title = Channel_title;
+//   json_broadcast_data = JSON.stringify(broadcast_data);
+//   console.log(broadcast_data);
+//   let csrftoken = await getCookie('csrftoken');
+//   const myHeaders = new Headers();
+//   myHeaders.append('Accept', 'application/json');
+//   myHeaders.append('Content-type', 'application/json');
+//   myHeaders.append('X-CSRFToken', csrftoken);
+
+//   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
+//   let responseStatus = null;
+//   await fetch(fetchPlaylistsApiUrl, {
+//     method: 'POST',
+//     body: json_broadcast_data,
+//     headers: myHeaders
+//   })
+//     .then(response => {
+//       console.log(response)
+//       responseStatus = response.status;
+//       console.log("Fetch playlists Response Status", responseStatus);
+//       // Return json data
+//       return response.json();
+//     })
+//     .then(json =>{
+//       if (responseStatus == 200){
+//         userPlaylists = json.id_title_dict;
+//         // console.log(userPlaylists);
+//         let playlistSelect = document.querySelector(".selectPlaylist");
+//         for (const key in userPlaylists){
+//           let opt = document.createElement("option")
+//           opt.id = key
+//           opt.value = userPlaylists[key];
+//           opt.innerHTML = userPlaylists[key];
+//           console.log(opt);
+//           playlistSelect.append(opt);
+//         }
+//       }
+//     })
+// }
+
+// get selected channel name
+function getSelectedChannelName(selectoption){
+    let channelName = selectoption.value;
+    console.log(channelName);
+    // fetchPlaylistsOnChangeChannel(channelName)
+  }
+
+
+// // get the name of the playlist
+// function getSelectedPlaylistName(selectoption) {
+//   let Playlistname = selectoption.value;
+//   let PlaylistId = selectoption.id;
+//   console.log(Playlistname);
+//   console.log(PlaylistId);
+// }
