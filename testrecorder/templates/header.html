@@ -65,6 +65,12 @@
         <!-- Story Name -->
       </div> {% endcomment %}
       <!-- end lower nav -->
+      {% load socialaccount %}
+      {% if user.is_authenticated %}
+        Welcome, {{ user.username }} !
+      {% else %}
+        <a href="{% provider_login_url 'google' %}?next=/">Login with Google</a> 
+      {% endif %}
     </nav>
   </header>
   <!-- header -->

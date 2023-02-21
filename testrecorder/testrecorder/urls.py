@@ -24,6 +24,7 @@ urlpatterns = [
     path('file/', include('file_app.urls')),
     path('websocket/', include('app_websocket.urls')),
     path('youtube/', include('youtube.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:

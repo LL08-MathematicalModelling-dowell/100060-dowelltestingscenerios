@@ -2878,31 +2878,31 @@ channel_title.addEventListener('keyup', () =>{
   document.getElementById('title-error').innerText = '';
   }
 );
-let channel_credential = document.querySelector('textarea[name=channel_credentials]');
-channel_credential.addEventListener('keyup', () =>{
-  document.getElementById('credential-error').innerText = '';
-});
+// let channel_credential = document.querySelector('textarea[name=channel_credentials]');
+// channel_credential.addEventListener('keyup', () =>{
+//   document.getElementById('credential-error').innerText = '';
+// });
 // Checks if a string is JSON serializable
-const isJSON = (str) => {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
-}
+// const isJSON = (str) => {
+//   try {
+//     JSON.parse(str);
+//   } catch (e) {
+//     return false;
+//   }
+//   return true;
+// }
 document.getElementById("add-channel-btn").addEventListener("click", async function(event){
   event.preventDefault();
   
   const idMsg = 'Invalid channel ID format'
   const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
-  const credentialMsg = 'Invalid credential format';
+  // const credentialMsg = 'Invalid credential format';
   let channelId = document.getElementById("channel_id_modal").value;
   let channelTitle = document.getElementById("channel_title_modal").value;
-  let channelCredentials = document.getElementById("channel_credentials_modal").value;
+  // let channelCredentials = document.getElementById("channel_credentials_modal").value;
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
-  const credentialError = document.getElementById('credential-error');  
+  // const credentialError = document.getElementById('credential-error');  
   let valid_input = true; 
 
   if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) { 
@@ -2913,10 +2913,10 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
       titleError.innerText = titleMsg;
       valid_input = false;
   } 
-  if (!isJSON(channelCredentials)) { 
-      credentialError.innerText = credentialMsg;
-      valid_input = false;
-  } 
+  // if (!isJSON(channelCredentials)) { 
+  //     credentialError.innerText = credentialMsg;
+  //     valid_input = false;
+  // } 
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);

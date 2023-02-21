@@ -1,4 +1,6 @@
+import os
 import json
+from dotenv import load_dotenv
 from django.views.generic import TemplateView
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -13,6 +15,7 @@ from rest_framework import status
 from youtube.forms import AddChannelRecord, CreatePlaylist
 
 
+load_dotenv()
 
 
 def validate_youtube_channel(channel_credentials,channel_id):
@@ -56,7 +59,8 @@ class HomePageView(TemplateView):
         form = AddChannelRecord(data=data)
         if form.is_valid():
             # extract channel_credenials from data object 
-            credentials = json.loads(dict(data)['channel_credentials'][0])
+            # credentials = json.loads(dict(data)['channel_credentials'][0])
+            credentials = json.loads(os.environ.get('DOWELL_GOOGLE_CREDENDEIAL'))
             # extract channel_id from data object
             channel_id = data['channel_id']
             if validate_youtube_channel(credentials, channel_id):

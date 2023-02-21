@@ -52,3 +52,16 @@ class PlaylistsRecord(models.Model):
 
     class Meta:
         db_table = 'playlists_records'
+
+
+from django.contrib.auth.models import User
+
+class YouTubeUser(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    youtube_user_id = models.CharField(max_length=255)
+    youtube_user_name = models.CharField(max_length=255)
+    access_token = models.CharField(max_length=255)
+    refresh_token = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.youtube_user_name
