@@ -3052,6 +3052,8 @@ async function getSelectedChannelRadioButton(event) {
   // console.log("userChanelSelection: ", currentChannelTitle); 
 }
 
+
+// plan to remove
 // Show modal window for user o select a channel
 // async function showSelectYoutubeChannelModal() {
 //   tableChannels = [];
