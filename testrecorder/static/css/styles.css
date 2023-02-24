@@ -109,6 +109,7 @@ img {
 #app-status{
   color: var(--white-clr);
 }
+
 .story-name input,
 .lower-nav select{
   background: var(--light-primary_clr);
@@ -331,9 +332,10 @@ img {
 
 /* status */
 .status-bar{
-  background: var(--dark-clr);
+  background: var(--primary_clr);
   color: var(--white-clr);
   padding: 0.3rem 2rem;
+  text-align: center;
 }
 /* lower-footer */
 

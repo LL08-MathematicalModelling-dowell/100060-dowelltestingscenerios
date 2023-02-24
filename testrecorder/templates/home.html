@@ -11,15 +11,42 @@
 
 
 {% block body %}
-
+<!-- lower nav -->
+    <div class="lower-nav">
+        <!-- single select -->
+        <div class="">
+            <!--<select name="channel" id="selectChannel" onChange="getSelectedChannelName(this)">
+                <option value="">Select Channel</option>
+              </select>-->
+            <select name="channel" id="selectChannel">
+                <option value="">Select Channel</option>
+              </select>
+            <div style="color:red;" id="channelname-error"></div>
+        </div>
+        <!-- end single select -->
+        <!-- single select -->
+          <!--<select name="playlist" class="selectPlaylist" onChange="getSelectedPlaylistName(this)">
+            <option value="">Select Playlist</option>
+          </select>-->
+        <!-- end single select -->
+        <!-- Story Name -->
+        <div class="story-name">
+          <input type="text" name="" id="test-name" placeholder="Video Title">
+          <div style="color:red;" id="test-name-error"></div>
+        </div> 
+        <!-- Story Name -->
+        <!-- user Name -->
+        <div class="story-name">
+          <input type="text" name="" id="username" placeholder="User">
+          <div style="color:red;" id="username-error"></div>
+        </div> 
+        <!-- user Name -->
+      </div>
+      <!-- end lower nav -->
 
 <!-- Main container -->
 <div class="contain">
 
-    <!-- status in lower nav -->
-<div class="lower-nav">
-    <div id="app-status">STATUS: Waiting to Record.</div>
-</div>
 <main class="main-contents">
     <!--display video title-->
     <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
@@ -67,7 +94,7 @@
 
             </div>
             <div class="record-btn tooltip-container">
-                <button id="start" onClick="showTestDetailsModal()">
+                <button id="start" onClick="validateModal()">
                     <i class="fas fa-record-vinyl"></i>
                 </button>
                 <span class="tooltip-text">Start Recording</span>
@@ -94,157 +121,14 @@
         </div>
     </main>
 
-    <!-- Settings and controls -->
-    {% comment %} <div class="row my-custom-row justify-content-center mt-3" style="--bs-bg-opacity: .5;">
-
-        <!-- Settings -->
-        <div class="col-sm-4">
-            <div class="col-sm-6">
-                <div style="--bs-bg-opacity: .5;" class="white-text">
-                    <h6>Settings</h6>
-                    <div>
-                        <input type="checkbox" id="webcam-recording" name="webcam">
-                        <label for="webcam">Webcam Recording</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" id="screen-recording" name="screen" checked>
-                        <label for="screen">Screen Recording</label>
-                    </div>
-
-                    <div>
-                        <input type="checkbox" id="audio-settings" name="audio" checked>
-                        <label for="keys">Audio</label>
-                    </div>
-
-                    <!-- <div>
-                        <input type="checkbox" id="key-logging" name="keys">
-                        <label for="keys">Key Logging</label>
-                    </div> -->
-
-                    <div>
-                        <input type="checkbox" id="public-videos" name="public">
-                        <label for="public">Make Stream Public</label>
-                    </div>
-
-                    <!-- <div>
-                        <input type="checkbox" id="clickupTaskNotesCheckbox" name="gettaskid"
-                            onchange="handleTaskIdCheckbox(event)">
-                        <label for="gettaskid">Clickup Task Notes</label>
-                    </div> -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="col-sm-8">
-            <div class="row">
-                <div class="row ">
-                    <div class="col-sm-12 ">
-                        <div class="row">
-                            <div class="col-sm-4 mt-3">
-                                <!--<button type="button" class="btn btn-danger btn-sm w-100" id="start"
-                                    data-bs-toggle="modal" data-bs-target="#test-details-modal">Start
-                                    Recording</button> -->
-
-                                <button type="button" class="btn btn-danger btn-sm w-100" id="start"
-                                    onClick="showTestDetailsModal()">Start Recording
-                                </button>
-                            </div>
-
-                            <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-success btn-sm w-100" id="stop"
-                                    onClick="showGetTaskIdFromUserModal()">Save/Stop
-                                    Recording</button>
-                            </div>
-
-                            <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-info btn-sm w-100" id="view_records"
-                                    onclick="goToPage(event)" disabled>
-                                    View YouTube Recording
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <!--<div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-secondary btn-sm w-100" id="pause"
-                                    onClick="showSelectYoutubePlaylistModal()">Tests Button</button>
-                            </div>-->
-                            <!-- <<div class="col-sm-4 mt-3">
-                                <form action="{% url 'view_records' %}" method="POST" target="_blank">
-                                    {% csrf_token %}
-                                    <input id="webcam_link" name="webcam_link" value="" type="hidden">
-                                    <input id="screen_link" name="screen_link" value="" type="hidden">
-                                    <input id="merged_link" name="merged_link" value="" type="hidden">
-                                    <input id="beanote_file_link" name="beanote_file_link" value="" type="hidden">
-                                    <input id="key_log_file_link" name="key_log_file_link" value="" type="hidden">
-                                    <button type="submit" class="btn btn-dark btn-sm w-100" id="view_vps_files">View VPS
-                                        Files</button> 
-                                </form> 
-                            </div> -->
-
-                            <!-- <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-secondary btn-sm w-100" id="btnUserSettings"
-                                    data-bs-toggle="modal" data-bs-target="#user-settings-modal">
-                                    User Settings
-                                </button>
-                            </div> -->
-
-                            <div class="col-sm-4 mt-3">
-                                <button type="button" class="btn btn-primary btn-sm w-100" id="create-playlist"
-                                    onClick="showCreatingNewPlaylistModal()">Create Playlist</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> {% endcomment %}
 
     <!-- Status bar -->
-    {% comment %} <div class="row border bg-light mt-3">
-        <!--<div class="col-sm-6" id="app-status">Status:</div>
-            <div class="col-sm-6">Time:</div>-->
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
-        <div class="col-sm-12" id="app-status">STATUS: Waiting to Record.</div>
-    </div> {% endcomment %}
-
-    <!-- Test Details Modal -->
-    <div class="modal" id="test-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Test Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        id="close-test-details-modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label required">User</label>
-                            <input type="text" class="form-control" id="username">
-                            <p style="color:red;" id="username-error"></p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">Test Name</label>
-                            <input type="email" class="form-control" id="test-name">
-                            <p style="color:red;" id="test-name-error"></p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">Test Description</label>
-                            <textarea class="form-control" id="test-description"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="validateModal()">Submit</button>
-                    <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Test Details Modal Deleted -->
+    
     <!-- Share youtube link Modal -->
     <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -700,7 +584,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Retry</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubeChannelModal();"
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="closeYoutubePlaylistSelectionModal();"
                         id="cancel-playlists-fetching">
                         Back
                     </button>
@@ -955,76 +839,8 @@
 </div>
 <!-- ====================================================================== -->
 <!-- Select Channel Modal -->
-<!-- YouTube channels Selection Modal -->
-<div class="modal" id="channels-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">YouTube Channel Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-channels-selection-modal" hidden></button>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubeChannelSelectionModal()"></button>
-            </div>
-            <!-- Shown when channels are received -->
-            <div id="received-channels">
-                <div class="modal-body">
-                    <p>
-                        <strong>Please select a Channel</strong>
-                    </p>
-                    <div id="radio-buttons-container" class="form-check overflow-auto">
-                        <table id="channels-table" class="display" width="100%"></table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal();"
-                        id="cancel-channels-selection">
-                        Use Default Channel
-                    </button>
-                    <button type="button" class="btn btn-success" onClick="channelSelected()">Okay</button>
-                </div>
-            </div>
-            <!-- Shown initially when getting the playlists -->
-            <div id="loading-channels">
-                <div class="modal-body">
-                    <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
-                        <i class="bi-x"></i>Loading channels...
-                    </p>
-                </div>
-            </div>
-            <!-- Shown when failure to receive channels occurs -->
-            <div id="failed-to-receive-channels">
-                <div class="modal-body">
-                    <p style="font-size: 1rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>Failed to get channels!
-                    </p>
-                    <ol>
-                        <li>
-                            <p>
-                                Make sure channel exists.
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                Click on the retry button to try fetching the channels again.
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                Click on the Use Default Channel button to proceed without selecting a channel.
-                            </p>
-                        </li>
-                    </ol>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="fetchChannels()">Retry</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubeChannelModal();"
-                        id="cancel-channels-fetching">
-                        Use Default Channel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- YouTube channels Selection Modal  -->
+<!-- deleted deleted -->
 
 
 
@@ -1037,7 +853,6 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-</script>
 <script src="{% static '/js/index.js' %}"></script>
 
 {% endblock body %}
