@@ -43,7 +43,6 @@
         <!-- user Name -->
       </div>
       <!-- end lower nav -->
-
 <!-- Main container -->
 <div class="contain">
 
@@ -97,6 +96,9 @@
                 <button id="start" onClick="validateModal()">
                     <i class="fas fa-record-vinyl"></i>
                 </button>
+                <!--<button id="start" onClick="showTestDetailsModal()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>-->
                 <span class="tooltip-text">Start Recording</span>
             </div>
             <div class="stop-btn tooltip-container" style="display:none">
@@ -120,7 +122,6 @@
         </div>
         </div>
     </main>
-
 
     <!-- Status bar -->
 <div class="status-bar">
@@ -546,7 +547,6 @@
                         Use Default Playlist
                     </button>
                     <button type="button" class="btn btn-success" onClick="playlistSelected()">Okay</button>
-                    <!--<button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Refresh List</button>-->
 
                 </div>
             </div>
@@ -567,7 +567,7 @@
                     <ol>
                         <li>
                             <p>
-                                Make sure the chanel is valid.
+                                Make sure the channel is valid.
                             </p>
                         </li>
                         <li>
@@ -588,6 +588,10 @@
                         id="cancel-playlists-fetching">
                         Back
                     </button>
+                    <!--<button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubeChannelModal();"
+                        id="cancel-playlists-fetching">
+                        Back
+                    </button>-->
                 </div>
             </div>
         </div>

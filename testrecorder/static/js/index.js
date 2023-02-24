@@ -73,6 +73,8 @@ let defaultChannel = 'UX Live from uxlivinglab';
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
+
+
 // Initialize the playlist table
 let playlistTable = $('#playlist-table').DataTable({
   data: tablePlaylists,
@@ -633,6 +635,7 @@ async function validateModal() {
   // Remove leading and trailling white space
   usernameValue = usernameValue.trim();
   let msg = "";
+
 
   // Check for empty string
   if (usernameValue === "") {
@@ -1263,6 +1266,8 @@ async function createBroadcast() {
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
+  // broadcast_data.channel_title = channel_title;
+  console.log("Broadcast title:", currentChannelTitle);
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   //headers: {"Content-type":"application/json;charset=UTF-8"}
@@ -2116,12 +2121,13 @@ async function showSelectYoutubePlaylistModal(channel_title=null) {
 
   // Make attempt to fetch playlist
   currentRadioButtonID = null;
-  if (!channel_title){
-    fetchPlaylists(defaultChannel)
-  }
-  else{
-    fetchPlaylists(channel_title);
-  }
+  // if (!channel_title){
+  //   fetchPlaylists(defaultChannel)
+  // }
+  // else{
+  //   fetchPlaylists(channel_title);
+  // }
+  fetchPlaylists();
 }
 
 // creates a list of radio buttons
@@ -2178,7 +2184,7 @@ function getSelectedRadioButton(event) {
 }
 
 // fetches the playlists
-async function fetchPlaylists(Channel_title) {
+async function fetchPlaylists() {
   // Show loading playlists message
   const receivedPlaylistsDiv = document.getElementById('received-playlists');
   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
@@ -2188,8 +2194,8 @@ async function fetchPlaylists(Channel_title) {
   failedToReceivePlaylistsDiv.hidden = true;
 
   let broadcast_data = new Object();
-  // broadcast_data.channel_title = currentChannelTitle;
-  broadcast_data.channel_title = Channel_title;
+  broadcast_data.channel_title = currentChannelTitle;
+  // broadcast_data.channel_title = Channel_title;
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
@@ -2273,8 +2279,6 @@ async function fetchPlaylists(Channel_title) {
 }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
-  // display some buttons and remove some
-  displayUtilities()
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
@@ -2325,6 +2329,8 @@ async function insertVideoIntoPlaylist() {
       // Show error modal
       playlistInsertVideoErrorModal();
     });
+  // display some buttons and remove some
+  displayUtilities()
 }
 
 // Inserts a video into the current day's youtube playlist
@@ -2800,6 +2806,8 @@ async function showPlaylistAlreadyExistsModal() {
   playlistAlreadyExistsModal.show();
 }
 
+/***************** deprecated ************************/
+/***************** deprecated ************************/
 // Shows the test details modal
 // async function showTestDetailsModal() {
 

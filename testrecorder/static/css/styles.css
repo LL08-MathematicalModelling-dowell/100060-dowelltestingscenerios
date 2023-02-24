@@ -105,6 +105,7 @@ img {
   padding: 1rem 0;
   display: flex;
   justify-content: space-around;
+  align-items: center;
 }
 #app-status{
   color: var(--white-clr);
@@ -384,7 +385,11 @@ img {
   font-size: 1.1rem;
 }
 }
-
+.status-container{
+  background: var(--primary_clr);
+  text-align: center;
+  padding: 0.5rem;
+}
 
 /* active utility */
 .active {
