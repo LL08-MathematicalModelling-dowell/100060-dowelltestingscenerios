@@ -11,8 +11,7 @@
 
 
 {% block body %}
-
-    <!-- lower nav -->
+<!-- lower nav -->
     <div class="lower-nav">
         <!-- single select -->
         <div class="">
@@ -123,47 +122,14 @@
         </div>
         </div>
     </main>
-    <!-- status in lower nav -->
-    <div class="status-container">
-        <div id="app-status">STATUS: Waiting to Record.</div>
-    </div>
 
+    <!-- Status bar -->
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
-    <!-- Test Details Modal -->
-    <!--<div class="modal" id="test-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Test Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        id="close-test-details-modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label required">User</label>
-                            <input type="text" class="form-control" id="username">
-                            <p style="color:red;" id="username-error"></p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">Test Name</label>
-                            <input type="email" class="form-control" id="test-name">
-                            <p style="color:red;" id="test-name-error"></p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label required">Test Description</label>
-                            <textarea class="form-control" id="test-description"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="validateModal()">Submit</button>
-                    <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>-->
-
+    <!-- Test Details Modal Deleted -->
+    
     <!-- Share youtube link Modal -->
     <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -618,7 +584,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" onClick="fetchPlaylists()">Retry</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="closeYoutubePlaylistSelectionModal();"
                         id="cancel-playlists-fetching">
                         Back
                     </button>
@@ -877,76 +843,8 @@
 </div>
 <!-- ====================================================================== -->
 <!-- Select Channel Modal -->
-<!-- YouTube channels Selection Modal -->
-{% comment %} <div class="modal" id="channels-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">YouTube Channel Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-channels-selection-modal" hidden></button>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubeChannelSelectionModal()"></button>
-            </div>
-            <!-- Shown when channels are received -->
-            <div id="received-channels">
-                <div class="modal-body">
-                    <p>
-                        <strong>Please select a Channel</strong>
-                    </p>
-                    <div id="radio-buttons-container" class="form-check overflow-auto">
-                        <table id="channels-table" class="display" width="100%"></table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubePlaylistModal();"
-                        id="cancel-channels-selection">
-                        Use Default Channel
-                    </button>
-                    <button type="button" class="btn btn-success" onClick="channelSelected()">Okay</button>
-                </div>
-            </div>
-            <!-- Shown initially when getting the playlists -->
-            <div id="loading-channels">
-                <div class="modal-body">
-                    <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
-                        <i class="bi-x"></i>Loading channels...
-                    </p>
-                </div>
-            </div>
-            <!-- Shown when failure to receive channels occurs -->
-            <div id="failed-to-receive-channels">
-                <div class="modal-body">
-                    <p style="font-size: 1rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>Failed to get channels!
-                    </p>
-                    <ol>
-                        <li>
-                            <p>
-                                Make sure channel exists.
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                Click on the retry button to try fetching the channels again.
-                            </p>
-                        </li>
-                        <li>
-                            <p>
-                                Click on the Use Default Channel button to proceed without selecting a channel.
-                            </p>
-                        </li>
-                    </ol>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="fetchChannels()">Retry</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubeChannelModal();"
-                        id="cancel-channels-fetching">
-                        Use Default Channel
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> {% endcomment %}
+<!-- YouTube channels Selection Modal  -->
+<!-- deleted deleted -->
 
 
 
@@ -959,7 +857,6 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-</script>
 <script src="{% static '/js/index.js' %}"></script>
 
 {% endblock body %}
