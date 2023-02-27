@@ -27,7 +27,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['100034.pythonanywhere.com']
+# ALLOWED_HOSTS = ['100034.pythonanywhere.com']
 ALLOWED_HOSTS = ['*']
 
 # Allow cors
@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'voc_stories_websocket',
 
-   
+
     'django.contrib.sites',
 
     'allauth',
@@ -98,6 +98,12 @@ SOCIALACCOUNT_PROVIDERS = {
         'SCOPE': [
             'profile',
             'email',
+            "https://www.googleapis.com/auth/youtube.force-ssl",
+            "openid",
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/youtube.force-ssl",
+            "https://www.googleapis.com/auth/userinfo.email",
+            "https://www.googleapis.com/auth/youtube.readonly"
         ],
         'AUTH_PARAMS': {
             'access_type': 'offline',
@@ -119,23 +125,23 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': os.getenv("DATABASE_NAME"),
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': os.getenv("DATABASE_HOST")
-        }  
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': os.getenv("DATABASE_NAME"),
+#         'ENFORCE_SCHEMA': False,
+#         'CLIENT': {
+#             'host': os.getenv("DATABASE_HOST")
+#         }
+#     }
+# }
 
 
 # Password validation
@@ -180,15 +186,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # default static files settings for PythonAnywhere.
 # see https://help.pythonanywhere.com/pages/DjangoStaticFiles for more info
-#MEDIA_ROOT = '/home/100034/testrecorder/media'
-#MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/home/100034/testrecorder/media'
+# MEDIA_URL = '/media/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-#STATIC_ROOT = '/home/100034/testrecorder/static'
-#STATIC_URL = '/static/'
-#STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# STATIC_ROOT = '/home/100034/testrecorder/static'
+# STATIC_URL = '/static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 STATICFILES_DIRS = [
-   os.path.join(BASE_DIR, 'static/')
+    os.path.join(BASE_DIR, 'static/')
 ]
 STATIC_URL = '/static/'
 
