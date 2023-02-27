@@ -70,7 +70,6 @@ let tablePlaylists = [];
 let userChannelSelection = null;
 let tableChannels = [];
 let defaultChannel = 'UX Live from uxlivinglab';
-// let currentChannelTitle = defaultChannel;
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
@@ -84,12 +83,12 @@ let playlistTable = $('#playlist-table').DataTable({
   ],
 });
 // Initialize the channel table
-let ChannelsTable = $('#channels-table').DataTable({
-  data: tableChannels,
-  columns: [
-    { title: 'Channels Titles' },
-  ],
-});
+// let ChannelsTable = $('#channels-table').DataTable({
+//   data: tableChannels,
+//   columns: [
+//     { title: 'Channels Titles' },
+//   ],
+// });
 
 
 // Show selenium IDE installation modal, if not disabled
@@ -1311,7 +1310,6 @@ async function createBroadcast() {
 
   if (broadcastCreated == true) {
     // Request user to select a Channel
-    // showSelectYoutubeChannelModal();
     showSelectYoutubePlaylistModal();
   }
 }
@@ -2101,7 +2099,7 @@ async function showSelectYoutubePlaylistModal(channel_title=null) {
   // hide the creating broadcast modal
   showCreatingBroadcastModal(false);
 
-  // close modal if open/////// deprecated
+  // close modal if open
   // const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
   // btnCloseChannelSelectionModal.click();
 
@@ -2485,15 +2483,13 @@ function confirmPlaylistSelection() {
     console.error("Error while showing confirm playlist selection modal: ", error)
   }
 }
-/* deprecated */
-// close channel list selection modal 
+// close channel list selection modal
 // async function closeYoutubeChannelSelectionModal(){
 //   showTestDetailsModal()
 //   resetStateOnClosingPlaylistModal()
 // }
 // close youtube list selection modal
 async function closeYoutubePlaylistSelectionModal(){
-  // showSelectYoutubeChannelModal()
   resetStateOnClosingPlaylistModal()
 }
 
@@ -2985,7 +2981,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
 
 // ======================================= Selecting a channel ===============================================
 
-// Proceeds after channel is selected////deprecated
+// Proceeds after channel is selected
 // async function channelSelected() {
 //   // Don't proceed if user has not selected a playlist
 //   if (currentRadioButtonID == null) {
@@ -2999,7 +2995,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
 //   }
 // }
 
-// confirm playlist selection////// deprecated
+// confirm playlist selection
 // async function confirmChannelSelection() {
 //   try {
 //     // close playlist selection modal
@@ -3064,7 +3060,8 @@ async function getSelectedChannelRadioButton(event) {
   // console.log("userChanelSelection: ", currentChannelTitle); 
 }
 
-/********************************** Deprecate ***************************/
+
+// plan to remove
 // Show modal window for user o select a channel
 // async function showSelectYoutubeChannelModal() {
 //   tableChannels = [];
@@ -3093,7 +3090,7 @@ async function getSelectedChannelRadioButton(event) {
 //   fetchChannels();
 // }
 
-// fetches the channels//// deprecated
+// // fetches the channels
 // async function fetchChannels() {
 //   // Show loading playlists message
 //   const receivedChannelDiv = document.getElementById('received-channels');
@@ -3221,87 +3218,26 @@ async function fectchChannelForNav() {
   await fetch(channelsApiUrl, {
     method: 'GET',
   })
-  .then(response=>{
-    status = response.status;
-    return response.json();
-  })
-  .then((data)=>{
-    let channel_list = data.channels_list;
-    // console.log(channel_list);
-    // let channelSelect = document.getElementById("selectChannel");
-    channel_list.map((obj)=>{
-      let opt = document.createElement("option");
-      let channel_id = obj.channel_id;
-      console.log(channel_id);
-      let channel_title = obj.channel_title;
-      console.log(channel_title);
-      // opt.value = channel_id;
-      opt.value = channel_title;
-      opt.innerHTML = channel_title;
-      channelSelect.append(opt);
-      console.log(opt);
+    .then(response => {
+      status = response.status;
+      return response.json();
     })
-  })
+    .then((data) => {
+      let channel_list = data.channels_list;
+      // console.log(channel_list);
+      // let channelSelect = document.getElementById("selectChannel");
+      channel_list.map((obj) => {
+        let opt = document.createElement("option");
+        let channel_id = obj.channel_id;
+        console.log(channel_id);
+        let channel_title = obj.channel_title;
+        console.log(channel_title);
+        // opt.value = channel_id;
+        opt.value = channel_title;
+        opt.innerHTML = channel_title;
+        channelSelect.append(opt);
+        console.log(opt);
+      })
+    })
 }
 fectchChannelForNav()
-
-
-
-
-// async function fetchPlaylistsOnChangeChannel(Channel_title){
-//   let broadcast_data = new Object();
-//   broadcast_data.channel_title = Channel_title;
-//   json_broadcast_data = JSON.stringify(broadcast_data);
-//   console.log(broadcast_data);
-//   let csrftoken = await getCookie('csrftoken');
-//   const myHeaders = new Headers();
-//   myHeaders.append('Accept', 'application/json');
-//   myHeaders.append('Content-type', 'application/json');
-//   myHeaders.append('X-CSRFToken', csrftoken);
-
-//   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-//   let responseStatus = null;
-//   await fetch(fetchPlaylistsApiUrl, {
-//     method: 'POST',
-//     body: json_broadcast_data,
-//     headers: myHeaders
-//   })
-//     .then(response => {
-//       console.log(response)
-//       responseStatus = response.status;
-//       console.log("Fetch playlists Response Status", responseStatus);
-//       // Return json data
-//       return response.json();
-//     })
-//     .then(json =>{
-//       if (responseStatus == 200){
-//         userPlaylists = json.id_title_dict;
-//         // console.log(userPlaylists);
-//         let playlistSelect = document.querySelector(".selectPlaylist");
-//         for (const key in userPlaylists){
-//           let opt = document.createElement("option")
-//           opt.id = key
-//           opt.value = userPlaylists[key];
-//           opt.innerHTML = userPlaylists[key];
-//           console.log(opt);
-//           playlistSelect.append(opt);
-//         }
-//       }
-//     })
-// }
-
-// get selected channel name
-function getSelectedChannelName(selectoption){
-    let channelName = selectoption.value;
-    console.log(channelName);
-    // fetchPlaylistsOnChangeChannel(channelName)
-  }
-
-
-// // get the name of the playlist
-// function getSelectedPlaylistName(selectoption) {
-//   let Playlistname = selectoption.value;
-//   let PlaylistId = selectoption.id;
-//   console.log(Playlistname);
-//   console.log(PlaylistId);
-// }
