@@ -142,7 +142,7 @@ async function captureScreen(mediaConstraints = {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
-  audio: true
+  //audio: true
 }) {
 
   try {
