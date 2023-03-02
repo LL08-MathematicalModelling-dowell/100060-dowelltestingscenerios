@@ -1,7 +1,11 @@
 # youtube/urls.py
 from django.urls import path
-from .views import index, test_api_request, create_broadcast, authorize, oauth2callback, revoke, clear_credentials, CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2,FetchChannels
-from .google_authen import *
+from .views import (logout_view, index,test_api_request, create_broadcast,
+                    authorize, oauth2callback, revoke, clear_credentials, 
+                    CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, 
+                    FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2,FetchChannels
+)
+from .views_w import UserChannels
 
 urlpatterns = [
     path('', index, name='index'),
@@ -22,11 +26,8 @@ urlpatterns = [
     path('createplaylist/api/', CreatePlaylistView.as_view(), name='create-playlist'),
     path('fetchplaylists/api/v2', FetchPlaylistsViewV2.as_view(), name='fetch-playlists-v2'),
     path('fetchchannels/api/', FetchChannels.as_view(), name='fetch-channels'),
-     # URL pattern for the view that redirects the user to Google's authentication page
-    path('auth/google/', youtube_auth, name='google_authenticate'),
-
-    # URL pattern for the view that exchanges the authorization code for an access token and refresh token
-    path('auth/google/callback/', youtube_callback, name='youtube_callback'),
-    path('clear_session', clear_session, name='clear_session')
+    # URL pattern tha logs a user out
+    path('logout/', logout_view, name='logout'),
+    path('channels/', UserChannels.as_view(), name='user_channel'),
 
 ]

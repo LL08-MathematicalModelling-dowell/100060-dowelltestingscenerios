@@ -1,18 +1,15 @@
 # youtube/views.py
 from django.http import HttpResponse
-
 # -*- coding: utf-8 -*-
-
 import os
+import json
+import pymongo
 import requests
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
-from datetime import date
-from datetime import time
-from datetime import datetime, timezone
+from datetime import datetime
 from datetime import timedelta
-import json
 from django.shortcuts import redirect
 from django.conf import settings
 from rest_framework.reverse import reverse
@@ -20,9 +17,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
-import pymongo
 from youtube.models import ChannelsRecord
-
+from django.contrib.auth import logout
 
 # When running locally, disable OAuthlib's HTTPs verification.
 # ACTION ITEM for developers:
@@ -38,8 +34,13 @@ CLIENT_SECRETS_FILE = settings.BASE_DIR+'/youtube/client_secret.json'
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
-SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl', 'openid', 'https://www.googleapis.com/auth/userinfo.profile',
-          'https://www.googleapis.com/auth/youtube.force-ssl', 'https://www.googleapis.com/auth/userinfo.email', "https://www.googleapis.com/auth/youtube.readonly"]
+SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
+          'openid', 
+          'https://www.googleapis.com/auth/userinfo.profile',
+          'https://www.googleapis.com/auth/youtube.force-ssl', 
+          'https://www.googleapis.com/auth/userinfo.email',
+          "https://www.googleapis.com/auth/youtube.readonly"
+]
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
@@ -1226,3 +1227,8 @@ class FetchChannels(APIView):
         except Exception as err:
             print("Error while getting channels: " + str(err))
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
+def logout_view(request):
+    '''Logs a user out and redirect to the homepage'''
+    logout(request)
+    return redirect('/')

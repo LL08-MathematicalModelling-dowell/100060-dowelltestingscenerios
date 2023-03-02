@@ -3,7 +3,7 @@ import json
 from dotenv import load_dotenv
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from googleapiclient.discovery import build

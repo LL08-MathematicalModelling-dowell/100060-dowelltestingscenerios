@@ -36,10 +36,25 @@
         </div> 
         <!-- Story Name -->
         <!-- user Name -->
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <!-- <p>Welcome, {{ user.username }} !</p> -->
         <div class="story-name">
+            <input type="text" name="" id="username" placeholder="User" value={{ user.username }} disabled>
+            <div style="color:red;" id="username-error"></div>
+        </div>
+        <p><a style="text-decoration: none; padding: 5px; margin-left: 10px;"
+                href="http://127.0.0.1:8000/youtube/logout">Logout</a></p>
+        {% else %}
+        <div class="story-name">
+            <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google</a>
+            <!-- <div style="color:red;" id="username-error"></div> -->
+        </div>
+        {% endif %}
+        <!-- <div class="story-name">
           <input type="text" name="" id="username" placeholder="User">
           <div style="color:red;" id="username-error"></div>
-        </div> 
+        </div>  -->
         <!-- user Name -->
       </div>
       <!-- end lower nav -->
@@ -686,9 +701,19 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Select privacy status</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                                id="p_privacy-error"></p>
+                            <div style='display: flex; justify-content:flex-start; width: 100%'>
+                                {% for radio in add_playlist.privacy_status %}
+                                    <div style='padding-right:20px; margin: 0'> {{ radio }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- <div class="mb-3">
+                            <label class="form-label plst required"><strong>Select privacy status</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_privacy-error"></p>
                             {{ add_playlist.privacy_status }}                       
-                        </div>
+                        </div> -->
                         
                         <div class="modal-footer">
                             <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit" value="Submit">
