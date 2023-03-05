@@ -8,12 +8,11 @@ import datetime
 
 @receiver(user_logged_in)
 def get_user(sender, **kwargs):
-    print('========= User logged in signal handler ===== ')
+    print('====== User logged in signal handler ===== ')
     request = kwargs['request']
     user = kwargs['user']
     # credentials = request.session['oauth_data']
     token = cache.get('oauth_data')
-    # print('credetial >>> ', credentials)
     print('credetial token>>> ', type(token))
 
     # Parse the input string into a datetime object
@@ -49,5 +48,6 @@ def get_user(sender, **kwargs):
         # user=user, token=token.token, refresh_token=token.token_secrete)
         # if created:
         youtube_user.save()
+    cache.delete('oauth_data')
     return (kwargs['user'])
 

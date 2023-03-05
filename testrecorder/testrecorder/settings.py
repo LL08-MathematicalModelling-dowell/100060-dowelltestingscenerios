@@ -141,11 +141,7 @@ DATABASES = {
 #         'ENFORCE_SCHEMA': False,
 #         'CLIENT': {
 #             'host': os.getenv("DATABASE_HOST")
-<<<<<<< HEAD
 #         }
-=======
-#         }  
->>>>>>> 37df92290afb8dd965866fadd0558e9df3504fb9
 #     }
 # }
 
