@@ -1,0 +1,16 @@
+{
+    "token": "ya29.a0AVvZVsqh6j8dO_XC0zsMev7kmQtZ0eBkZcJvu-ADB0lK9PMf30FgBMj5alBP02DVMwIRHEeyrYzhjJwvZakZl12lRmu7lDJ71wnfoAHfqLpCsJxvUSq5NFRVY8KSsokBKlkaL3gBZSA68aRsOqjl7TRyGFpCaCgYKAaoSARISFQGbdwaIEkwE7GOFyza7N0vB9Mfh7g0163",
+    "refresh_token": "1//03jUsEIT5K7JNCgYIARAAGAMSNwF-L9IrLRcU_m0iYl1G6pM59iKsHPKXHf8RAZ1L0hFlc67gcP_BFE573kw0kPKqhATUNnZC0M8",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "client_id": "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com",
+    "client_secret": "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",
+    "scopes": [
+        "https://www.googleapis.com/auth/youtube.force-ssl",
+        "openid",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/youtube.force-ssl",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/youtube.readonly"
+    ],
+    "expiry": "2023-03-03T13:34:38.132070Z"
+}
