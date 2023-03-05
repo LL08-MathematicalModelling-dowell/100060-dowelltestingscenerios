@@ -72,6 +72,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    # 'youtube.custom_middleware.GoogleCallbackMiddleware',
 ]
 
 ROOT_URLCONF = 'testrecorder.urls'
@@ -107,8 +108,9 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'offline',
+            'prompt': 'consent',
         },
-        'OAUTH_PKCE_ENABLED': True,
+        #'OAUTH_PKCE_ENABLED': True,
     }
 }
 

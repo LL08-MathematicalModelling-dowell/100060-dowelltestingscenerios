@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from allauth.socialaccount.models import SocialAccount
 
 
 class UserYoutubePlaylists(models.Model):
@@ -56,13 +57,17 @@ class PlaylistsRecord(models.Model):
         db_table = 'playlists_records'
 
 
+
+
 class YouTubeUser(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    access_token = models.CharField(max_length=255)
-    refresh_token = models.CharField(max_length=255)
+    credential = models.JSONField()
 
     class Meta:
         db_table = 'YouTubeUsers'
+        verbose_name = 'Youtube User'
 
     def __str__(self):
-        return f'{self.user.first_name} {self.user.last_name}'
+        return f'{self.user.username} {self.user.first_name}'
+
+

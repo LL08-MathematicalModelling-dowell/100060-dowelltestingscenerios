@@ -5,5 +5,5 @@ class YoutubeConfig(AppConfig):
     name = 'youtube'
     
     def ready(self) -> None:
-        import youtube.signal
+        import youtube.signals.handlers
     
