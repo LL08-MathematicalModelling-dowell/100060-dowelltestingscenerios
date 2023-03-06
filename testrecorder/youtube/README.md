@@ -1,7 +1,7 @@
-        youtube.views_w.UserChannels
+##        youtube.views_w.UserChannels
         =============================
 
-        Availabe at 'http://127.0.0.1/youtube/channels'
+#        Availabe at 'http://127.0.0.1/youtube/channels'
         ===============================================
 This is a Django REST Framework view class named UserChannels which inherits from APIView class.
 The purpose of this class is to retrieve the YouTube channels of the currently logged-in user. 
@@ -31,7 +31,7 @@ message indicating that it was unable to retrieve the user's YouTube channels.
 Overall, this class provides a secure way for authenticated users to retrieve their YouTube channels using the YouTube Data API.
 
 
-        youtube.signals.handlers.get_user
+##        youtube.signals.handlers.get_user
         =================================
 This code defines a signal handler function that listens to the user_logged_in signal sent by Django when a user logs in.
 
@@ -44,3 +44,9 @@ checks if a YouTubeUser object already exists for the logged-in user, and either
 retrieves or creates a new YouTubeUser object with the credentials data.
 
 Finally, it deletes the oauth_data token from the cache using the cache.delete() method and returns the user object.
+
+### NOTE: Add this line to the bottom (ust befor the return statement) of allauth.proiders.oauth.views.OAuth2Adapter.parse_token method:
+        #Get user token info
+        from django.core.cache import cache
+        # save token data in the cache for futher use in the code
+        cache.set('oauth_data', token)
