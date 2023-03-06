@@ -65,7 +65,7 @@ class YouTubeUser(models.Model):
 
     class Meta:
         db_table = 'YouTubeUsers'
-        verbose_name = 'Youtube User'
+        
 
     def __str__(self):
         return f'{self.user.username} {self.user.first_name}'
