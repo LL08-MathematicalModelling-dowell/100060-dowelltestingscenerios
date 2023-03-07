@@ -3211,8 +3211,41 @@ function displayUtilities(){
 }
 
 /* fetch channels for navbar */
-async function fectchChannelForNav() {
-  let channelsApiUrl = 'youtube/fetchchannels/api/';
+// async function fetchChannelForNav() {
+//   let channelsApiUrl = 'youtube/fetchchannels/api/';
+
+//   let status = null
+//   await fetch(channelsApiUrl, {
+//     method: 'GET',
+//   })
+//     .then(response => {
+//       status = response.status;
+//       return response.json();
+//     })
+//     .then((data) => {
+//       console.log(data);
+//       let channel_list = data.channels_list;
+//       // console.log(channel_list);
+//       // let channelSelect = document.getElementById("selectChannel");
+//       channel_list.map((obj) => {
+//         let opt = document.createElement("option");
+//         let channel_id = obj.channel_id;
+//         console.log(channel_id);
+//         let channel_title = obj.channel_title;
+//         console.log(channel_title);
+//         // opt.value = channel_id;
+//         opt.value = channel_title;
+//         opt.innerHTML = channel_title;
+//         channelSelect.append(opt);
+//         console.log(opt);
+//       })
+//     })
+// }
+// fetchChannelForNav()
+
+/* fetch channels for user */
+async function fetchUserChannel() {
+  let channelsApiUrl = 'youtube/channels/';
 
   let status = null
   await fetch(channelsApiUrl, {
@@ -3223,10 +3256,9 @@ async function fectchChannelForNav() {
       return response.json();
     })
     .then((data) => {
-      let channel_list = data.channels_list;
-      // console.log(channel_list);
-      // let channelSelect = document.getElementById("selectChannel");
-      channel_list.map((obj) => {
+      let userChannels = data;
+      console.log("channel_list:", userChannels);
+      userChannels.map((obj) => {
         let opt = document.createElement("option");
         let channel_id = obj.channel_id;
         console.log(channel_id);
@@ -3240,4 +3272,4 @@ async function fectchChannelForNav() {
       })
     })
 }
-fectchChannelForNav()
+fetchUserChannel()
