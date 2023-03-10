@@ -13,6 +13,19 @@
   margin: 0;
   box-sizing: border-box;
 }
+ul{
+  list-style-type: none;
+}
+
+button{
+  border: none;
+  cursor: pointer;
+  background: var(--light-primary_clr);
+  color: var(--white-clr);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.5rem;
+  font-size: 1.2rem;
+}
 body{
   line-height: 1.05!important;
   height: 100vh;
@@ -125,7 +138,9 @@ img {
   width: 80%;
   margin: 0 auto;
 }
-
+.story-name a{
+  color: var(--white-clr);
+}
 .story-name input::placeholder{
   color: var(--white-clr);
   text-align: center;
@@ -433,4 +448,77 @@ img {
   background: none;
   border: none;
   outline: none;
+}
+/* account design */
+.save-btn,
+.primary-btn {
+  display: block;
+  width: 50%;
+  margin: 1rem auto;
+  padding: 0.6rem;
+  border: none;
+  cursor: pointer;
+  color: var(--white-clr);
+  background: var(--secondary-clr);
+  border-radius: var(--border-radius);
+}
+
+.delete-btn {
+  display: block;
+  width: 50%;
+  margin: 1rem auto;
+  padding: 0.6rem;
+  border: none;
+  cursor: pointer;
+  color: var(--white-clr);
+  background: #8a0f0f;
+  border-radius: var(--border-radius);
+}
+.form-wrapper {
+  width: 100%;
+  background: var(--dark-clr);
+  padding: 5rem 0;
+  color: var(--secondary-clr);
+}
+
+.form-container {
+  width: 80%;
+  margin: 0 auto;
+  background: var(--white-clr);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--light-shadow);
+}
+
+label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.5rem;
+  outline: none;
+  border: 1px solid var(--dark-clr);
+  border-radius: 0.5rem;
+}
+.signup-url{
+  color: var(--light-primary_clr);
+}
+.form-container p{
+  margin: 1rem 0;
+}
+
+@media screen and (min-width:768px) {
+  .form-container {
+    width: 60%;
+  }
+}
+
+@media screen and (min-width:996px) {
+  .form-container {
+    width: 50%;
+  }
 }
