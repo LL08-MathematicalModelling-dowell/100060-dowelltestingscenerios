@@ -148,7 +148,8 @@ class VideoConsumer(AsyncConsumer):
     async def websocket_disconnect(self, event):
         # when websocket disconnects
         print("disconnected", event)
-        self.process.stdin.close()
+        if self.process:
+            self.process.stdin.close()
 
 
 class WebacamScreenVideoConsumer(AsyncConsumer):
