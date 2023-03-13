@@ -17,7 +17,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
-from youtube.models import ChannelsRecord
+from youtube.models import ChannelsRecord, YoutubeUserCredenial
 from django.contrib.auth import logout
 
 # When running locally, disable OAuthlib's HTTPs verification.
@@ -44,11 +44,24 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
-
 def get_channel_credentials(request, the_channel_title):
     """
         Gets the channel details using the channel title
     """
+    try:
+        youtube_user = YoutubeUserCredenial.objects.get(user=request.user)
+        current_channel_credentials = dict(youtube_user.credential) # session_channel["channel_credentials"]
+        del current_channel_credentials['expiry']
+        return current_channel_credentials
+    except Exception:
+        # if the user doesn't have a YoutubeUserCredenial object, return an error response with 401 Unauthorized status code
+        return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # retrieve the user's credentials associated with the YoutubeUserCredenial object
+    # credentials = Credentials.from_authorized_user_info(
+    #         info=youtube_user.credential)
+    
+    '''
     # Check if session has channel information
     if not request.session.get('channel_details'):
         # Fetch credentials and add to session
@@ -103,11 +116,14 @@ def get_channel_credentials(request, the_channel_title):
             raise Exception(msg)
     else:
         print("session has the credentials we need")
+    
 
     # Return current credentials
     session_channel = request.session.get('channel_details')
     current_channel_credentials = session_channel["channel_credentials"]
     return current_channel_credentials
+    '''
+
 
 
 def index(request):
@@ -536,7 +552,7 @@ def create_broadcast(videoPrivacyStatus, testNameValue, request):
 
     # Get current channel credetials
     channel_title = request.data.get("channel_title")
-    credentials = json.loads(get_channel_credentials(request, channel_title))
+    credentials = get_channel_credentials(request, channel_title)  # json.loads(get_channel_credentials(request, channel_title))
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -598,7 +614,7 @@ def transition_broadcast(the_broadcast_id,request):
 
     # Get current channel credetials
     channel_title = request.data.get("channel_title")
-    credentials = json.loads(get_channel_credentials(request, channel_title))
+    credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -665,7 +681,7 @@ class PlaylistItemsInsertView(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = json.loads(get_channel_credentials(request, channel_title))
+            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -786,7 +802,7 @@ class FetchPlaylistsView(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = json.loads(get_channel_credentials(request, channel_title))
+            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -805,7 +821,7 @@ class FetchPlaylistsView(APIView):
 
             # Extract playlist id and names from data
             playlists = response['items']"""
-
+            print('=========================== ready to fetch playlist with pagination =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
@@ -1021,7 +1037,7 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
 
         # Get current channel credetials
         channel_title = request.data.get("channel_title")
-        credentials = json.loads(get_channel_credentials(request, channel_title))
+        credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
 
         credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -1126,7 +1142,7 @@ class FetchPlaylistsViewV2(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = json.loads(get_channel_credentials(request, channel_title))
+            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 

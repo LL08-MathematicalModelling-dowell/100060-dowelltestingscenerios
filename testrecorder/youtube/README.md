@@ -12,10 +12,10 @@ verifies if the user is authenticated before allowing access to the view.
 
 The renderer_classes variable is set to [JSONRenderer], which specifies that the response should be rendered in JSON format.
 
-The get method is defined to handle HTTP GET requests sent to the view. The method tries to retrieve the YouTubeUser object associated with the currently logged-in user.
-If the user doesn't have a YouTubeUser object, it returns a 401 Unauthorized response with an error message indicating that the account is not a Google account.
+The get method is defined to handle HTTP GET requests sent to the view. The method tries to retrieve the YoutubeUserCredenial object associated with the currently logged-in user.
+If the user doesn't have a YoutubeUserCredenial object, it returns a 401 Unauthorized response with an error message indicating that the account is not a Google account.
 
-If the user has a YouTubeUser object, the method retrieves the credentials associated with the YouTubeUser object using the Credentials.from_authorized_user_info method.
+If the user has a YoutubeUserCredenial object, the method retrieves the credentials associated with the YoutubeUserCredenial object using the Credentials.from_authorized_user_info method.
 Then, it uses the build method from the googleapiclient.discovery module to create a YouTube object with the v3 version of the API and the retrieved credentials.
 
 The method then tries to retrieve the channels associated with the user's account by calling the list method on the youtube.channels() object.
@@ -40,8 +40,8 @@ retrieves the token from the cache using the cache.get() method, and converts th
 to a UTC ISO 8601 formatted string.
 
 It then creates a credentials dictionary using the token and other required fields,
-checks if a YouTubeUser object already exists for the logged-in user, and either
-retrieves or creates a new YouTubeUser object with the credentials data.
+checks if a YoutubeUserCredenial object already exists for the logged-in user, and either
+retrieves or creates a new YoutubeUserCredenial object with the credentials data.
 
 Finally, it deletes the oauth_data token from the cache using the cache.delete() method and returns the user object.
 
