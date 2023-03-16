@@ -8,6 +8,7 @@ admin.site.register(MegaTestRecord)
 admin.site.register(VpsTestRecord)
 """
 
+""" @Muhammad Ahmed  """
 @admin.register(TestRecords)
 class TestRecordsAdmin(admin.ModelAdmin):
     list_display = ('user_name', 'test_description',

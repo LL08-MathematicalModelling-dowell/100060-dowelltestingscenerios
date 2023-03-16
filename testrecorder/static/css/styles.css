@@ -105,10 +105,12 @@ img {
   padding: 1rem 0;
   display: flex;
   justify-content: space-around;
+  align-items: center;
 }
 #app-status{
   color: var(--white-clr);
 }
+
 .story-name input,
 .lower-nav select{
   background: var(--light-primary_clr);
@@ -137,7 +139,7 @@ img {
   position: absolute;
   display: flex;
   top: 20%;
-  left: 50%;
+  left: 40%;
 }
 .main-contents{
   height: 70vh;
@@ -265,10 +267,11 @@ img {
   outline: none;
   border: none;
 }
-.view-record-btn button {
+.share-record-btn button {
   background: #1b6dd8;
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
+  margin-right: 0.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
   color: var(--white-clr);
@@ -290,7 +293,7 @@ img {
 }
 @media screen and (min-width:500px) {
   .main-content-btns {
-    left: 60%;
+    left: 50%;
   }
 }
 
@@ -308,7 +311,7 @@ img {
     width: 60%;
   }
   .main-content-btns {
-    left: 65%;
+    left: 55%;
   }
   .video-component video {
     width: 70%;
@@ -319,20 +322,21 @@ img {
 }
 @media screen and (min-width:996px) {
   .main-content-btns {
-    left: 70%;
+    left: 60%;
   }
 }
 @media screen and (min-width:1200px) {
   .main-content-btns {
-    left: 80%;
+    left: 70%;
   }
 }
 
 /* status */
 .status-bar{
-  background: var(--dark-clr);
+  background: var(--primary_clr);
   color: var(--white-clr);
   padding: 0.3rem 2rem;
+  text-align: center;
 }
 /* lower-footer */
 
@@ -381,10 +385,52 @@ img {
   font-size: 1.1rem;
 }
 }
-
+.status-container{
+  background: var(--primary_clr);
+  text-align: center;
+  padding: 0.5rem;
+}
 
 /* active utility */
 .active {
   color: var(--white-clr);
 }
 
+.facebook i{
+  font-size: 2rem!important;
+  padding:  0 1rem;
+  color: #3b5998;
+
+}
+.twitter i{
+  font-size: 2rem!important;
+  padding: 0 1rem;
+  color: #00acee;
+
+}
+.linkedin i {
+  font-size: 2rem!important;
+  padding: 0 1rem;
+  color: #0077b5;
+
+}
+.envelope i{
+  font-size: 2rem!important;
+  padding: 0 1rem;
+  color: #6b6565;
+
+}
+.whatsapp i {
+  font-size: 2rem!important;
+  padding: 0 1rem;
+  color: #4fce5d;
+}
+.copylink{
+  font-size: 2rem!important;
+  padding: 0 1rem;
+  color: #121214;
+  cursor:pointer;
+  background: none;
+  border: none;
+  outline: none;
+}
