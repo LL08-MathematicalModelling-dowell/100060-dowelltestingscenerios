@@ -490,12 +490,12 @@ img {
   box-shadow: var(--light-shadow);
 }
 
-label {
+.form-container label {
   display: block;
   margin: 0.5rem 0;
 }
 
-input {
+.form-container input {
   display: block;
   width: 100%;
   margin: 0 auto;
