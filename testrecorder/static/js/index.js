@@ -9,6 +9,7 @@ const publicVideosCheckbox = document.getElementById('public-videos')
 
 let btnShareRecords = document.querySelector('.share-record-btn');
 let channelSelect = document.getElementById("selectChannel");
+let channelSelect_1 = document.getElementById("selectChannel_1");
 // App global variables
 let usernameValue = null;
 let testNameValue = null;
@@ -702,7 +703,7 @@ async function validateModal() {
 async function sendAvailableData(prevProgress) {
 
 
-   // show record button
+  // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
 
@@ -982,7 +983,7 @@ async function resetStateOnError() {
   document.querySelector('.record-btn').style.display = 'block';
 
 
-// reset video title 
+  // reset video title 
   document.querySelector(".video-title").innerHTML = ""
 
 
@@ -1015,7 +1016,7 @@ async function resetStateOnError() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-  
+
 
   // Close any open websocket
   try {
@@ -2094,7 +2095,7 @@ async function uploadWithoutClickupNotes() {
 }
 
 // Shows youtube playlist selection modal
-async function showSelectYoutubePlaylistModal(channel_title=null) {
+async function showSelectYoutubePlaylistModal(channel_title = null) {
 
   // hide the creating broadcast modal
   showCreatingBroadcastModal(false);
@@ -2207,8 +2208,8 @@ async function fetchPlaylists() {
   let responseStatus = null;
   await fetch(fetchPlaylistsApiUrl, {
     method: 'POST',
-    body: json_broadcast_data, 
-    headers: myHeaders 
+    body: json_broadcast_data,
+    headers: myHeaders
   })
     .then(response => {
       console.log(response)
@@ -2489,7 +2490,7 @@ function confirmPlaylistSelection() {
 //   resetStateOnClosingPlaylistModal()
 // }
 // close youtube list selection modal
-async function closeYoutubePlaylistSelectionModal(){
+async function closeYoutubePlaylistSelectionModal() {
   resetStateOnClosingPlaylistModal()
 }
 
@@ -2509,7 +2510,7 @@ async function resetStateOnClosingPlaylistModal() {
 
 
 
-// show record button
+  // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
@@ -2541,7 +2542,7 @@ async function resetStateOnClosingPlaylistModal() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-  
+
 
   // Close any open websocket
   try {
@@ -2637,13 +2638,14 @@ async function handleCreatePlaylistRequest() {
   let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
 
   // Get playlist privacy status
-  let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
-  if (newPlaylistPrivacyStatus === true) {
-    newPlaylistPrivacyStatus = "public"
-  } else {
-    newPlaylistPrivacyStatus = "private"
-  }
-  
+  // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
+  let newPlaylistPrivacyStatus = document.querySelector('input[name="privacy_status"]:checked').value;
+  // if (newPlaylistPrivacyStatus === true) {
+  //   newPlaylistPrivacyStatus = "public"
+  // } else {
+  //   newPlaylistPrivacyStatus = "private"
+  // }
+
 
   if (docIsValid) {
     // close create new playlist modal
@@ -2666,14 +2668,18 @@ async function handleCreatePlaylistRequest() {
 
 // Makes api request to create playlist
 async function createNewPlaylist() {
-// async function createNewPlaylist(title, description, privacyStatus) {
+  // async function createNewPlaylist(title, description, privacyStatus) {
   let createPlaylistURL = '/youtube/createplaylist/api/';
   let responseStatus = null;
   // const form = document.getElementById("create-playlist");
-  const channel = document.getElementById("playlist_channel_modal").value;
+  const form = document.getElementById("create-playlist");
+  const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+  // const csrf_token = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  const channel = document.getElementById("selectChannel_1").value;
   const description = document.getElementById("playlist_description_modal").value;
   const title = document.getElementById("playlist_title_modal").value;
-  const privacy = document.getElementById("playlist_privacy_status_modal").value;
+  let privacy = document.querySelector('input[name="privacy_status"]:checked').value;
+  // const privacy = document.getElementById("playlist_privacy_status_modal").value;
   // const data = new FormData(form);
   await fetch(createPlaylistURL, {
     method: 'POST',
@@ -2684,7 +2690,8 @@ async function createNewPlaylist() {
       channel_title: channel
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": csrf_token
     }
   })
     .then(response => {
@@ -2706,10 +2713,10 @@ async function createNewPlaylist() {
         showPlaylistCreatedModal();
 
         // clear modal input fields
+        document.getElementById("selectChannel_1").value = "";
         document.getElementById("playlist_title_modal").value = "";
+        document.querySelector('input[name="privacy_status"]:checked').value = "";
         document.getElementById("playlist_description_modal").value = "";
-        document.getElementById("playlist_privacy_status_modal").value = "";
-        document.getElementById("playlist_channel_modal").value = "";
       } else if (responseStatus == 409) {
         // Server error message
         console.log("Server Error Message: ", json)
@@ -2897,14 +2904,14 @@ async function showAddChannelModal() {
   createChannelModal.show();
 }
 let channel_id = document.querySelector('input[name=channel_id');
-channel_id.addEventListener('keyup', () =>{
+channel_id.addEventListener('keyup', () => {
   document.getElementById('id-error').innerText = '';
 })
 // Confiqure error display 
 let channel_title = document.querySelector('input[name=channel_title]');
-channel_title.addEventListener('keyup', () =>{
+channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
-  }
+}
 );
 // let channel_credential = document.querySelector('textarea[name=channel_credentials]');
 // channel_credential.addEventListener('keyup', () =>{
@@ -2919,9 +2926,9 @@ channel_title.addEventListener('keyup', () =>{
 //   }
 //   return true;
 // }
-document.getElementById("add-channel-btn").addEventListener("click", async function(event){
+document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
   event.preventDefault();
-  
+
   const idMsg = 'Invalid channel ID format'
   const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
   // const credentialMsg = 'Invalid credential format';
@@ -2931,16 +2938,16 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
   // const credentialError = document.getElementById('credential-error');  
-  let valid_input = true; 
+  let valid_input = true;
 
-  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) { 
-      idError.innerText = idMsg;
-      valid_input = false;
-  } 
+  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
+    idError.innerText = idMsg;
+    valid_input = false;
+  }
   if (!channelTitle.match(/^[a-zA-Z0-9_ -]{3,50}$/)) {
-      titleError.innerText = titleMsg;
-      valid_input = false;
-  } 
+    titleError.innerText = titleMsg;
+    valid_input = false;
+  }
   // if (!isJSON(channelCredentials)) { 
   //     credentialError.innerText = credentialMsg;
   //     valid_input = false;
@@ -2952,29 +2959,29 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
       method: 'POST',
       body: formData
     })
-    .then(async response => {
-      const resp = await response.json()
-      const { channel_id, channel_title, channel_credential} = resp;
-      if (channel_id) {
-        idError.innerText = channel_id[0]
-      }
-      if (channel_title) {
-        titleError.innerText = channel_title[0]
-      }
-      if (channel_credential) {
-        credentialError.innerText = channel_credential[0]
-      }
-      if ('message' in resp) {
-        if (resp['message'] === 'Invalid channel!'){
-          document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
-          document.getElementById('add-status').innerText = resp['message'];
-        } else {
-          document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';   
-          document.getElementById('add-status').innerText = resp['message'];
+      .then(async response => {
+        const resp = await response.json()
+        const { channel_id, channel_title, channel_credential } = resp;
+        if (channel_id) {
+          idError.innerText = channel_id[0]
         }
-        console.log(resp['message'])
-      }
-    })
+        if (channel_title) {
+          titleError.innerText = channel_title[0]
+        }
+        if (channel_credential) {
+          credentialError.innerText = channel_credential[0]
+        }
+        if ('message' in resp) {
+          if (resp['message'] === 'Invalid channel!') {
+            document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
+            document.getElementById('add-status').innerText = resp['message'];
+          } else {
+            document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';
+            document.getElementById('add-status').innerText = resp['message'];
+          }
+          console.log(resp['message'])
+        }
+      })
   }
 })
 
@@ -2990,7 +2997,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
 //     // Hide modal
 //     const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
 //     btnCloseChannelSelectionModal.click();
-  
+
 //     confirmChannelSelection();
 //   }
 // }
@@ -3176,14 +3183,14 @@ async function getSelectedChannelRadioButton(event) {
 
 // ============================Handle Create playlist====================================
 
-document.getElementById("create-playlist-btn").addEventListener("click", async function(event){
+document.getElementById("create-playlist-btn").addEventListener("click", async function (event) {
   event.preventDefault();
   handleCreatePlaylistRequest();
 })
 
-    // display some buttons and remove some
-function displayUtilities(){
-    // show stop button
+// display some buttons and remove some
+function displayUtilities() {
+  // show stop button
   document.querySelector('.stop-btn').style.display = 'block';
 
 
@@ -3260,14 +3267,18 @@ async function fetchUserChannel() {
       console.log("channel_list:", userChannels);
       userChannels.map((obj) => {
         let opt = document.createElement("option");
+        let opt_1 = document.createElement("option");
         let channel_id = obj.channel_id;
         console.log(channel_id);
         let channel_title = obj.channel_title;
         console.log(channel_title);
         // opt.value = channel_id;
         opt.value = channel_title;
+        opt_1.value = channel_title;
         opt.innerHTML = channel_title;
+        opt_1.innerHTML = channel_title;
         channelSelect.append(opt);
+        channelSelect_1.append(opt_1);
         console.log(opt);
       })
     })

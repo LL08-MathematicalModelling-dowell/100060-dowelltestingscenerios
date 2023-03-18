@@ -8,6 +8,7 @@ import requests
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
 import googleapiclient.discovery
+from googleapiclient.errors import HttpError
 from datetime import datetime
 from datetime import timedelta
 from django.shortcuts import redirect
@@ -35,22 +36,24 @@ CLIENT_SECRETS_FILE = settings.BASE_DIR+'/youtube/client_secret.json'
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
-          'openid', 
+          'openid',
           'https://www.googleapis.com/auth/userinfo.profile',
-          'https://www.googleapis.com/auth/youtube.force-ssl', 
+          'https://www.googleapis.com/auth/youtube.force-ssl',
           'https://www.googleapis.com/auth/userinfo.email',
           "https://www.googleapis.com/auth/youtube.readonly"
-]
+          ]
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
 
-def get_channel_credentials(request, the_channel_title):
+
+def get_user_credentials(request, the_channel_title):
     """
         Gets the channel details using the channel title
     """
     try:
         youtube_user = YoutubeUserCredenial.objects.get(user=request.user)
-        current_channel_credentials = dict(youtube_user.credential) # session_channel["channel_credentials"]
+        # session_channel["channel_credentials"]
+        current_channel_credentials = dict(youtube_user.credential)
         del current_channel_credentials['expiry']
         return current_channel_credentials
     except Exception:
@@ -60,7 +63,7 @@ def get_channel_credentials(request, the_channel_title):
     # retrieve the user's credentials associated with the YoutubeUserCredenial object
     # credentials = Credentials.from_authorized_user_info(
     #         info=youtube_user.credential)
-    
+
     '''
     # Check if session has channel information
     if not request.session.get('channel_details'):
@@ -125,7 +128,6 @@ def get_channel_credentials(request, the_channel_title):
     '''
 
 
-
 def index(request):
     return HttpResponse(print_index_table())
 
@@ -154,7 +156,7 @@ def test_api_request(request):
     with open(credentials_file, "w") as write_file:
         json.dump(credentials_dict, write_file, indent=4)
 
-    #json_channel = json.dumps(channel, indent = 4)
+    # json_channel = json.dumps(channel, indent = 4)
     json_channel = json.dumps(channel)
     print(json_channel)
     return HttpResponse(json_channel)
@@ -349,8 +351,8 @@ def authorize(request):
 
 def oauth2callback(request):
     print("Request: ", request)
-    #print("Request.GET: ", request.GET)
-    #print("request.GET.keys(): ", request.GET.keys())
+    # print("Request.GET: ", request.GET)
+    # print("request.GET.keys(): ", request.GET.keys())
     currentUrl = request.get_full_path()
     print("request currentUrl: ", currentUrl)
     # Specify the state when creating the flow in the callback so that it can
@@ -455,7 +457,7 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
     # testNameValue = "Python tests"  # ToDo get this from request
     videoPrivacyStatus = videoPrivacyStatus
     testNameValue = testNameValue
-    #videoTitle = "Test Broadcast " + testNameValue + " " + future_date_iso
+    # videoTitle = "Test Broadcast " + testNameValue + " " + future_date_iso
     videoTitle = testNameValue + " " + future_date_iso
     print(future_date_iso)
 
@@ -552,7 +554,8 @@ def create_broadcast(videoPrivacyStatus, testNameValue, request):
 
     # Get current channel credetials
     channel_title = request.data.get("channel_title")
-    credentials = get_channel_credentials(request, channel_title)  # json.loads(get_channel_credentials(request, channel_title))
+    # json.loads(get_user_credentials(request, channel_title))
+    credentials = get_user_credentials(request, channel_title)
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -580,7 +583,7 @@ def create_broadcast(videoPrivacyStatus, testNameValue, request):
 
 
 class CreateBroadcastView(APIView):
-    #parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
     renderer_classes = [JSONRenderer]
 
     def post(self, request, *args, **kwargs):
@@ -591,22 +594,23 @@ class CreateBroadcastView(APIView):
         print("Request: ", request)
         print("Request Data: ", request.data)
         print("Request Data Type: ", type(request.data))
-        #videoPrivacyStatus = "private"
-        #testNameValue = "Test1"
+        # videoPrivacyStatus = "private"
+        # testNameValue = "Test1"
         videoPrivacyStatus = request.data.get("videoPrivacyStatus")
         testNameValue = request.data.get("testNameValue")
         print("videoPrivacyStatus: ", videoPrivacyStatus)
         print("testNameValue: ", testNameValue)
 
-        stream_dict = create_broadcast(videoPrivacyStatus, testNameValue,request)
-        #stream_dict = {"Hello":"Testing for now!"}
+        stream_dict = create_broadcast(
+            videoPrivacyStatus, testNameValue, request)
+        # stream_dict = {"Hello":"Testing for now!"}
         print("stream_dict: ", stream_dict)
 
         return Response(stream_dict, status=status.HTTP_201_CREATED)
 
 
 # Transitions a broadcast to complete status
-def transition_broadcast(the_broadcast_id,request):
+def transition_broadcast(the_broadcast_id, request):
 
     # Opening JSON file
     """with open(credentials_file) as json_file:
@@ -614,7 +618,8 @@ def transition_broadcast(the_broadcast_id,request):
 
     # Get current channel credetials
     channel_title = request.data.get("channel_title")
-    credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
+    # json.loads(get_user_credentials(request, channel_title))
+    credentials = get_user_credentials(request, channel_title)
 
     credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -634,7 +639,7 @@ def transition_broadcast(the_broadcast_id,request):
 
 
 class TransitionBroadcastView(APIView):
-    #parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
     renderer_classes = [JSONRenderer]
 
     def post(self, request, *args, **kwargs):
@@ -645,13 +650,13 @@ class TransitionBroadcastView(APIView):
         print("Request: ", request)
         print("Request Data: ", request.data)
         print("Request Data Type: ", type(request.data))
-        #videoPrivacyStatus = "private"
-        #testNameValue = "Test1"
+        # videoPrivacyStatus = "private"
+        # testNameValue = "Test1"
         the_broadcast_id = request.data.get("the_broadcast_id")
         print("the_broadcast_id: ", the_broadcast_id)
 
-        transition_response = transition_broadcast(the_broadcast_id,request)
-        #transition_response = {"Hello":"Testing for now!"}
+        transition_response = transition_broadcast(the_broadcast_id, request)
+        # transition_response = {"Hello":"Testing for now!"}
         print("transition_response: ", transition_response)
 
         return Response(transition_response, status=status.HTTP_200_OK)
@@ -666,7 +671,7 @@ class PlaylistItemsInsertView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            #print("Request: ", request)
+            # print("Request: ", request)
             print("Request Data: ", request.data)
 
             # Get the video and playlist data
@@ -681,7 +686,8 @@ class PlaylistItemsInsertView(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
+            # json.loads(get_user_credentials(request, channel_title))
+            credentials = get_user_credentials(request, channel_title)
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -741,12 +747,13 @@ def get_todays_playlist_title():
     current_date_and_time = datetime.now()
 
     date_string = current_date_and_time.strftime('%d %B %Y')
-    #print("date_string: ",date_string)
+    # print("date_string: ",date_string)
 
     playlist_title = date_string + " Daily Playlist"
-    #print("playlist_title: ",playlist_title)
+    # print("playlist_title: ",playlist_title)
 
     return playlist_title
+
 
 def fetch_playlists_with_pagination(youtube_object):
     """
@@ -754,8 +761,8 @@ def fetch_playlists_with_pagination(youtube_object):
     """
     fetch_playlists = True
     playlists = []
-    page_token=""
-    #count = 0
+    page_token = ""
+    # count = 0
 
     # Fetch the playlists
     while fetch_playlists:
@@ -766,9 +773,9 @@ def fetch_playlists_with_pagination(youtube_object):
             pageToken=page_token
         )
         response = request.execute()
-        #print("FetchPlaylistsView response: ", response)
-        #print("FetchPlaylistsView response: ", count)
-        #count = count + 1
+        # print("FetchPlaylistsView response: ", response)
+        # print("FetchPlaylistsView response: ", count)
+        # count = count + 1
 
         # Get next page token
         if "nextPageToken" in response.keys():
@@ -778,7 +785,6 @@ def fetch_playlists_with_pagination(youtube_object):
 
         # Add current page's playlists
         playlists.extend(response['items'])
-
 
     # Return fetched playlists
     return playlists
@@ -802,7 +808,8 @@ class FetchPlaylistsView(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
+            # json.loads(get_user_credentials(request, channel_title))
+            credentials = get_user_credentials(request, channel_title)
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -821,7 +828,8 @@ class FetchPlaylistsView(APIView):
 
             # Extract playlist id and names from data
             playlists = response['items']"""
-            print('=========================== ready to fetch playlist with pagination =====')
+            print(
+                '=========================== ready to fetch playlist with pagination =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
@@ -837,12 +845,12 @@ class FetchPlaylistsView(APIView):
             # Iterating through the json list
             for playlist in playlists:
                 id = playlist["id"]
-                #print("Playlist ID = ",id)
+                # print("Playlist ID = ",id)
                 title = playlist["snippet"]["title"]
-                #print("Playlist Title = ",title)
+                # print("Playlist Title = ",title)
 
                 # Add playlist to dictionary
-                #id_title_dict[id] = title
+                # id_title_dict[id] = title
 
                 # Filter out daily playlists
                 if "Daily Playlist" not in title:
@@ -857,8 +865,8 @@ class FetchPlaylistsView(APIView):
             print("id_title_dict: ", id_title_dict)
 
             # Dummy dictionary for testing
-            #id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-            #id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
 
             """# Get playlists in user db list and in youtube
             new_user_id = "Walter"
@@ -931,12 +939,12 @@ def fetch_user_playlists():
         # Iterating through the json list
         for playlist in playlists:
             id = playlist["id"]
-            #print("Playlist ID = ",id)
+            # print("Playlist ID = ",id)
             title = playlist["snippet"]["title"]
-            #print("Playlist Title = ",title)
+            # print("Playlist Title = ",title)
 
             # Add playlist to dictionary
-            #id_title_dict[id] = title
+            # id_title_dict[id] = title
             # Filter out daily playlists
             if "Daily Playlist" not in title:
                 id_title_dict[id] = title
@@ -950,8 +958,8 @@ def fetch_user_playlists():
         print("id_title_dict: ", id_title_dict)
 
         # Dummy dictionary for testing
-        #id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-        #id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+        # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+        # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
 
         """# Get playlists in user db list and in youtube
         new_user_id = "Walter"
@@ -971,7 +979,7 @@ def fetch_user_playlists():
         # Dictionary with all necessary data
         youtube_details = {'channel_title': channel_title,
                            'id_title_dict': id_title_dict,
-                            'todays_playlist_dict': todays_playlist_dict}
+                           'todays_playlist_dict': todays_playlist_dict}
         return youtube_details
 
     except Exception as err:
@@ -1024,39 +1032,25 @@ def insert_video_into_playlist(the_video_id, the_playlist_id):
 
 def create_playlist(playlist_title, playlist_description, playlist_privacy_status, request):
     """
-        Handles requests to create a playlist
+    Handles requests to create a playlist
     """
     try:
-        print("playlist_title: ", playlist_title)
-        print("playlist_description: ", playlist_description)
-        print("playlist_privacy_status: ", playlist_privacy_status)
-
-        # Create youtube object
-        """with open(credentials_file) as json_file:
-            credentials = json.load(json_file)"""
-
-        # Get current channel credetials
+        # Get current channel credentials
         channel_title = request.data.get("channel_title")
-        credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
-
+        credentials = get_user_credentials(request, channel_title)
         credentials = google.oauth2.credentials.Credentials(**credentials)
 
+        # Create youtube object
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-
         # Check if a playlist with provided title exists
-        # Fetch all playlists with pagination
         playlists = fetch_playlists_with_pagination(youtube)
-        # Iterating through the json list
         for playlist in playlists:
             title = playlist["snippet"]["title"]
-
             if playlist_title.lower() == title.lower():
-                # Duplicate record was found
-                message = "A playlist with the title "+playlist_title+" already exists!"
-                raise Exception(message)
-
+                raise Exception(
+                    f"A playlist with the title '{playlist_title}' already exists!")
 
         # Make the insert request
         request = youtube.playlists().insert(
@@ -1065,24 +1059,22 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
                 "snippet": {
                     "title": playlist_title,
                     "description": playlist_description,
-                    "tags": [
-                        "sample playlist",
-                        "API call"
-                    ],
+                    "tags": ["sample playlist", "API call"],
                     "defaultLanguage": "en"
                 },
-                "status": {
-                    "privacyStatus": playlist_privacy_status
-                }
+                "status": {"privacyStatus": playlist_privacy_status}
             }
         )
         response = request.execute()
-
-        #return True
         return response
 
+    except HttpError as err:
+        error_msg = f"HTTP error occurred while creating playlist: {err}"
+        print(error_msg)
+        raise Exception(error_msg)
+
     except Exception as err:
-        error_msg = "Error while creating playlist: " + str(err)
+        error_msg = f"Error occurred while creating playlist: {err}"
         print(error_msg)
         raise Exception(error_msg)
 
@@ -1104,8 +1096,8 @@ class CreatePlaylistView(APIView):
             # Check if playlist already exists
 
             # create playlist
-            response = create_playlist(title, description, privacy,request)
-            #print("Playlist creation response: ",response)
+            response = create_playlist(title, description, privacy, request)
+            # print("Playlist creation response: ",response)
 
             if response:
                 msg = {'CreatePlaylistResponse': "Playlist created"}
@@ -1122,6 +1114,7 @@ class CreatePlaylistView(APIView):
                 return Response(error_msg, status=status.HTTP_409_CONFLICT)
             else:
                 return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FetchPlaylistsViewV2(APIView):
     """
@@ -1142,7 +1135,8 @@ class FetchPlaylistsViewV2(APIView):
 
             # Get current channel credetials
             channel_title = request.data.get("channel_title")
-            credentials = get_channel_credentials(request, channel_title) # json.loads(get_channel_credentials(request, channel_title))
+            # json.loads(get_user_credentials(request, channel_title))
+            credentials = get_user_credentials(request, channel_title)
 
             credentials = google.oauth2.credentials.Credentials(**credentials)
 
@@ -1165,17 +1159,16 @@ class FetchPlaylistsViewV2(APIView):
             # Iterating through the json list
             for playlist in playlists:
                 id = playlist["id"]
-                #print("Playlist ID = ",id)
+                # print("Playlist ID = ",id)
                 title = playlist["snippet"]["title"]
-                #print("Playlist Title = ",title)
-
+                # print("Playlist Title = ",title)
 
                 # Add playlist to dictionary
-                #id_title_dict[id] = title
+                # id_title_dict[id] = title
 
                 # Filter out daily playlists
                 if "Daily Playlist" not in title:
-                    #id_title_dict[id] = title
+                    # id_title_dict[id] = title
 
                     temp_dict = {}
                     temp_dict["playlist_id"] = id
@@ -1191,8 +1184,8 @@ class FetchPlaylistsViewV2(APIView):
             print("id_title_dict: ", id_title_dict)
 
             # Dummy dictionary for testing
-            #id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-            #id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
 
             # add channel title
             print("channel_title: ", channel_title)
@@ -1220,8 +1213,8 @@ class FetchChannels(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            #get_channel_details(request, "UX Live from uxlivinglab")
-            """current_credentials = get_channel_credentials(request, "UX Live from uxlivinglab")
+            # get_channel_details(request, "UX Live from uxlivinglab")
+            """current_credentials = get_user_credentials(request, "UX Live from uxlivinglab")
             print("current_credentials: ",current_credentials)"""
 
             all_channels = ChannelsRecord.objects.all()
@@ -1230,7 +1223,7 @@ class FetchChannels(APIView):
             for channel in all_channels.iterator():
                 print("Channel id: ", channel.channel_id)
                 print("Channel title: ", channel.channel_title)
-                #print("Channel credentials: ", channel.channel_credentials)
+                # print("Channel credentials: ", channel.channel_credentials)
                 temp_dict = {}
                 temp_dict["channel_id"] = channel.channel_id
                 temp_dict["channel_title"] = channel.channel_title
@@ -1243,6 +1236,7 @@ class FetchChannels(APIView):
         except Exception as err:
             print("Error while getting channels: " + str(err))
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+
 
 def logout_view(request):
     '''Logs a user out and redirect to the homepage'''

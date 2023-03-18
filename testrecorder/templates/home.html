@@ -692,12 +692,16 @@
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Select channel</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_channel-error"></p>
-                            {{ add_playlist.channel }}
+                            <!-- {{ add_playlist.channel }} -->
+                            <select class='form-control select2 select2-hidden-accessible' name="channel" id="selectChannel_1" >
+                                <option value="">Select Channel</option>
+                              </select>
+                            <div style="color:red;" id="channelname-error"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Description</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_description-error"></p>
-                            {{ add_playlist.playlist_description }}
+                            {{ add_playlist.playlist_description }}                            
                         </div>
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Select privacy status</strong></label>

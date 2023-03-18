@@ -37,11 +37,11 @@ class CreatePlaylist(forms.Form):
         playlist_description: Description for he playlist
         privacy_status: Two options, 'private/public'. sets the privacy status of the playlist
     """
-    def __init__(self, *args, **kwargs):
-        '''Call the __init__ method of the parent class'''
-        super(CreatePlaylist, self).__init__(*args, **kwargs)
-        # Set the choices attribute of the 'channel' field to the result of get_channel_choices()
-        # self.fields['channel'].choices = self.get_channel_choices()
+    # def __init__(self, *args, **kwargs):
+    #     '''Call the __init__ method of the parent class'''
+    #     super(CreatePlaylist, self).__init__(*args, **kwargs)
+    #     # Set the choices attribute of the 'channel' field to the result of get_channel_choices()
+    #     # self.fields['channel'].choices = self.get_channel_choices()
 
     PRIVATE = 'private'
     PUBLIC = 'Public'
@@ -85,15 +85,15 @@ class CreatePlaylist(forms.Form):
         initial=PUBLIC,
     )
 
-    def get_channel_choices(self):
-        '''Make a GET request to the API endpoint that returns the channels data'''
-        response = requests.get('http://127.0.0.1:8000/youtube/channels/')
-        print('=========== response type ======   >>>  ',type(response.json()))
-        print('dictionary ===>  ', response.json())
-        # Parse the response as JSON
-        data = response.json()
+    # def get_channel_choices(self):
+    #     '''Make a GET request to the API endpoint that returns the channels data'''
+    #     response = requests.get('http://127.0.0.1:8000/youtube/channels/')
+    #     print('=========== response type ======   >>>  ',type(response.json()))
+    #     print('dictionary ===>  ', response.json())
+    #     # Parse the response as JSON
+    #     data = response.json()
         
-        # Extract the 'id' and 'name' fields from each channel object and create a tuple of (id, name) for each channel
-        choices = [(channel['channel_id'], channel['channel_title']) for channel in data]
-        # Return the list of tuples as the choices for the 'channel' field
-        return choices
+    #     # Extract the 'id' and 'name' fields from each channel object and create a tuple of (id, name) for each channel
+    #     choices = [(channel['channel_id'], channel['channel_title']) for channel in data]
+    #     # Return the list of tuples as the choices for the 'channel' field
+    #     return choices
