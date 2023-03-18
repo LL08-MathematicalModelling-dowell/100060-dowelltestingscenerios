@@ -45,7 +45,7 @@ retrieves or creates a new YoutubeUserCredenial object with the credentials data
 
 Finally, it deletes the oauth_data token from the cache using the cache.delete() method and returns the user object.
 
-### NOTE: Add this line to the bottom (ust befor the return statement) of allauth.proiders.oauth.views.OAuth2Adapter.parse_token method:
+### NOTE: Add this line to the bottom (just before the return statement) of allauth.providers.oauth.views.OAuth2Adapter.parse_token method:
         #Get user token info
         from django.core.cache import cache
         # save token data in the cache for futher use in the code
