@@ -57,7 +57,7 @@ class PlaylistsRecord(models.Model):
         db_table = 'playlists_records'
 
 
-class YoutubeUserCredenial(models.Model):
+class YoutubeUserCredential(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     credential = models.JSONField()
 

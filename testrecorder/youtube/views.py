@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
-from youtube.models import ChannelsRecord, YoutubeUserCredenial
+from youtube.models import ChannelsRecord, YoutubeUserCredential
 from django.contrib.auth import logout
 
 # When running locally, disable OAuthlib's HTTPs verification.
@@ -51,16 +51,16 @@ def get_user_credentials(request, the_channel_title):
         Gets the channel details using the channel title
     """
     try:
-        youtube_user = YoutubeUserCredenial.objects.get(user=request.user)
+        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
         # session_channel["channel_credentials"]
         current_channel_credentials = dict(youtube_user.credential)
         del current_channel_credentials['expiry']
         return current_channel_credentials
     except Exception:
-        # if the user doesn't have a YoutubeUserCredenial object, return an error response with 401 Unauthorized status code
+        # if the user doesn't have a YoutubeUserCredential object, return an error response with 401 Unauthorized status code
         return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # retrieve the user's credentials associated with the YoutubeUserCredenial object
+    # retrieve the user's credentials associated with the YoutubeUserCredential object
     # credentials = Credentials.from_authorized_user_info(
     #         info=youtube_user.credential)
 

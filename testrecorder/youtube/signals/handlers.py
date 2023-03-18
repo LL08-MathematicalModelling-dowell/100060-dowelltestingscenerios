@@ -1,5 +1,5 @@
 from django.dispatch import receiver
-from ..models import YoutubeUserCredenial
+from ..models import YoutubeUserCredential
 from allauth.account.signals import user_logged_in
 from django.core.cache import cache
 import datetime
@@ -46,13 +46,13 @@ def get_user(sender, **kwargs):
     }
 
     try:
-        # tries to retrieve an existing YoutubeUserCredenial object for the logged-in user
-        youtube_user = YoutubeUserCredenial.objects.get(user=user)
+        # tries to retrieve an existing YoutubeUserCredential object for the logged-in user
+        youtube_user = YoutubeUserCredential.objects.get(user=user)
         # prints a message indicating that the user already exists for debugging purposes
         print('User aready exist')
     except Exception:
-        # if no YoutubeUserCredenial object exists for the logged-in user, creates a new one
-        youtube_user, created = YoutubeUserCredenial.objects.get_or_create(
+        # if no YoutubeUserCredential object exists for the logged-in user, creates a new one
+        youtube_user, created = YoutubeUserCredential.objects.get_or_create(
             user=user, credential=credentials)
         youtube_user.save()
 
