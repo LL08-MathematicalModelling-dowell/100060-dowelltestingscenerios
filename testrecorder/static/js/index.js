@@ -2281,6 +2281,7 @@ async function fetchPlaylists() {
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let csrftoken = await getCookie('csrftoken');
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
@@ -2291,7 +2292,7 @@ async function insertVideoIntoPlaylist() {
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8",
-      "X-CSRFToken": getCookie("csrftoken")
+      "X-CSRFToken": csrftoken
     }
   })
     .then(response => {
@@ -2338,6 +2339,7 @@ async function insertVideoIntoPlaylist() {
 // Inserts a video into the current day's youtube playlist
 async function insertVideoIntoTodaysPlaylist() {
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let csrftoken = await getCookie('csrftoken');
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
@@ -2348,7 +2350,7 @@ async function insertVideoIntoTodaysPlaylist() {
     }),
     headers: {
       "Content-type": "application/json; charset=UTF-8",
-      "X-CSRFToken": getCookie("csrftoken")
+      "X-CSRFToken": csrftoken
     }
   })
     .then(response => {
