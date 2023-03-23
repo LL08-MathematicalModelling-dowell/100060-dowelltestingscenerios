@@ -68,5 +68,6 @@ tzdata==2022.1
 uritemplate==4.1.1
 urllib3==1.26.9
 websockets==10.3
+whitenoise==6.4.0
 wrapt==1.14.1
 zope.interface==5.4.0

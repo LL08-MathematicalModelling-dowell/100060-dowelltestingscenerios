@@ -12,10 +12,10 @@ verifies if the user is authenticated before allowing access to the view.
 
 The renderer_classes variable is set to [JSONRenderer], which specifies that the response should be rendered in JSON format.
 
-The get method is defined to handle HTTP GET requests sent to the view. The method tries to retrieve the YoutubeUserCredenial object associated with the currently logged-in user.
-If the user doesn't have a YoutubeUserCredenial object, it returns a 401 Unauthorized response with an error message indicating that the account is not a Google account.
+The get method is defined to handle HTTP GET requests sent to the view. The method tries to retrieve the YoutubeUserCredential object associated with the currently logged-in user.
+If the user doesn't have a YoutubeUserCredential object, it returns a 401 Unauthorized response with an error message indicating that the account is not a Google account.
 
-If the user has a YoutubeUserCredenial object, the method retrieves the credentials associated with the YoutubeUserCredenial object using the Credentials.from_authorized_user_info method.
+If the user has a YoutubeUserCredential object, the method retrieves the credentials associated with the YoutubeUserCredential object using the Credentials.from_authorized_user_info method.
 Then, it uses the build method from the googleapiclient.discovery module to create a YouTube object with the v3 version of the API and the retrieved credentials.
 
 The method then tries to retrieve the channels associated with the user's account by calling the list method on the youtube.channels() object.
@@ -40,12 +40,12 @@ retrieves the token from the cache using the cache.get() method, and converts th
 to a UTC ISO 8601 formatted string.
 
 It then creates a credentials dictionary using the token and other required fields,
-checks if a YoutubeUserCredenial object already exists for the logged-in user, and either
-retrieves or creates a new YoutubeUserCredenial object with the credentials data.
+checks if a YoutubeUserCredential object already exists for the logged-in user, and either
+retrieves or creates a new YoutubeUserCredential object with the credentials data.
 
 Finally, it deletes the oauth_data token from the cache using the cache.delete() method and returns the user object.
 
-### NOTE: Add this line to the bottom (just before the return statement) of allauth.providers.oauth.views.OAuth2Adapter.parse_token method:
+### NOTE: Add this line to the bottom (just before the return statement) of allauth-socialaccounts-providers-oauth-views-OAuth2Adapter:parse_token method:
         #Get user token info
         from django.core.cache import cache
         # save token data in the cache for futher use in the code

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from youtube.serializers import CreateChannnelSerializer
-from .models import YoutubeUserCredenial
+from .models import YoutubeUserCredential
 
 
 class UserChannels(APIView):
@@ -17,14 +17,14 @@ class UserChannels(APIView):
     def get(self, request, *args, **kwargs):
         '''Get the logged-in user's YouTube channels'''
 
-        # retrieve the YoutubeUserCredenial object associated with the currently authenticated user
+        # retrieve the YoutubeUserCredential object associated with the currently authenticated user
         try:
-            youtube_user = YoutubeUserCredenial.objects.get(user=request.user)
+            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
         except Exception:
-            # if the user doesn't have a YoutubeUserCredenial object, return an error response with 401 Unauthorized status code
+            # if the user doesn't have a YoutubeUserCredential object, return an error response with 401 Unauthorized status code
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        # retrieve the user's credentials associated with the YoutubeUserCredenial object
+        # retrieve the user's credentials associated with the YoutubeUserCredential object
         credentials = Credentials.from_authorized_user_info(
             info=youtube_user.credential)
 
@@ -70,10 +70,10 @@ class CreateChannel(APIView):
     def post(self, request, *args, **kwargs):
         """Handles POst requests and create user channel through google Youtube API """
         serializer = CreateChannnelSerializer(data=request.data)
-        # retrieve the YoutubeUserCredenial object associated with the currently authenticated user
+        # retrieve the YoutubeUserCredential object associated with the currently authenticated user
         if serializer.is_valid():
             try:
-                youtube_user = YoutubeUserCredenial.objects.get(user=request.user)
+                youtube_user = YoutubeUserCredential.objects.get(user=request.user)
                 credentials = Credentials.from_authorized_user_info(
                     info=youtube_user.credential)
 
@@ -92,7 +92,7 @@ class CreateChannel(APIView):
             except Exception:
                 print('An error occurred:')
                 traceback.print_exc()
-                # if the user doesn't have a YoutubeUserCredenial object, return an error response with 401 Unauthorized status code
+                # if the user doesn't have a YoutubeUserCredential object, return an error response with 401 Unauthorized status code
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
