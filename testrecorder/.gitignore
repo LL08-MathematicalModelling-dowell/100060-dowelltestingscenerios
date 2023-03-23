@@ -2,3 +2,4 @@ client_secret.json
 .env
 db.sqlite3
 /static/
+*.sqlite3
