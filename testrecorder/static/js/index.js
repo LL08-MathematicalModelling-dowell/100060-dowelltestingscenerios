@@ -2290,7 +2290,8 @@ async function insertVideoIntoPlaylist() {
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": getCookie("csrftoken")
     }
   })
     .then(response => {
@@ -2346,7 +2347,8 @@ async function insertVideoIntoTodaysPlaylist() {
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": getCookie("csrftoken")
     }
   })
     .then(response => {
