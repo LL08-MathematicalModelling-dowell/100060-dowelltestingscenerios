@@ -148,13 +148,17 @@ img {
 
 /* main contents */
 .input-start-record-btn{
-  position: relative;
-}
+  background: var(--white-clr);
+  padding: 0.5rem 2rem;
+  border-radius: 0.5rem;
+} 
 .main-content-btns{
-  position: absolute;
+  /* position: absolute; */
   display: flex;
-  top: 20%;
-  left: 40%;
+  /* top: 50%;
+  left: 50%; */
+  justify-content: center;
+  align-items: center;
 }
 .main-contents{
   height: 70vh;
@@ -162,7 +166,10 @@ img {
   color: var(--white-clr);
   position: relative;
 }
-
+#test-name{
+  outline: 1px solid #fa3d4a;
+  border-radius: 0.5rem;
+}
 .video-component video{
   position: absolute;
   width: 90%;
@@ -260,6 +267,11 @@ img {
   outline: none;
   border: none;
 }
+.create-playlist-btn button:disabled {
+  background: rgba(128, 128, 128, 0.5);
+}
+
+
 .record-btn button{
   background: green;
   padding: 0.3rem 0.6rem;
@@ -306,15 +318,18 @@ img {
   outline: none;
   border: none;
 }
+.add-channel-btn button:disabled {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+
 @media screen and (min-width:500px) {
   .main-content-btns {
     left: 50%;
   }
 }
 
-/* .stop-btn button:disabled{
-  background: var(--light-primary_clr);
-} */
+
 
 
 
@@ -476,6 +491,7 @@ img {
 }
 .form-wrapper {
   width: 100%;
+  height: 75vh;
   background: var(--dark-clr);
   padding: 5rem 0;
   color: var(--secondary-clr);

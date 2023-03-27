@@ -301,8 +301,7 @@ async function stopRecording() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-
-
+  resetonStartRecording()
   // Show upload in progress modal
   let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
   uploadModal.show();
@@ -978,15 +977,7 @@ async function resetStateOnError() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-
-  // show record button
-  document.querySelector('.record-btn').style.display = 'block';
-
-
-  // reset video title 
-  document.querySelector(".video-title").innerHTML = ""
-
-
+  // resetonStart()
   // Stop the webcam stream
   if (recordWebcam == true) {
     try {
@@ -2282,6 +2273,7 @@ async function fetchPlaylists() {
 async function insertVideoIntoPlaylist() {
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
+  let csrftoken = await getCookie('csrftoken');
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
     body: JSON.stringify({
@@ -2290,7 +2282,8 @@ async function insertVideoIntoPlaylist() {
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      'X-CSRFToken': csrftoken
     }
   })
     .then(response => {
@@ -3200,10 +3193,17 @@ function displayUtilities() {
   document.querySelector('#create-playlist').disabled = true;
   // disable channel button
   document.querySelector('#view_records').disabled = true;
+  document.querySelector('#selectChannel').disabled = true;
+  document.querySelector('#test-name').disabled = true;
+  document.querySelector('.logout-disable').removeAttribute("href");
+  document.querySelector('#webcam-recording').disabled = true;
+  document.querySelector('#screen-recording').disabled = true;
+  document.querySelector('#audio-settings').disabled = true;
+  document.querySelector('#public-videos').disabled = true;
 
   // clear navbar forms
-  document.getElementById("selectChannel").value = "";
-  document.getElementById("test-name").value = "";
+  // document.getElementById("selectChannel").value = "";
+  // document.getElementById("test-name").value = "";
   // Enable share records button
   if (publicVideosCheckbox.checked) {
     btnShareRecords.style.display = "block";
@@ -3250,3 +3250,22 @@ async function fetchUserChannel() {
     })
 }
 fetchUserChannel()
+
+function resetonStartRecording(){
+
+  // show record button
+  document.querySelector('.record-btn').style.display = 'block';
+
+  // reset video title 
+  document.querySelector(".video-title").innerHTML = "";
+  document.querySelector('#selectChannel').disabled = false;
+  document.querySelector('#view_records').disabled = false;
+  document.querySelector('#test-name').disabled = false;
+  document.querySelector('#create-playlist').disabled = false;
+  document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
+  document.querySelector('#webcam-recording').disabled = false;
+  document.querySelector('#screen-recording').disabled = false;
+  document.querySelector('#audio-settings').disabled = false;
+  document.querySelector('#public-videos').disabled = false;
+
+}
