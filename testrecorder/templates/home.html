@@ -16,20 +16,24 @@
         {% if user.is_authenticated %}
         
         <div class="">
-            <!--<select name="channel" id="selectChannel" onChange="getSelectedChannelName(this)">
-                <option value="">Select Channel</option>
-              </select>-->
-            <select name="channel" id="selectChannel">
+            <select name="channel" id="selectChannel" onChange="getSelectedChannelName(this)">
                 <option value="">Select Channel</option>
               </select>
+            <!--<select name="channel" id="selectChannel">
+                <option value="">Select Channel</option>
+              </select>-->
             <div style="color:red;" id="channelname-error"></div>
         </div>
         <!-- end single select -->
-        <!-- single select -->
-          <!--<select name="playlist" class="selectPlaylist" onChange="getSelectedPlaylistName(this)">
-            <option value="">Select Playlist</option>
-          </select>-->
-        <!-- end single select -->
+        <div class="">
+            <!-- single select -->
+            <select name="playlist" class="selectPlaylist" id="selectPlaylist">
+                <option value="">Select Playlist</option>
+            </select>
+            <div style="color:red;" id="playlist-error"></div>
+            <!-- end single select -->
+
+        </div>
         <!-- Story Name -->
         <div class="story-name">
           <input type="text" name="" id="test-name" placeholder="Video Title">
@@ -494,7 +498,7 @@
 </div>
 
 <!-- Selenium IDE installation request modal-->
-<div class="modal" id="seleniumIDEModal">
+<!--<div class="modal" id="seleniumIDEModal">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -534,11 +538,11 @@
             </div>
         </div>
     </div>
-</div>
+</div>-->
 </div>
 
 <!-- YouTube Playlist Selection Modal -->
-<div class="modal" id="playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+<!--<div class="modal" id="playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -546,7 +550,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-playlist-selection-modal" hidden></button>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" onClick="closeYoutubePlaylistSelectionModal()"></button>
             </div>
-            <!-- Shown when playlists are received -->
+             Shown when playlists are received 
             <div id="received-playlists">
                 <div class="modal-body">
                     <p>
@@ -564,17 +568,17 @@
                     <button type="button" class="btn btn-success" onClick="playlistSelected()">Okay</button>
 
                 </div>
-            </div>
+            </div>-->
             <!-- Shown initially when getting the playlists -->
-            <div id="loading-playlists">
+            <!--<div id="loading-playlists">
                 <div class="modal-body">
                     <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
                         <i class="bi-x"></i>Loading Playlists...
                     </p>
                 </div>
-            </div>
+            </div>-->
             <!-- Shown when failure to receive playlists occurs -->
-            <div id="failed-to-receive-playlists">
+            <!--<div id="failed-to-receive-playlists">
                 <div class="modal-body">
                     <p style="font-size: 1rem; color: rgb(255, 0, 0);">
                         <i class="bi-x"></i>Failed to get playlists for the selected channel!
@@ -606,12 +610,12 @@
                     <!--<button type="button" class="btn btn-danger" data-bs-dismiss="modal" onclick="showSelectYoutubeChannelModal();"
                         id="cancel-playlists-fetching">
                         Back
-                    </button>-->
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div>-->
 
 <!-- Playlist insert video Error occurred modal -->
 <div class="modal" id="playlist-insert-video-error-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -670,7 +674,6 @@
     </div>
 </div>
 
-<!-- Ojophilip -->
 <!-- New Playlist Details Modal -->
 <div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -713,11 +716,6 @@
                                 {% endfor %}
                             </div>
                         </div>
-                        <!-- <div class="mb-3">
-                            <label class="form-label plst required"><strong>Select privacy status</strong></label>
-                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_privacy-error"></p>
-                            {{ add_playlist.privacy_status }}                       
-                        </div> -->
                         
                         <div class="modal-footer">
                             <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit" value="Submit">
