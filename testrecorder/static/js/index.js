@@ -2287,7 +2287,6 @@ async function uploadWithoutClickupNotes() {
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
   // hide the creating broadcast modal
-  showCreatingBroadcastModal(false);
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
   let responseStatus = null;
   let csrftoken = await getCookie('csrftoken');
@@ -2413,7 +2412,7 @@ async function insertVideoIntoTodaysPlaylist() {
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
-
+  showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
   let recordAudio = audioCheckbox.checked;
   if (recordAudio == true) {
