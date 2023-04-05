@@ -77,12 +77,12 @@ class CreateChannel(APIView):
                 credentials = Credentials.from_authorized_user_info(
                     info=youtube_user.credential)
 
-                print('======serializer data ==>> ', serializer.data)
+                print('====== serializer data ==>> ', serializer.data)
                 print('== credentials ==> ', credentials)
                 print('======= user => ', youtube_user)
                 data = serializer.data
                 channel_id = self.create_youtube_channel(credentials, data)
-                print('=== new id== ', channel_id)
+                print('=== new id == ', channel_id)
 
                 respons_data = {
                     'id': channel_id,
@@ -102,6 +102,7 @@ class CreateChannel(APIView):
         youtube = build('youtube', 'v3', credentials=credentials)
 
         print('=============== channel creation ====')
+        # print('channels =>',[channel for channel in youtube.channels().list() ])
 
         # Create a new channel with the specified title and description
         channel_title = data.get('title')
@@ -120,7 +121,8 @@ class CreateChannel(APIView):
 
         # Extract the new channel ID from the response
         channel_id = channel_response['id']
-
+        print('========== Channel ID ========', channel_id)
+       
         # Return the channel ID
         return channel_id
 
