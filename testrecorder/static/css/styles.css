@@ -150,20 +150,6 @@ img {
   color: var(--white-clr);
 }
 
-/* .story-name input,
-.lower-nav select{
-  background: var(--light-primary_clr);
-  color: var(--white-clr);
-  font-size: 1rem;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  margin: 0 1rem;
-} */
-/* .story-name input{
-  width: 80%;
-  margin: 0 auto;
-} */
 .story-name a{
   color: var(--white-clr);
 }
