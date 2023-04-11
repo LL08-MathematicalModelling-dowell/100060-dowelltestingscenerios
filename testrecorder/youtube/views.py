@@ -60,73 +60,6 @@ def get_user_credentials(request, the_channel_title):
         # if the user doesn't have a YoutubeUserCredential object, return an error response with 401 Unauthorized status code
         return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # retrieve the user's credentials associated with the YoutubeUserCredential object
-    # credentials = Credentials.from_authorized_user_info(
-    #         info=youtube_user.credential)
-
-    '''
-    # Check if session has channel information
-    if not request.session.get('channel_details'):
-        # Fetch credentials and add to session
-        queryset = ChannelsRecord.objects.filter(
-            channel_title = the_channel_title)
-        if queryset.exists():
-            fetched_channel = queryset.first()
-            print("Channel id: ", fetched_channel.channel_id)
-            print("Channel title: ", fetched_channel.channel_title)
-            #print("Channel credentials: ", fetched_channel.channel_credentials)
-            request.session['channel_details'] = {
-                "channel_id":fetched_channel.channel_id,
-                "channel_title":fetched_channel.channel_title,
-                "channel_credentials": fetched_channel.channel_credentials
-            }
-
-            # Test session channel information
-            """session_channel = request.session.get('channel_details')
-            print("Session Channel id: ", session_channel["channel_id"])
-            print("Session Channel title: ", session_channel["channel_title"])
-            print("Session Channel credentials: ", session_channel["channel_credentials"])"""
-        else:
-            msg = "A channel with the title "+the_channel_title+" does not exist!"
-            raise Exception(msg)
-    else:
-        print("session has credentials")
-
-    # Check if the channel is session is same as the one we need
-    session_channel = request.session.get('channel_details')
-    if the_channel_title != session_channel["channel_title"]:
-        print("session has different credentials")
-                # Fetch credentials and add to session
-        queryset = ChannelsRecord.objects.filter(
-            channel_title = the_channel_title)
-        if queryset.exists():
-            fetched_channel = queryset.first()
-            print("Channel id: ", fetched_channel.channel_id)
-            print("Channel title: ", fetched_channel.channel_title)
-            #print("Channel credentials: ", fetched_channel.channel_credentials)
-            request.session['channel_details'] = {
-                "channel_id":fetched_channel.channel_id,
-                "channel_title":fetched_channel.channel_title,
-                "channel_credentials": fetched_channel.channel_credentials
-            }
-
-            # Test session channel information
-            """print("Session Channel id: ", session_channel["channel_id"])
-            print("Session Channel title: ", session_channel["channel_title"])
-            print("Session Channel credentials: ", session_channel["channel_credentials"])"""
-        else:
-            msg = "A channel with the title "+the_channel_title+" does not exist!"
-            raise Exception(msg)
-    else:
-        print("session has the credentials we need")
-    
-
-    # Return current credentials
-    session_channel = request.session.get('channel_details')
-    current_channel_credentials = session_channel["channel_credentials"]
-    return current_channel_credentials
-    '''
-
 
 def index(request):
     return HttpResponse(print_index_table())
@@ -543,44 +476,43 @@ def insert_stream(youtube):
     return stream_dict
 
 
-def create_broadcast(videoPrivacyStatus, testNameValue, request):
-    """
-        Creates a broadcast with a livestream bound
-    """
+# def create_broadcast(videoPrivacyStatus, testNameValue, request):
+#     """
+#         Creates a broadcast with a livestream bound
+#     """
 
-    # Opening JSON file
-    """with open(credentials_file) as json_file:
-        credentials = json.load(json_file)"""
+#     # Opening JSON file
+#     """with open(credentials_file) as json_file:
+#         credentials = json.load(json_file)"""
 
-    # Get current channel credetials
-    channel_title = request.data.get("channel_title")
-    # json.loads(get_user_credentials(request, channel_title))
-    credentials = get_user_credentials(request, channel_title)
+#     # Get current channel credetials
+#     channel_title = request.data.get("channel_title")
+#     # json.loads(get_user_credentials(request, channel_title))
+#     credentials = get_user_credentials(request, channel_title)
 
-    credentials = google.oauth2.credentials.Credentials(**credentials)
+#     credentials = google.oauth2.credentials.Credentials(**credentials)
 
-    youtube = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+#     youtube = googleapiclient.discovery.build(
+#         API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-    # Create broadcast
-    new_broadcast_id = insert_broadcast(
-        youtube, videoPrivacyStatus, testNameValue)
+#     # Create broadcast
+#     new_broadcast_id = insert_broadcast(
+#         youtube, videoPrivacyStatus, testNameValue)
 
-    # Create stream
-    stream_dict = insert_stream(youtube)
+#     # Create stream
+#     stream_dict = insert_stream(youtube)
 
-    # Bind livestream and broadcast
-    stream_dict['new_broadcast_id'] = new_broadcast_id
-    stream_id = stream_dict['newStreamId']
-    bind_broadcast(youtube, new_broadcast_id, stream_id)
+#     # Bind livestream and broadcast
+#     stream_dict['new_broadcast_id'] = new_broadcast_id
+#     stream_id = stream_dict['newStreamId']
+#     bind_broadcast(youtube, new_broadcast_id, stream_id)
 
-    # Serializing json
-    json_stream_dict = json.dumps(stream_dict)
-    print(json_stream_dict)
+#     # Serializing json
+#     json_stream_dict = json.dumps(stream_dict)
+#     print(json_stream_dict)
 
-    # return json_stream_dict
-    return stream_dict
-
+#     # return json_stream_dict
+#     return stream_dict
 
 class CreateBroadcastView(APIView):
     # parser_classes = (MultiPartParser, FormParser)
@@ -601,12 +533,60 @@ class CreateBroadcastView(APIView):
         print("videoPrivacyStatus: ", videoPrivacyStatus)
         print("testNameValue: ", testNameValue)
 
-        stream_dict = create_broadcast(
+        stream_dict = self.create_broadcast(
             videoPrivacyStatus, testNameValue, request)
         # stream_dict = {"Hello":"Testing for now!"}
         print("stream_dict: ", stream_dict)
 
         return Response(stream_dict, status=status.HTTP_201_CREATED)
+
+    def create_broadcast(self, videoPrivacyStatus, testNameValue, request):
+        """
+        Creates a broadcast with a live stream bound
+        """
+        # Get current channel credentials
+        channel_title = request.data.get("channel_title")
+        credentials = get_user_credentials(request, channel_title)
+        credentials = google.oauth2.credentials.Credentials(**credentials)
+
+        # Build the YouTube API client
+        youtube = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+        # Check if the user's account has live streaming enabled
+        list_response = youtube.liveBroadcasts().list(
+            part='id,snippet,contentDetails,status',
+            mine=True
+        ).execute()
+        try:
+            channel_id = list_response['items'][0]['snippet']['channelId']
+        except:
+            raise Exception("User does not have a YouTube channel")
+
+        ingestion_info = youtube.liveStreams().list(
+            part='cdn',
+            id=list_response['items'][0]['contentDetails']['boundStreamId']
+        ).execute()
+        if not ingestion_info['items'][0]['cdn']['ingestionInfo']['isLinked']:
+            raise Exception("User does not have live streaming enabled")
+
+        # Create a new broadcast
+        new_broadcast_id = insert_broadcast(
+            youtube, videoPrivacyStatus, testNameValue)
+
+        # Create a new stream
+        stream_dict = insert_stream(youtube)
+
+        # Bind the stream to the broadcast
+        stream_dict['new_broadcast_id'] = new_broadcast_id
+        stream_id = stream_dict['newStreamId']
+        bind_broadcast(youtube, new_broadcast_id, stream_id)
+
+        # Serialize the stream dictionary to JSON
+        json_stream_dict = json.dumps(stream_dict)
+        print(json_stream_dict)
+
+        return stream_dict
 
 
 # Transitions a broadcast to complete status
