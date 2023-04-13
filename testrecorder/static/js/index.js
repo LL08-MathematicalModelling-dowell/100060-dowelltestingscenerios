@@ -3,7 +3,7 @@ const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
-const audioCheckbox = document.getElementById('audio-settings')
+//const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
@@ -142,7 +142,7 @@ async function captureScreen(mediaConstraints = {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
-  audio: true
+ // audio: true
 }) {
 
   try {
@@ -158,6 +158,19 @@ async function captureScreen(mediaConstraints = {
     resetStateOnError();
   }
 }
+
+//@Muhammad Ahmed 
+// VOice mute/Unmute
+async function micphoneStatus(){
+  var microphoen_btn = null;
+  microphoen_btn= document.getElementById("audio-settings");
+  if (microphoen_btn.checked == true) {
+    return microphoen_btn = true;
+  } else {
+   return microphoen_btn = false;
+  }
+}
+
 
 // Records webcam and audio
 async function recordStream() {
@@ -211,7 +224,7 @@ async function recordMergedStream() {
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
-    let recordAudio = audioCheckbox.checked;
+    let recordAudio = await micphoneStatus();
     let muteState = !recordAudio;
     //console.log("muteState: ",muteState)
 
@@ -368,7 +381,7 @@ async function recordScreenAndAudio() {
   screenStream = await captureScreen();
 
   // Check if we need to add audio stream
-  let recordAudio = audioCheckbox.checked;
+  let recordAudio = await micphoneStatus();
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
@@ -479,7 +492,7 @@ async function startRecording() {
 
   // Enable or disable audio recording
   try {
-    let recordAudio = audioCheckbox.checked;
+    let recordAudio = await micphoneStatus();
 
     if (recordAudio == true) {
       // Enable audio recording for webcam
@@ -2416,7 +2429,7 @@ async function insertVideoIntoTodaysPlaylist() {
 function sendRTMPURL() {
   showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
-  let recordAudio = audioCheckbox.checked;
+  let recordAudio = micphoneStatus();
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
