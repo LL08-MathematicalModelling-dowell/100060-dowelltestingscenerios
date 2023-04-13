@@ -2288,8 +2288,8 @@ async function uploadWithoutClickupNotes() {
 async function insertVideoIntoPlaylist() {
   // hide the creating broadcast modal
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  let responseStatus = null;
   let csrftoken = await getCookie('csrftoken');
+  let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
     body: JSON.stringify({
@@ -2348,6 +2348,7 @@ async function insertVideoIntoPlaylist() {
 async function insertVideoIntoTodaysPlaylist() {
   showCreatingBroadcastModal(false);
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let csrftoken = await getCookie('csrftoken');
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
@@ -2357,7 +2358,8 @@ async function insertVideoIntoTodaysPlaylist() {
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": csrftoken
     }
   })
     .then(response => {
