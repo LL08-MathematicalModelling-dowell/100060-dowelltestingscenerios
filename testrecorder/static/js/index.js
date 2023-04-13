@@ -617,7 +617,7 @@ async function validateModal() {
 
   // validate channel name
   let currentChannelTitleIsValid = true
-  currentChannelTitle = document.getElementById("selectChannel").value;
+  currentChannelTitle = document.getElementById("selectChannel").name;
   // Remove leading and trailling white space
   currentChannelTitle = currentChannelTitle.trim();
   let channelTitleErrorMsg = "";
@@ -644,7 +644,7 @@ async function validateModal() {
 
   // Validate username
   let docIsValid = true;
-  usernameValue = document.getElementById("username").value;
+  usernameValue = document.getElementById("username").name;
   // Remove leading and trailling white space
   usernameValue = usernameValue.trim();
   let msg = "";
@@ -2647,7 +2647,7 @@ async function handleCreatePlaylistRequest() {
   document.getElementById("p_title-error").innerHTML = msg;
 
   // Get playlist description
-  let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
+  // let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
 
   // Get playlist privacy status
   // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
@@ -2688,7 +2688,7 @@ async function createNewPlaylist() {
   const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
   // const csrf_token = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
   const channel = document.getElementById("selectChannel_1").value;
-  const description = document.getElementById("playlist_description_modal").value;
+  // const description = document.getElementById("playlist_description_modal").value;
   const title = document.getElementById("playlist_title_modal").value;
   let privacy = document.querySelector('input[name="privacy_status"]:checked').value;
   // const privacy = document.getElementById("playlist_privacy_status_modal").value;
@@ -2697,7 +2697,7 @@ async function createNewPlaylist() {
     method: 'POST',
     body: JSON.stringify({
       new_playlist_title: title,
-      new_playlist_description: description,
+      new_playlist_description: "",
       new_playlist_privacy: privacy,
       channel_title: channel
     }),
@@ -2728,7 +2728,7 @@ async function createNewPlaylist() {
         document.getElementById("selectChannel_1").value = "";
         document.getElementById("playlist_title_modal").value = "";
         document.querySelector('input[name="privacy_status"]:checked').value = "";
-        document.getElementById("playlist_description_modal").value = "";
+        // document.getElementById("playlist_description_modal").value = "";
       } else if (responseStatus == 409) {
         // Server error message
         console.log("Server Error Message: ", json)
@@ -3055,6 +3055,8 @@ async function fetchUserChannel() {
           opt_1.innerHTML = channel_title;
           channelSelect.append(opt);
           channelSelect_1.append(opt_1);
+          channelSelect.value = `Channel/${channel_title}`;
+          channelSelect.name = channel_title;
           console.log(opt);
         })
       } else {
@@ -3071,14 +3073,19 @@ async function fetchUserChannel() {
 }
 fetchUserChannel()
 
-function getSelectedChannelName(selectObject){
-  let channel = selectObject.value;
-  console.log(channel);
+// function getSelectedChannelName(selectObject){
+//   let channel = selectObject.value;
+//   console.log(channel);
+//   fetchUserPlaylists(channel)
+// }
+async function loadUserPlaylist(){
+  let channel = document.getElementById("selectChannel").name;
   fetchUserPlaylists(channel)
 }
+loadUserPlaylist()
 
 let selectUserPlaylist = document.querySelector(".selectPlaylist")
-async function fetchUserPlaylists(channelName) {
+async function fetchUserPlaylists(channel_title) {
   let csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
   myHeaders.append('Accept', 'application/json');
@@ -3135,7 +3142,7 @@ function resetonStartRecording(){
 
   // reset video title 
   document.querySelector(".video-title").innerHTML = "";
-  document.querySelector('#selectChannel').disabled = false;
+  document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
   document.querySelector('#view_records').disabled = false;
   document.querySelector('#test-name').disabled = false;

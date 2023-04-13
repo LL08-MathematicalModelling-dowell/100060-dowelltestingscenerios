@@ -18,9 +18,10 @@
         <div class="authenticated-user">
             
             <div class="lower-nav-item">
-                <select name="channel" id="selectChannel" onChange="getSelectedChannelName(this)">
+                <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                {% comment %} <select name="channel" id="selectChannel" disabled>
                     <option value="">Select Channel</option>
-                  </select>
+                  </select> {% endcomment %}
                 <!--<select name="channel" id="selectChannel">
                     <option value="">Select Channel</option>
                   </select>-->
@@ -29,8 +30,9 @@
             <!-- end single select -->
             <div class="lower-nav-item">
                 <!-- single select -->
-                <select name="playlist" class="selectPlaylist" id="selectPlaylist">
+                <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
                     <option value="">Select Playlist</option>
+                    {% comment %} <input type="text" name="" id="searchPlaylist" placeholder="Search playlist ..." onkeyup="filterFunction()"> {% endcomment %}
                 </select>
                 <div style="color:red;" id="playlist-error"></div>
                 <!-- end single select -->
@@ -41,26 +43,23 @@
               <div style="color:red;" id="test-name-error"></div>
             </div> 
             <!-- Story Name -->
-            <div class="lower-nav-item lower-nav-item-flex">
-                <!-- user Name -->
-                <div class="story-name">
-                    <input type="text" name="" id="username" placeholder="User" value="{{ user.username }}" disabled>
-                <div style="color:red;" id="username-error"></div>
-                </div>
-                <div class="">
-                    <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a></div>
+                <div class="lower-nav-item-flex lower-nav-item">
+                    <span>
+                        <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="User/{{ user.username }}" disabled>
+                        <div style="color:red;" id="username-error"></div>
+                    </span>
+                    <span>
+                        <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
+                        <div style="color:red;" id="username-error"></div>
+                    </span>
+                {% comment %} </div> {% endcomment %}
     
                 </div>
         </div>
         {% else %}
-        <div class="non-authenticated-user">
-            <div class="lower-nav-item">
-            <div style="color:white;">Please Click on Login to Start Recording</div>
-            </div> 
             <div class="story-name lower-nav-item">
-                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google</a>
+                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>
             </div>
-        </div>
         {% endif %}
         <!-- user Name -->
     </div>
@@ -102,6 +101,7 @@
             <div style="color:red;" id="new-playlist-title-error"></div>
             </form>
         </div> {% endcomment %}
+        {% if user.is_authenticated %}
         <div class="main-content-btns">
             <div class="create-playlist-btn tooltip-container">
                 {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
@@ -138,9 +138,26 @@
                 <button id="view_records" onClick="showAddChannelModal()">
                     <i class="fab fa-youtube"></i>
                 </button>
-                <span class="tooltip-text" >Add Channel</span>
+                <span class="tooltip-text" >Save Channel Details</span>
             </div>
         </div>
+        {% else %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
+                <span class="tooltip-text">Login First</span>
+
+            </div>
+            <div class="record-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+            <div class="add-channel-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fab fa-youtube"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+        </div>
+        {% endif %}
         </div>
     </main>
 
@@ -698,15 +715,10 @@
                             <label class="form-label plst required"><strong>Select channel</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_channel-error"></p>
                             <!-- {{ add_playlist.channel }} -->
-                            <select class='form-control select2 select2-hidden-accessible' name="channel" id="selectChannel_1" >
-                                <option value="">Select Channel</option>
+                            <select class='form-control' name="channel" id="selectChannel_1" >
+                                {% comment %} <option value="">Select Channel</option> {% endcomment %}
                               </select>
                             <div style="color:red;" id="channelname-error"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label plst required"><strong>Description</strong></label>
-                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_description-error"></p>
-                            {{ add_playlist.playlist_description }}                            
                         </div>
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Select privacy status</strong></label>
@@ -836,7 +848,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add New Channel</h5>
+                <h5 class="modal-title">Save Channel Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-add-channel-modal"></button>
             </div>
@@ -856,7 +868,7 @@
                     </div>
                     <div class="modal-footer">
                         <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
-                        <button type="submit" class="btn btn-success" id="add-channel-btn" >Add</button>
+                        <button type="submit" class="btn btn-success" id="add-channel-btn" >Save</button>
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>

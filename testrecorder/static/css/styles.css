@@ -123,10 +123,8 @@ img {
 .authenticated-user{
   display: grid;
   grid-template-columns: repeat(4, 25%);
-}
-.non-authenticated-user{
-  display: grid;
-  grid-template-columns: repeat(2, 50%);
+  align-items: center;
+  /* place-items: center; */
 }
 
 .lower-nav-item select,
@@ -145,6 +143,17 @@ img {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+#username{
+  display: inline;
+  width: fit-content;
+  text-align: right;
+  padding-right: 0.2rem;
+  color: var(--white-clr);
+  background: transparent;
+}
+.lower-nav-item-flex a{
+  color: var(--white-clr);
 }
 #app-status{
   color: var(--white-clr);
@@ -165,10 +174,7 @@ img {
   border-radius: 0.5rem;
 } 
 .main-content-btns{
-  /* position: absolute; */
   display: flex;
-  /* top: 50%;
-  left: 50%; */
   justify-content: center;
   align-items: center;
 }
@@ -279,6 +285,17 @@ img {
   outline: none;
   border: none;
 }
+.create-playlist-btn a {
+  background: var(--gray-clr);
+  padding: 0.1rem 0.6rem;
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
 .create-playlist-btn button:disabled {
   background: rgba(128, 128, 128, 0.5);
 }
@@ -287,6 +304,17 @@ img {
 .record-btn button{
   background: green;
   padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.record-btn a{
+  background: green;
+  padding: 0.1rem 0.6rem;
   font-size: 1.4rem;
   margin-right: 0.5rem;
   border-radius: 0.5rem;
@@ -323,6 +351,16 @@ img {
 .add-channel-btn button {
   background: black;
   padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.add-channel-btn a {
+  background: black;
+  padding: 0.1rem 0.6rem;
   font-size: 1.4rem;
   border-radius: 0.5rem;
   cursor: pointer;
@@ -549,4 +587,19 @@ img {
   .form-container {
     width: 50%;
   }
+}
+.select2-container--default .select2-selection--single  {
+  background-color: transparent !important;
+  border: none !important;
+  /* border-radius: 4px; */
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--white-clr) !important;
+  /* border-radius: 4px; */
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: var(--white-clr) transparent transparent transparent;
+}
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+  border-color: transparent transparent var(--white-clr) transparent !important;
 }
