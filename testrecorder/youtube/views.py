@@ -546,7 +546,7 @@ class CreateBroadcastView(APIView):
             error_data = {
                 'message': e.reason,
             }
-            print(f'=========== Error Broadcast null ======= {error_data}')
+            print(f'Broadcast Error: {error_data}')
             return Response(error_data, status=status.HTTP_403_FORBIDDEN)
 
         return Response(stream_dict, status=status.HTTP_201_CREATED)
@@ -555,9 +555,8 @@ class CreateBroadcastView(APIView):
         """
         Creates a broadcast with a live stream bound
         """
-        logger.info('===========  Creating broadcast... ===========')
+        logger.info('Creating broadcast... ===========')
         # Get current channel credentials
-        print('===========  Creating broadcast... ===========')
         channel_title = request.data.get("channel_title")
         credentials = get_user_credentials(request, channel_title)
         credentials = google.oauth2.credentials.Credentials(**credentials)
@@ -574,8 +573,8 @@ class CreateBroadcastView(APIView):
         try:
             channel_id = list_response['items'][0]['snippet']['channelId']
         except:
-            logger.critical('======= User does not have a YouTube channel =========')
-            print('======= User does not have a YouTube channel =========')
+            logger.critical('User does not have a YouTube channel!!!')
+            print('User does not have a YouTube channel!!!')
             raise Exception("User does not have a YouTube channel")
 
         ingestion_info = youtube.liveStreams().list(

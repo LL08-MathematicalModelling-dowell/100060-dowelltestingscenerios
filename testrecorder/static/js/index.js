@@ -629,14 +629,14 @@ async function validateModal() {
     currentChannelTitleIsValid = false;
   }
   document.getElementById("channelname-error").innerHTML = channelTitleErrorMsg;
-  
+
   // validate playlist name
   let playlistIsValid = true;
   userPlaylistSelection = document.getElementById("selectPlaylist").value;
   userPlaylistSelection = userPlaylistSelection.trim();
   console.log("userPlaylistSelection:", userPlaylistSelection);
   let playlistError = "";
-  if (userPlaylistSelection === ""){
+  if (userPlaylistSelection === "") {
     playlistError = "Please select a playlist";
     playlistIsValid = false;
   }
@@ -1286,30 +1286,41 @@ async function createBroadcast() {
   await fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders })
     .then((response) => {
       if (response.status != 201) {
-        if (response.status === 403){
-          return response.json().then(data => {throw new Error(data.message)});
+        if (response.status === 403) {
+          return response.json().then(data => {
+            console.error(`Error: ${data.message}`);
+            resetStateOnError();
+            showErrorModal(data.message);
+          });
         } else {
-        throw new Error("Error when creating broadcast!");
-      }
+          throw new Error("Error when creating broadcast!");
+        }
       } else {
         broadcastCreated = true;
         return response.json();
       }
     })
     .then((json) => {
-      data = json;
-      console.log("data: ", data);
-      newStreamId = data.newStreamId;
-      newStreamName = data.newStreamName;
-      newStreamIngestionAddress = data.newStreamIngestionAddress;
-      //newRtmpUrl=data.newRtmpUrl;
-      newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
-      newBroadcastID = data.new_broadcast_id;
-      console.log("newStreamId:", newStreamId);
-      console.log("newStreamName:", newStreamName);
-      console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-      console.log("newRtmpUrl:", newRtmpUrl);
-      console.log("new_broadcast_id:", newBroadcastID);
+      try {
+        data = json;
+        // console.log("data: ", data);
+        newStreamId = data.newStreamId;
+        newStreamName = data.newStreamName;
+        newStreamIngestionAddress = data.newStreamIngestionAddress;
+        //newRtmpUrl=data.newRtmpUrl;
+        newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
+        newBroadcastID = data.new_broadcast_id;
+        // console.log("newStreamId:", newStreamId);
+        // console.log("newStreamName:", newStreamName);
+        // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
+        // console.log("newRtmpUrl:", newRtmpUrl);
+        // console.log("new_broadcast_id:", newBroadcastID);
+      }
+      catch {
+        // resetStateOnError();
+        // showErrorModal();
+        return
+      }
     })
     .catch((err) => {
       console.error("Broadcast creation error: ", err)
@@ -1454,9 +1465,16 @@ async function shareLinkModal() {
 
 
 // Shows upload failed modal
-async function showErrorModal() {
-  let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
-  errorModal.show();
+async function showErrorModal(liveStreamError = null) {
+  if (liveStreamError != null) {
+    let errorModal = new bootstrap.Modal(document.getElementById('livestreamErrorModal'));
+    // let msg_p = errorModal.querySelector('#livestreamErrorOccurred');
+    document.querySelector('#livestreamErrorOccurred').innerHTML = liveStreamError;
+    errorModal.show();
+  } else {
+    let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
+    errorModal.show();
+  }
 }
 
 // Timer to check network status every second
@@ -3077,7 +3095,7 @@ async function fetchUserChannel() {
 }
 fetchUserChannel()
 
-function getSelectedChannelName(selectObject){
+function getSelectedChannelName(selectObject) {
   let channel = selectObject.value;
   console.log(channel);
   fetchUserPlaylists(channel)
@@ -3107,7 +3125,7 @@ async function fetchUserPlaylists(channelName) {
         document.getElementById("app-status").innerHTML = msg;
         let userPlaylists = json.id_title_dict;
         console.log("userPlaylists:", userPlaylists);
-        for (const key in userPlaylists){
+        for (const key in userPlaylists) {
           console.log(`${key}: ${userPlaylists[key]}`);
           let opt = document.createElement("option");
           opt.innerHTML = userPlaylists[key];
@@ -3126,7 +3144,7 @@ async function fetchUserPlaylists(channelName) {
         msg = "STATUS: Failed to Fetch Playlists."
         document.getElementById("app-status").innerHTML = msg;
       }
-        
+
     }).catch(error => {
       console.error(error);
       msg = "STATUS: Failed to Fetch Playlists."
@@ -3134,7 +3152,7 @@ async function fetchUserPlaylists(channelName) {
     });
 }
 
-function resetonStartRecording(){
+function resetonStartRecording() {
 
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
