@@ -1289,8 +1289,12 @@ async function createBroadcast() {
         if (response.status === 403) {
           return response.json().then(data => {
             console.error(`Error: ${data.message}`);
+            let errMsg = data.message;
             resetStateOnError();
-            showErrorModal(data.message);
+            if (errMsg === 'The user is not enabled for live streaming.'){
+              errMsg = 'This youtube account is not enabled for live streaming.';
+            }
+            showErrorModal(errMsg);
           });
         } else {
           throw new Error("Error when creating broadcast!");
