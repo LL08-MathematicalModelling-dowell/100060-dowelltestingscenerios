@@ -1286,7 +1286,11 @@ async function createBroadcast() {
   await fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders })
     .then((response) => {
       if (response.status != 201) {
+        if (response.status === 403){
+          return response.json().then(data => {throw new Error(data.message)});
+        } else {
         throw new Error("Error when creating broadcast!");
+      }
       } else {
         broadcastCreated = true;
         return response.json();

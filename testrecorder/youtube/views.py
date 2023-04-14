@@ -20,7 +20,10 @@ from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from youtube.models import ChannelsRecord, YoutubeUserCredential
 from django.contrib.auth import logout
+import logging
 
+
+logger = logging.getLogger(__name__)
 # When running locally, disable OAuthlib's HTTPs verification.
 # ACTION ITEM for developers:
 #     When running in production *do not* leave this option enabled.
@@ -533,10 +536,18 @@ class CreateBroadcastView(APIView):
         print("videoPrivacyStatus: ", videoPrivacyStatus)
         print("testNameValue: ", testNameValue)
 
-        stream_dict = self.create_broadcast(
-            videoPrivacyStatus, testNameValue, request)
-        # stream_dict = {"Hello":"Testing for now!"}
-        print("stream_dict: ", stream_dict)
+        try:
+            stream_dict = self.create_broadcast(
+                videoPrivacyStatus, testNameValue, request)
+            # stream_dict = {"Hello":"Testing for now!"}
+            print("stream_dict: ", stream_dict)
+        except Exception as e:
+            # HttpError as e:
+            error_data = {
+                'message': e.reason,
+            }
+            print(f'=========== Error Broadcast null ======= {error_data}')
+            return Response(error_data, status=status.HTTP_403_FORBIDDEN)
 
         return Response(stream_dict, status=status.HTTP_201_CREATED)
 
@@ -544,7 +555,9 @@ class CreateBroadcastView(APIView):
         """
         Creates a broadcast with a live stream bound
         """
+        logger.info('===========  Creating broadcast... ===========')
         # Get current channel credentials
+        print('===========  Creating broadcast... ===========')
         channel_title = request.data.get("channel_title")
         credentials = get_user_credentials(request, channel_title)
         credentials = google.oauth2.credentials.Credentials(**credentials)
@@ -561,6 +574,8 @@ class CreateBroadcastView(APIView):
         try:
             channel_id = list_response['items'][0]['snippet']['channelId']
         except:
+            logger.critical('======= User does not have a YouTube channel =========')
+            print('======= User does not have a YouTube channel =========')
             raise Exception("User does not have a YouTube channel")
 
         ingestion_info = youtube.liveStreams().list(
@@ -808,8 +823,7 @@ class FetchPlaylistsView(APIView):
 
             # Extract playlist id and names from data
             playlists = response['items']"""
-            print(
-                '=========================== ready to fetch playlist with pagination =====')
+            print('=========================== ready to fetch playlist with pagination =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
