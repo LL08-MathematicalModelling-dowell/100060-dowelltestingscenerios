@@ -56,7 +56,7 @@ def get_user(sender, **kwargs):
             user=user, credential=credentials)
         youtube_user.save()
 
-     # delete the 'oauth_data' token from the cache    
+     # delete the 'oauth_data' token from the cache
     cache.delete('oauth_data')
 
     # returns the 'user' object from the signal 'kwargs' parameter
