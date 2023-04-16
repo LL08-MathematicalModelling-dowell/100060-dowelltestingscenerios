@@ -161,15 +161,17 @@ async function captureScreen(mediaConstraints = {
 
 //@Muhammad Ahmed 
 // VOice mute/Unmute
-async function micphoneStatus(){
+
+async function micphoneStatus() {
   var microphoen_btn = null;
-  microphoen_btn= document.getElementById("audio-settings");
+  microphoen_btn = document.getElementById("audio-settings");
   if (microphoen_btn.checked == true) {
     return microphoen_btn = true;
   } else {
     return microphoen_btn = false;
   }
 }
+
 
 
 // Records webcam and audio
