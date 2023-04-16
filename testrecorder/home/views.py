@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from youtube.forms import AddChannelRecord, CreatePlaylist
+from youtube.models import ChannelsRecord
 
 
 load_dotenv()
@@ -48,9 +49,10 @@ class HomePageView(TemplateView):
     def get(self, request, *args, **kwargs):
         """Handles get requests to '/'"""
         # create he form object to render
+        channelrecord= ChannelsRecord.objects.all()
         form = AddChannelRecord()
         add_playlist = CreatePlaylist()
-        return render(request, self.template_name, {'form': form, 'add_playlist': add_playlist})
+        return render(request, self.template_name, {'form': form, 'add_playlist': add_playlist, 'channelrecord':channelrecord})
     
     def post(self, request, *args, **kwargs):
         """Handles POST requests to '/'"""
