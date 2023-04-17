@@ -12,7 +12,6 @@
 
 {% block body %}
 <!-- lower nav -->
-
     <div class="lower-nav">
         {% load socialaccount %}
         {% if user.is_authenticated %}
@@ -68,12 +67,12 @@
 <!-- Main container -->
 <div class="contain">
 
-    <main class="main-contents">
-        <!--display video title-->
-        <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
+<main class="main-contents">
+    <!--display video title-->
+    <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
         <div class="video-component">
-            <video id="video" autoplay muted></video>
+        <video id="video" autoplay muted></video>
         </div>
         <!-- Settings and controls -->
                 <div class="main-content-check-boxes">
@@ -113,34 +112,16 @@
                     <i class="fas fa-save"></i>
                 </button>
                 <span class="tooltip-text">Create Play List</span>
-                </div>
-                <div class="record-btn tooltip-container">
-                    <button id="start" onClick="validateModal()">
-                        <i class="fas fa-record-vinyl"></i>
-                    </button>
-                    <!--<button id="start" onClick="showTestDetailsModal()">
+
+            </div>
+            <div class="record-btn tooltip-container">
+                <button id="start" onClick="validateModal()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>
+                <!--<button id="start" onClick="showTestDetailsModal()">
                     <i class="fas fa-record-vinyl"></i>
                 </button>-->
-                    <span class="tooltip-text">Start Recording</span>
-                </div>
-                <div class="stop-btn tooltip-container" style="display:none">
-                    <button id="stop" onClick="showGetTaskIdFromUserModal()">
-                        <i class="fas fa-stop-circle"></i>
-                    </button>
-                    <span class="tooltip-text">Stop Recording</span>
-                </div>
-                <div class="share-record-btn tooltip-container" style="display:none">
-                    <button id="share_records" onClick="shareLinkModal()">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                    <span class="tooltip-text">Share Video</span>
-                </div>
-                <div class="add-channel-btn tooltip-container">
-                    <button id="view_records" onClick="showAddChannelModal()">
-                        <i class="fab fa-youtube"></i>
-                    </button>
-                    <span class="tooltip-text">Save Channel Details</span>
-                </div>
+                <span class="tooltip-text">Start Recording</span>
             </div>
             <div class="stop-btn tooltip-container" style="display:none">
                 <button id="stop" onClick="showGetTaskIdFromUserModal()">
@@ -178,17 +159,16 @@
             </div>
         </div>
         {% endif %}
-
         </div>
     </main>
 
     <!-- Status bar -->
-    <div class="status-bar">
-        <div id="app-status">STATUS: Waiting to Record.</div>
-    </div>
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
     <!-- Test Details Modal Deleted -->
-
+    
     <!-- Share youtube link Modal -->
     <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -199,16 +179,11 @@
                         id="close-share-link-modal"></button>
                 </div>
                 <div class="modal-body modal-link">
-                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareToFacebook()"></i></a>
-                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareToTwitter()"></i></a>
-                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareToLinkedin()"></i></a>
-                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareToEmail()"></i></a>
-                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareToWhatsapp()"></i></a>
+                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook" onClick="shareToFacebook()"></i></a>
+                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin" onClick="shareToLinkedin()"></i></a>
+                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp" onClick="shareToWhatsapp()"></i></a>
                     <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
@@ -374,7 +349,7 @@
                         <i class="bi-x"></i>
                     </p>
                     <p>
-                        <i>For more information how to ctivate your youtube account for livestreaming click <a
+                        <i>For more information on how to activate your youtube account for livestreaming click <a
                                 href="https://support.google.com/youtube/answer/2474026?hl=en&co=GENIE.Platform%3DDesktop&oco=0"
                                 target="_blank" rel="noopener noreferrer">here!</a><i>
                     </p>
