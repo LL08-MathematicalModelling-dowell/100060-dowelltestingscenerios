@@ -577,13 +577,6 @@ class CreateBroadcastView(APIView):
             print('User does not have a YouTube channel!!!')
             raise Exception("User does not have a YouTube channel")
 
-        ingestion_info = youtube.liveStreams().list(
-            part='cdn',
-            id=list_response['items'][0]['contentDetails']['boundStreamId']
-        ).execute()
-        if not ingestion_info['items'][0]['cdn']['ingestionInfo']['isLinked']:
-            raise Exception("User does not have live streaming enabled")
-
         # Create a new broadcast
         new_broadcast_id = insert_broadcast(
             youtube, videoPrivacyStatus, testNameValue)
@@ -595,7 +588,6 @@ class CreateBroadcastView(APIView):
         stream_dict['new_broadcast_id'] = new_broadcast_id
         stream_id = stream_dict['newStreamId']
         bind_broadcast(youtube, new_broadcast_id, stream_id)
-
         # Serialize the stream dictionary to JSON
         json_stream_dict = json.dumps(stream_dict)
         print(json_stream_dict)

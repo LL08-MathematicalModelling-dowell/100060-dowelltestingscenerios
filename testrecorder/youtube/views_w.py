@@ -72,7 +72,7 @@ class UserChannels(APIView):
         # if the execution reaches this point, return an empty response with 404 Not Found status code
         return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-
+'''
 class CreateChannel(APIView):
     """Create a new YouTube channel for loggein user"""
     permission_classes = [
@@ -145,3 +145,4 @@ class CreateChannel(APIView):
 
 
 create_channel = CreateChannel.as_view()
+'''

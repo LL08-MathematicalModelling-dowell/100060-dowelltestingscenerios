@@ -5,7 +5,7 @@ from .views import (logout_view, index,test_api_request, create_broadcast,
                     CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, 
                     FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2,FetchChannels
 )
-from .views_w import CreateChannel, UserChannels, create_channel
+from .views_w import UserChannels
 
 urlpatterns = [
     path('', index, name='index'),
@@ -29,6 +29,4 @@ urlpatterns = [
     # URL pattern tha logs a user out
     path('logout/', logout_view, name='logout'),
     path('channels/', UserChannels.as_view(), name='user_channel'),
-    path('createchannel/', create_channel, name='create_channel'),
-
 ]

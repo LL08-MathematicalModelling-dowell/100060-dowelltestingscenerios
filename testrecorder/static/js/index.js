@@ -3,7 +3,7 @@ const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
-const audioCheckbox = document.getElementById('audio-settings')
+//const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
@@ -142,7 +142,7 @@ async function captureScreen(mediaConstraints = {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
-  audio: true
+ // audio: true
 }) {
 
   try {
@@ -158,6 +158,21 @@ async function captureScreen(mediaConstraints = {
     resetStateOnError();
   }
 }
+
+//@Muhammad Ahmed 
+// VOice mute/Unmute
+
+async function micphoneStatus() {
+  var microphoen_btn = null;
+  microphoen_btn = document.getElementById("audio-settings");
+  if (microphoen_btn.checked == true) {
+    return microphoen_btn = true;
+  } else {
+    return microphoen_btn = false;
+  }
+}
+
+
 
 // Records webcam and audio
 async function recordStream() {
@@ -211,7 +226,7 @@ async function recordMergedStream() {
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
-    let recordAudio = audioCheckbox.checked;
+    let recordAudio = await micphoneStatus();
     let muteState = !recordAudio;
     //console.log("muteState: ",muteState)
 
@@ -368,7 +383,7 @@ async function recordScreenAndAudio() {
   screenStream = await captureScreen();
 
   // Check if we need to add audio stream
-  let recordAudio = audioCheckbox.checked;
+  let recordAudio = await micphoneStatus();
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
@@ -479,7 +494,7 @@ async function startRecording() {
 
   // Enable or disable audio recording
   try {
-    let recordAudio = audioCheckbox.checked;
+    let recordAudio = await micphoneStatus();
 
     if (recordAudio == true) {
       // Enable audio recording for webcam
@@ -617,7 +632,7 @@ async function validateModal() {
 
   // validate channel name
   let currentChannelTitleIsValid = true
-  currentChannelTitle = document.getElementById("selectChannel").value;
+  currentChannelTitle = document.getElementById("selectChannel").name;
   // Remove leading and trailling white space
   currentChannelTitle = currentChannelTitle.trim();
   let channelTitleErrorMsg = "";
@@ -644,7 +659,7 @@ async function validateModal() {
 
   // Validate username
   let docIsValid = true;
-  usernameValue = document.getElementById("username").value;
+  usernameValue = document.getElementById("username").name;
   // Remove leading and trailling white space
   usernameValue = usernameValue.trim();
   let msg = "";
@@ -2314,8 +2329,8 @@ async function uploadWithoutClickupNotes() {
 async function insertVideoIntoPlaylist() {
   // hide the creating broadcast modal
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  let responseStatus = null;
   let csrftoken = await getCookie('csrftoken');
+  let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
     body: JSON.stringify({
@@ -2442,7 +2457,7 @@ async function insertVideoIntoTodaysPlaylist() {
 function sendRTMPURL() {
   showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
-  let recordAudio = audioCheckbox.checked;
+  let recordAudio = micphoneStatus();
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
@@ -2675,7 +2690,7 @@ async function handleCreatePlaylistRequest() {
   document.getElementById("p_title-error").innerHTML = msg;
 
   // Get playlist description
-  let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
+  // let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
 
   // Get playlist privacy status
   // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
@@ -2716,7 +2731,7 @@ async function createNewPlaylist() {
   const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
   // const csrf_token = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
   const channel = document.getElementById("selectChannel_1").value;
-  const description = document.getElementById("playlist_description_modal").value;
+  // const description = document.getElementById("playlist_description_modal").value;
   const title = document.getElementById("playlist_title_modal").value;
   let privacy = document.querySelector('input[name="privacy_status"]:checked').value;
   // const privacy = document.getElementById("playlist_privacy_status_modal").value;
@@ -2725,7 +2740,7 @@ async function createNewPlaylist() {
     method: 'POST',
     body: JSON.stringify({
       new_playlist_title: title,
-      new_playlist_description: description,
+      new_playlist_description: "",
       new_playlist_privacy: privacy,
       channel_title: channel
     }),
@@ -2756,7 +2771,7 @@ async function createNewPlaylist() {
         document.getElementById("selectChannel_1").value = "";
         document.getElementById("playlist_title_modal").value = "";
         document.querySelector('input[name="privacy_status"]:checked').value = "";
-        document.getElementById("playlist_description_modal").value = "";
+        // document.getElementById("playlist_description_modal").value = "";
       } else if (responseStatus == 409) {
         // Server error message
         console.log("Server Error Message: ", json)
@@ -3083,6 +3098,8 @@ async function fetchUserChannel() {
           opt_1.innerHTML = channel_title;
           channelSelect.append(opt);
           channelSelect_1.append(opt_1);
+          channelSelect.value = `Channel/${channel_title}`;
+          channelSelect.name = channel_title;
           console.log(opt);
         })
       } else {
@@ -3098,15 +3115,19 @@ async function fetchUserChannel() {
     });
 }
 fetchUserChannel()
-
-function getSelectedChannelName(selectObject) {
-  let channel = selectObject.value;
-  console.log(channel);
+// function getSelectedChannelName(selectObject){
+//   let channel = selectObject.value;
+//   console.log(channel);
+//   fetchUserPlaylists(channel)
+// }
+async function loadUserPlaylist(){
+  let channel = document.getElementById("selectChannel").name;
   fetchUserPlaylists(channel)
 }
+loadUserPlaylist()
 
 let selectUserPlaylist = document.querySelector(".selectPlaylist")
-async function fetchUserPlaylists(channelName) {
+async function fetchUserPlaylists(channel_title) {
   let csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
   myHeaders.append('Accept', 'application/json');
@@ -3163,7 +3184,7 @@ function resetonStartRecording() {
 
   // reset video title 
   document.querySelector(".video-title").innerHTML = "";
-  document.querySelector('#selectChannel').disabled = false;
+  document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
   document.querySelector('#view_records').disabled = false;
   document.querySelector('#test-name').disabled = false;

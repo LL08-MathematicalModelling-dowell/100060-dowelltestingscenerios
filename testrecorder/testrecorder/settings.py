@@ -114,6 +114,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 #ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
 
+
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
 ASGI_APPLICATION = 'testrecorder.asgi.application'
 
