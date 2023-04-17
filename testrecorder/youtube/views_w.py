@@ -13,6 +13,7 @@ from .models import YoutubeUserCredential, ChannelsRecord
 
 logger = logging.getLogger(__name__)
 
+
 class UserChannels(APIView):
     # user must be authenticated to access this view
     permission_classes = [IsAuthenticated]
@@ -57,7 +58,8 @@ class UserChannels(APIView):
                 )
                 channel_record.save()
             except Exception:
-                logger.warning('Error while saving user channel credential locally!')
+                logger.warning(
+                    'Error while saving user channel credential locally!')
             # return the channels in the response body with 200 OK status code
             return Response(channels, status=status.HTTP_200_OK)
         except Exception:
@@ -71,6 +73,7 @@ class UserChannels(APIView):
 
         # if the execution reaches this point, return an empty response with 404 Not Found status code
         return Response({}, status=status.HTTP_404_NOT_FOUND)
+
 
 '''
 class CreateChannel(APIView):
