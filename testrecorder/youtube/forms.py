@@ -53,7 +53,7 @@ class CreatePlaylist(forms.Form):
     playlist_title = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control',
                'id': 'playlist_title_modal',
-               'placeholder': 'Enter Playlist Title'
+               'placeholder': 'Enter Genre Name'
                }
     ))
     channel = forms.ChoiceField(choices=[], widget=forms.Select(

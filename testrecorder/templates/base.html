@@ -41,7 +41,10 @@
     {% include "footer.html" %}
     <script>
         $(document).ready(function () {
-            $('.search-playlist').select2();
+            $('.search-playlist').select2({
+                placeholder: "Genre",
+                allowClear: true
+            });
         });
     </script>
 </body>

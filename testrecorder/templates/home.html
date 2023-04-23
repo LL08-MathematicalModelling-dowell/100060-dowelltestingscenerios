@@ -31,15 +31,23 @@
             <div class="lower-nav-item">
                 <!-- single select -->
                 <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
-                    <option value="">Select Playlist</option>
+                    <option value=""></option>
                     {% comment %} <input type="text" name="" id="searchPlaylist" placeholder="Search playlist ..." onkeyup="filterFunction()"> {% endcomment %}
                 </select>
                 <div style="color:red;" id="playlist-error"></div>
                 <!-- end single select -->
             </div>
+            {% comment %} <div class="lower-nav-item">
+                <!-- single select -->
+                <select name="" class="" id="video-source">
+                    <option value="">Select a Camera</option>
+                </select>
+                <div style="color:red;" id="camera-error"></div>
+                <!-- end single select -->
+            </div> {% endcomment %}
             <!-- Story Name -->
             <div class="story-name lower-nav-item">
-              <input type="text" name="" id="test-name" placeholder="Video Title">
+              <input type="text" name="" id="test-name" placeholder="Title">
               <div style="color:red;" id="test-name-error"></div>
             </div> 
             <!-- Story Name -->
@@ -71,13 +79,13 @@
     <!--display video title-->
     <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
-        <div class="video-component">
+        <div class="video-component" id="screen">
         <video id="video" autoplay muted></video>
         </div>
         <!-- Settings and controls -->
                 <div class="main-content-check-boxes">
         <div class="setting-icon">
-            <input type="checkbox" name="webcam" id="webcam-recording">
+            <input type="checkbox" name="webcam" id="webcam-recording" onClick="showCameraModal()">
             <label for="webcam-recording"><i class="fas fa-camera"></i><p>Webcam</p></label>
         </div>
         <div class="setting-icon">
@@ -115,12 +123,12 @@
 
             </div>
             <div class="record-btn tooltip-container">
-                <button id="start" onClick="validateModal()">
+                {% comment %} <button id="start" onClick="validateModal()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button> {% endcomment %}
+                <button id="start" onClick="validateAll()">
                     <i class="fas fa-record-vinyl"></i>
                 </button>
-                <!--<button id="start" onClick="showTestDetailsModal()">
-                    <i class="fas fa-record-vinyl"></i>
-                </button>-->
                 <span class="tooltip-text">Start Recording</span>
             </div>
             <div class="stop-btn tooltip-container" style="display:none">
@@ -261,7 +269,30 @@
             </div>
         </div>
     </div>
+        
+    <!-- Select camera Modal -->
+<div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a Camera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="closecameraModal"></button>
+            </div>
+            <div class="modal-body">
+                <select name="" class="form-control" id="video-source">
+                    <option value="">Select a Camera</option>
+                </select>
+                <div style="color:red;" id="camera-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+            </div>
 
+        </div>
+    </div>
+</div>
     <!-- Creating broadcast in progress-->
     <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -699,7 +730,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
+                <h5 class="modal-title" style="text-align: cen;">Create New Genre</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-new-playlist-details-modal"></button>
             </div>
@@ -708,7 +739,7 @@
                     <form id="create-playlist">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Playlist title</strong></label>
+                            <label class="form-label plst required"><strong>Genre Name</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
                         </div>
