@@ -12,22 +12,6 @@
 
 {% block body %}
 <!-- lower nav -->
-<<<<<<< HEAD
-<div class="lower-nav">
-    {% load socialaccount %}
-    {% if user.is_authenticated %}
-    <div class="authenticated-user">
-
-        <div class="lower-nav-item">
-            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
-            {% comment %} <select name="channel" id="selectChannel" disabled>
-                <option value="">Select Channel</option>
-            </select> {% endcomment %}
-            <!--<select name="channel" id="selectChannel">
-                    <option value="">Select Channel</option>
-                  </select>-->
-            <div style="color:red;" id="channelname-error"></div>
-=======
     <div class="lower-nav">
         {% load socialaccount %}
         {% if user.is_authenticated %}
@@ -64,81 +48,22 @@
                 {% comment %} </div> {% endcomment %}
     
                 </div>
->>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
         </div>
-        <!-- end single select -->
-        <div class="lower-nav-item">
-            <!-- single select -->
-            <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
-                <option value="">Select Playlist</option>
-                {% comment %} <input type="text" name="" id="searchPlaylist" placeholder="Search playlist ..."
-                    onkeyup="filterFunction()"> {% endcomment %}
-            </select>
-            <div style="color:red;" id="playlist-error"></div>
-            <!-- end single select -->
-        </div>
-        <!-- Story Name -->
-        <div class="story-name lower-nav-item">
-            <input type="text" name="" id="test-name" placeholder="Video Title">
-            <div style="color:red;" id="test-name-error"></div>
-        </div>
-        <!-- Story Name -->
-        <div class="lower-nav-item-flex lower-nav-item">
-            <span>
-                <input type="text" name="{{ user.username }}" id="username" placeholder="User"
-                    value="User/{{ user.username }}" disabled>
-                <div style="color:red;" id="username-error"></div>
-            </span>
-            <span>
-                <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
-                <div style="color:red;" id="username-error"></div>
-            </span>
-            {% comment %}
-        </div> {% endcomment %}
-
-    </div>
-</div>
-{% else %}
-<div class="story-name lower-nav-item">
-    <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select
-        Channel</a>
-</div>
-{% endif %}
-<!-- user Name -->
-</div>
-<!-- end lower nav -->
+        {% else %}
+            <div class="story-name lower-nav-item">
+                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>
+            </div>
+        {% endif %}
+        <!-- user Name -->
+    </div>                      
+    <!-- end lower nav -->
 <!-- Main container -->
 <div class="contain">
 
-    <main class="main-contents">
-        <!--display video title-->
-        <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
+<main class="main-contents">
+    <!--display video title-->
+    <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
-<<<<<<< HEAD
-        <div class="video-component">
-            <video id="video" autoplay muted></video>
-        </div>
-        <!-- Settings and controls -->
-        <div class="main-content-check-boxes">
-            <div class="setting-icon">
-                <input type="checkbox" name="webcam" id="webcam-recording">
-                <label for="webcam-recording"><i class="fas fa-camera"></i>
-                    <p>Webcam</p>
-                </label>
-            </div>
-            <div class="setting-icon">
-                <input type="checkbox" name="screen" id="screen-recording" checked>
-                <label for="screen-recording"><i class="fas fa-desktop"></i>
-                    <p>Screen</p>
-                </label>
-            </div>
-            <div class="setting-icon">
-                <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()" checked>
-                <label for="audio-settings"><i class="fas fa-microphone-lines"></i>
-                    <p>Audio</p>
-                </label>
-            </div>
-=======
         <div class="video-component" id="screen">
         <video id="video" autoplay muted></video>
         </div>
@@ -156,64 +81,13 @@
             <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()"  checked>
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
->>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
 
-            <div class="setting-icon">
-                <input type="checkbox" name="public" id="public-videos">
-                <label for="public-videos"><i class="fas fa-globe"></i>
-                    <p>Public</p>
-                </label>
-            </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="public" id="public-videos">
+            <label for="public-videos"><i class="fas fa-globe"></i><p>Public</p></label>
+        </div>
         </div>
         <div class="input-start-record-btn">
-<<<<<<< HEAD
-            <!-- main content inputs -->
-            {% comment %} <div class="main-content-input">
-                <form>
-                    <input type="text" name="" id="new-playlist-tit" placeholder="Play List Title">
-                    <div style="color:red;" id="new-playlist-title-error"></div>
-                </form>
-            </div> {% endcomment %}
-            {% if user.is_authenticated %}
-            <div class="main-content-btns">
-                <div class="create-playlist-btn tooltip-container">
-                    {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
-                        <i class="fas fa-save"></i>
-                    </button> {% endcomment %}
-                    <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
-                        <i class="fas fa-save"></i>
-                    </button>
-                    <span class="tooltip-text">Create Play List</span>
-
-                </div>
-                <div class="record-btn tooltip-container">
-                    <button id="start" onClick="validateModal()">
-                        <i class="fas fa-record-vinyl"></i>
-                    </button>
-                    <!--<button id="start" onClick="showTestDetailsModal()">
-                    <i class="fas fa-record-vinyl"></i>
-                </button>-->
-                    <span class="tooltip-text">Start Recording</span>
-                </div>
-                <div class="stop-btn tooltip-container" style="display:none">
-                    <button id="stop" onClick="showGetTaskIdFromUserModal()">
-                        <i class="fas fa-stop-circle"></i>
-                    </button>
-                    <span class="tooltip-text">Stop Recording</span>
-                </div>
-                <div class="share-record-btn tooltip-container" style="display:none">
-                    <button id="share_records" onClick="shareLinkModal()">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                    <span class="tooltip-text">Share Video</span>
-                </div>
-                <div class="add-channel-btn tooltip-container">
-                    <button id="view_records" onClick="showAddChannelModal()">
-                        <i class="fab fa-youtube"></i>
-                    </button>
-                    <span class="tooltip-text">Save Channel Details</span>
-                </div>
-=======
         <!-- main content inputs -->
         {% comment %} <div class="main-content-input">
             <form>
@@ -241,35 +115,53 @@
                     <i class="fas fa-record-vinyl"></i>
                 </button>
                 <span class="tooltip-text">Start Recording</span>
->>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
             </div>
-            {% else %}
-            <div class="main-content-btns">
-                <div class="create-playlist-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
-                    <span class="tooltip-text">Login First</span>
+            <div class="stop-btn tooltip-container" style="display:none">
+                <button id="stop" onClick="showGetTaskIdFromUserModal()">
+                    <i class="fas fa-stop-circle"></i>
+                </button>
+                <span class="tooltip-text">Stop Recording</span>
+            </div>
+            <div class="share-record-btn tooltip-container" style="display:none">
+                <button id="share_records" onClick="shareLinkModal()">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <span class="tooltip-text">Share Video</span>
+            </div>
+            <div class="add-channel-btn tooltip-container">
+                <button id="view_records" onClick="showAddChannelModal()">
+                    <i class="fab fa-youtube"></i>
+                </button>
+                <span class="tooltip-text" >Save Channel Details</span>
+            </div>
+        </div>
+        {% else %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
+                <span class="tooltip-text">Login First</span>
 
-                </div>
-                <div class="record-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
-                    <span class="tooltip-text">Login First</span>
-                </div>
-                <div class="add-channel-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fab fa-youtube"></i></a>
-                    <span class="tooltip-text">Login First</span>
-                </div>
             </div>
-            {% endif %}
+            <div class="record-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+            <div class="add-channel-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fab fa-youtube"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+        </div>
+        {% endif %}
         </div>
     </main>
 
     <!-- Status bar -->
-    <div class="status-bar">
-        <div id="app-status">STATUS: Waiting to Record.</div>
-    </div>
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
     <!-- Test Details Modal Deleted -->
-
+    
     <!-- Share youtube link Modal -->
     <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -280,16 +172,11 @@
                         id="close-share-link-modal"></button>
                 </div>
                 <div class="modal-body modal-link">
-                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareToFacebook()"></i></a>
-                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareToTwitter()"></i></a>
-                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareToLinkedin()"></i></a>
-                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareToEmail()"></i></a>
-                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareToWhatsapp()"></i></a>
+                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook" onClick="shareToFacebook()"></i></a>
+                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin" onClick="shareToLinkedin()"></i></a>
+                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp" onClick="shareToWhatsapp()"></i></a>
                     <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
@@ -872,9 +759,9 @@
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
                                 id="p_channel-error"></p>
                             <!-- {{ add_playlist.channel }} -->
-                            <select class='form-control' name="channel" id="selectChannel_1">
+                            <select class='form-control' name="channel" id="selectChannel_1" >
                                 {% comment %} <option value="">Select Channel</option> {% endcomment %}
-                            </select>
+                              </select>
                             <div style="color:red;" id="channelname-error"></div>
                         </div>
                         <div class="mb-3">
@@ -1007,7 +894,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Save Channel Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-add-channel-modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="close-add-channel-modal"></button>
             </div>
             <div class="modal-body">
                 <form id="add-channel">
@@ -1028,7 +916,7 @@
                     </div>
                     <div class="modal-footer">
                         <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
-                        <button type="submit" class="btn btn-success" id="add-channel-btn">Save</button>
+                        <button type="submit" class="btn btn-success" id="add-channel-btn" >Save</button>
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
