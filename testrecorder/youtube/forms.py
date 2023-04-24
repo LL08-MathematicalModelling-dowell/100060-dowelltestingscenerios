@@ -44,16 +44,18 @@ class CreatePlaylist(forms.Form):
     #     # self.fields['channel'].choices = self.get_channel_choices()
 
     PRIVATE = 'private'
+    UNLISTED = 'unlisted'
     PUBLIC = 'Public'
     PRIVACY_STATUS = [
         (PRIVATE, 'private'),
+        (UNLISTED, 'unlisted'),
         (PUBLIC, 'public')
     ]
 
     playlist_title = forms.CharField(widget=forms.TextInput(
         attrs={'class': 'form-control',
                'id': 'playlist_title_modal',
-               'placeholder': 'Enter Playlist Title'
+               'placeholder': 'Enter Genre Name'
                }
     ))
     channel = forms.ChoiceField(choices=[], widget=forms.Select(
