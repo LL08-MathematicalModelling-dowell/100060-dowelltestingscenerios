@@ -17,39 +17,24 @@
         {% if user.is_authenticated %}
         <div class="authenticated-user">
             
-            <div class="lower-nav-item">
-                <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
-                {% comment %} <select name="channel" id="selectChannel" disabled>
-                    <option value="">Select Channel</option>
-                  </select> {% endcomment %}
-                <!--<select name="channel" id="selectChannel">
-                    <option value="">Select Channel</option>
-                  </select>-->
-                <div style="color:red;" id="channelname-error"></div>
+            <div class="story-name lower-nav-item">
+                <input type="text" name="" id="test-name" placeholder="Title">
+              <div style="color:red;" id="test-name-error"></div>
             </div>
+             <div class="lower-nav-item">
+            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                <div style="color:red;" id="channelname-error"></div>
+            </div> 
             <!-- end single select -->
             <div class="lower-nav-item">
                 <!-- single select -->
                 <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
                     <option value=""></option>
-                    {% comment %} <input type="text" name="" id="searchPlaylist" placeholder="Search playlist ..." onkeyup="filterFunction()"> {% endcomment %}
                 </select>
                 <div style="color:red;" id="playlist-error"></div>
                 <!-- end single select -->
             </div>
-            {% comment %} <div class="lower-nav-item">
-                <!-- single select -->
-                <select name="" class="" id="video-source">
-                    <option value="">Select a Camera</option>
-                </select>
-                <div style="color:red;" id="camera-error"></div>
-                <!-- end single select -->
-            </div> {% endcomment %}
             <!-- Story Name -->
-            <div class="story-name lower-nav-item">
-              <input type="text" name="" id="test-name" placeholder="Title">
-              <div style="color:red;" id="test-name-error"></div>
-            </div> 
             <!-- Story Name -->
                 <div class="lower-nav-item-flex lower-nav-item">
                     <span>
