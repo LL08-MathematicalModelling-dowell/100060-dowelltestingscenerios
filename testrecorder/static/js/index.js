@@ -5,6 +5,9 @@ const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
+// const selectCamerabutton = document.getElementById('choose-camera');
+const selectVideo = document.getElementById('video-source');
+let currentStream;
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
 let btnShareRecords = document.querySelector('.share-record-btn');
@@ -24,9 +27,16 @@ let webcamRecorder = null
 let webCamStream = null;
 let screenStream = null;
 let audioStream = null;
-let webcamMediaConstraints = {
-  video: true, audio: true
-};
+let videoConstraints = {};
+// if (selectVideo.value === '') {
+//   videoConstraints.facingMode = 'environment';
+// } else {
+//   videoConstraints.deviceId = { exact: selectVideo.value };
+// }
+// let webcamMediaConstraints = {
+//   video: videoConstraints, audio: true
+// };
+let webcamMediaConstraints = null;
 let screenAudioConstraints = {
   audio: {
     echoCancellation: true,
@@ -105,16 +115,86 @@ generateString(6).then((randomString) => {
 })
 
 // Clickup error modal
-let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
+// let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
 
-// user settings modal
-let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
+// // user settings modal
+// let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
 
 // Get task id from user modal
 let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
 
 // Fill user email settings if it exists
 document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
+
+
+// show select camera modal
+async function showCameraModal() {
+  let webCam = cameraCheckbox.checked;
+  if (webCam == true){
+    // close modal if open
+    const btnCloseCameraModal = document.getElementById('closecameraModal');
+    btnCloseCameraModal.click();
+  
+    // Show modal
+    const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
+    showCamera.show();
+  }else{
+    // Show modal
+    const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
+    showCamera.hide();
+  }
+
+}
+// function stopMediaTracks(stream) {
+//   stream.getTracks().forEach(track => {
+//     track.stop();
+//   });
+// }
+
+async function gotDevices(mediaDevices) {
+  selectVideo.innerHTML = '';
+  selectVideo.appendChild(document.createElement('option'));
+  let count = 1;
+  mediaDevices.forEach(mediaDevice => {
+    if (mediaDevice.kind === 'videoinput') {
+      const option = document.createElement('option');
+      option.value = mediaDevice.deviceId;
+      const label = mediaDevice.label || `Camera ${count++}`;
+      const textNode = document.createTextNode(label);
+      option.appendChild(textNode);
+      selectVideo.appendChild(option);
+    }
+  });
+}
+navigator.mediaDevices.enumerateDevices().then(gotDevices);
+// selectCamerabutton.addEventListener('click', event => {
+//   if (typeof currentStream !== 'undefined') {
+//     stopMediaTracks(currentStream);
+//   }
+//   const videoConstraints = {};
+//   if (selectVideo.value === '') {
+//     videoConstraints.facingMode = 'environment';
+//   } else {
+//     videoConstraints.deviceId = { exact: selectVideo.value };
+//   }
+//   const constraints = {
+//     video: videoConstraints,
+//     audio: false
+//   };
+//   navigator.mediaDevices
+//     .getUserMedia(constraints)
+//     .then(stream => {
+//       currentStream = stream;
+//       video.srcObject = stream;
+//       return navigator.mediaDevices.enumerateDevices();
+//     })
+//     .then(gotDevices)
+//     .catch(error => {
+//       console.error(error);
+//     });
+// });
+
+
 
 // Gets webcam stream
 async function captureMediaDevices(currentMediaConstraints) {
@@ -126,6 +206,16 @@ async function captureMediaDevices(currentMediaConstraints) {
     video.muted = true
 
     return stream
+    // navigator.mediaDevices
+    //   .getUserMedia(currentMediaConstraints)
+    //   .then(stream => {
+    //     currentStream = stream;
+    //     video.srcObject = stream;
+    //     return navigator.mediaDevices.enumerateDevices();
+    //   }).then(gotDevices)
+    //     .catch(error => {
+    //     console.error(error);
+    //   });
   }
   catch (err) {
     let msg = "STATUS: Error while getting webcam stream."
@@ -176,7 +266,9 @@ async function micphoneStatus() {
 
 // Records webcam and audio
 async function recordStream() {
+  // webCamStream = await getAllCamera();
   webCamStream = await captureMediaDevices(webcamMediaConstraints);
+  console.log(webcamMediaConstraints);
 
   video.src = null
   video.srcObject = webCamStream
@@ -215,14 +307,64 @@ async function recordStream() {
   //webcamRecorder.start(200)
 }
 
+/**
+ * Internal Polyfill to simulate
+ * window.requestAnimationFrame
+ * since the browser will kill canvas
+ * drawing when tab is inactive
+ */
+const requestVideoFrame = function (callback) {
+  return window.setTimeout(function () {
+    callback(Date.now());
+  }, 1000 / 60); // 60 fps - just like requestAnimationFrame
+};
+
+/**
+ * Internal polyfill to simulate
+ * window.cancelAnimationFrame
+ */
+const cancelVideoFrame = function (id) {
+  clearTimeout(id);
+};
+
+// make composite
+
+async function makeComposite() {
+  if (webCamStream && screenStream) {
+    canvasCtx.save();
+    canvasElement.setAttribute("width", `${screenStream.videoWidth}px`);
+    canvasElement.setAttribute("height", `${screenStream.videoHeight}px`);
+    canvasCtx.clearRect(0, 0, screenStream.videoWidth, screenStream.videoHeight);
+    canvasCtx.drawImage(screenStream, 0, 0, screenStream.videoWidth, screenStream.videoHeight);
+    canvasCtx.drawImage(
+      cam,
+      0,
+      Math.floor(screenStream.videoHeight - screenStream.videoHeight / 4),
+      Math.floor(screenStream.videoWidth / 4),
+      Math.floor(screenStream.videoHeight / 4)
+    ); // this is just a rough calculation to offset the webcam stream to bottom left
+    let imageData = canvasCtx.getImageData(
+      0,
+      0,
+      screenStream.videoWidth,
+      screenStream.videoHeight
+    ); // this makes it work
+    canvasCtx.putImageData(imageData, 0, 0); // properly on safari/webkit browsers too
+    canvasCtx.restore();
+    rafId = requestVideoFrame(makeComposite);
+  }
+}
+
+
 // Records merged screen and webcam stream
 async function recordMergedStream() {
   try {
     var merger = new VideoStreamMerger();
 
     // Set width and height of merger
-    let screenWidth = screen.width;
-    let screenHeight = screen.height;
+    let screenWidth = merger.width;
+    console.log(screenWidth);
+    let screenHeight = merger.height;
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
@@ -250,9 +392,12 @@ async function recordMergedStream() {
     // Add the webcam stream. Position it on the bottom left and resize it to 0.15 of screen width.
     merger.addStream(webCamStream, {
       x: 0,
-      y: merger.height - webcamStreamHeight,
-      width: webcamStreamWidth,
-      height: webcamStreamHeight,
+      y: merger.height - 100,
+      width: 100,
+      height: 100,
+      // y: merger.height - webcamStreamHeight,
+      // width: webcamStreamWidth,
+      // height: webcamStreamHeight,
       mute: false
     })
 
@@ -268,6 +413,7 @@ async function recordMergedStream() {
       document.location.reload();
     }
 
+    // mergedStreamRecorder = new MediaRecorder(mergedStream, options);
     mergedStreamRecorder = new MediaRecorder(mergedStream, options);
 
     mergedStreamRecorder.ondataavailable = event => {
@@ -499,9 +645,9 @@ async function startRecording() {
     if (recordAudio == true) {
       // Enable audio recording for webcam
       webcamMediaConstraints = {
-        video: true, audio: true
+        video: videoConstraints, audio: true
       };
-
+      console.log(videoConstraints);
       // Enable audio recording for screen recording
       screenAudioConstraints = {
         audio: {
@@ -514,7 +660,7 @@ async function startRecording() {
     } else {
       // Disable audio recording for webcam
       webcamMediaConstraints = {
-        video: true, audio: false
+        video: videoConstraints, audio: false
       };
 
       // Disable audio recording for screen recording
@@ -615,12 +761,35 @@ async function startRecording() {
   }
 }
 
+async function validateAll(){
+  let webCam = cameraCheckbox.checked;
+  if (webCam == true) {
+    webcamMediaConstraints = null
+    let currentCameraIsValid = true
+    let cameraErrorMsg = "";
+    if (selectVideo.value === '') {
+      cameraErrorMsg = "Please select one Camera";
+      // videoConstraints.facingMode = 'environment';
+      currentCameraIsValid = false
+    } else {
+      videoConstraints.deviceId = { exact: selectVideo.value };
+      currentCameraIsValid = true
+    }
+    webcamMediaConstraints = {
+      video: videoConstraints, audio: true
+    };
+    document.getElementById("camera-error").innerHTML = cameraErrorMsg;
+    validateModal()
+  }else{
+    validateModal()
+  }
+}
 // Validates test details
 async function validateModal() {
 
   // Get permission to show notifications in system tray
   showNotificationPermission = await Notification.requestPermission();
-  // // console.log("showNotificationPermission: ", showNotificationPermission);
+  console.log("showNotificationPermission: ", showNotificationPermission);
 
   // Clear previous test data
   userPlaylistSelection = null;
@@ -630,6 +799,20 @@ async function validateModal() {
   testDescriptionValue = null;
   testRecordingData = null;
 
+  // let currentCameraIsValid = true
+  // let cameraErrorMsg = "";
+  // if (selectVideo.value === '') {
+  //   cameraErrorMsg = "Please select one Camera";
+  //   // videoConstraints.facingMode = 'environment';
+  //   currentCameraIsValid = false
+  // } else {
+  //   videoConstraints.deviceId = { exact: selectVideo.value };
+  //   currentCameraIsValid = true
+  // }
+  // webcamMediaConstraints = {
+  //   video: videoConstraints, audio: true
+  // };
+  // document.getElementById("camera-error").innerHTML = cameraErrorMsg;
   // validate channel name
   let currentChannelTitleIsValid = true
   currentChannelTitle = document.getElementById("selectChannel").name;
@@ -702,12 +885,16 @@ async function validateModal() {
 
   // Get test description
   // testDescriptionValue = document.getElementById("test-description").value;
+  // check if camera btn is checked
+  // let webCam = cameraCheckbox.checked;
+  // if (webCam == true) {
+  //   await showCameraModal()
+  // }
 
   // All test details are available now
   if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true) && (playlistIsValid == true)) {
     // Click on close modal button
     // document.getElementById("close-test-details-modal").click();
-
     // Disable start recording button
     document.getElementById("start").disabled = true;
 
@@ -1070,7 +1257,7 @@ async function resetStateOnError() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: true, audio: true
+    video: videoConstraints, audio: true
   };
   screenAudioConstraints = {
     audio: {
@@ -2631,7 +2818,7 @@ async function resetStateOnClosingPlaylistModal() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: true, audio: true
+    video: videoConstraints, audio: true
   };
   screenAudioConstraints = {
     audio: {

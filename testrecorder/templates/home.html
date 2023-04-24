@@ -12,6 +12,7 @@
 
 {% block body %}
 <!-- lower nav -->
+<<<<<<< HEAD
 <div class="lower-nav">
     {% load socialaccount %}
     {% if user.is_authenticated %}
@@ -26,6 +27,44 @@
                     <option value="">Select Channel</option>
                   </select>-->
             <div style="color:red;" id="channelname-error"></div>
+=======
+    <div class="lower-nav">
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <div class="authenticated-user">
+            
+            <div class="story-name lower-nav-item">
+                <input type="text" name="" id="test-name" placeholder="Title">
+              <div style="color:red;" id="test-name-error"></div>
+            </div>
+             <div class="lower-nav-item">
+            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                <div style="color:red;" id="channelname-error"></div>
+            </div> 
+            <!-- end single select -->
+            <div class="lower-nav-item">
+                <!-- single select -->
+                <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
+                    <option value=""></option>
+                </select>
+                <div style="color:red;" id="playlist-error"></div>
+                <!-- end single select -->
+            </div>
+            <!-- Story Name -->
+            <!-- Story Name -->
+                <div class="lower-nav-item-flex lower-nav-item">
+                    <span>
+                        <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="User/{{ user.username }}" disabled>
+                        <div style="color:red;" id="username-error"></div>
+                    </span>
+                    <span>
+                        <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
+                        <div style="color:red;" id="username-error"></div>
+                    </span>
+                {% comment %} </div> {% endcomment %}
+    
+                </div>
+>>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
         </div>
         <!-- end single select -->
         <div class="lower-nav-item">
@@ -75,6 +114,7 @@
         <!--display video title-->
         <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
+<<<<<<< HEAD
         <div class="video-component">
             <video id="video" autoplay muted></video>
         </div>
@@ -98,6 +138,25 @@
                     <p>Audio</p>
                 </label>
             </div>
+=======
+        <div class="video-component" id="screen">
+        <video id="video" autoplay muted></video>
+        </div>
+        <!-- Settings and controls -->
+                <div class="main-content-check-boxes">
+        <div class="setting-icon">
+            <input type="checkbox" name="webcam" id="webcam-recording" onClick="showCameraModal()">
+            <label for="webcam-recording"><i class="fas fa-camera"></i><p>Webcam</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="screen" id="screen-recording" checked>
+            <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()"  checked>
+            <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
+        </div>
+>>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
 
             <div class="setting-icon">
                 <input type="checkbox" name="public" id="public-videos">
@@ -107,6 +166,7 @@
             </div>
         </div>
         <div class="input-start-record-btn">
+<<<<<<< HEAD
             <!-- main content inputs -->
             {% comment %} <div class="main-content-input">
                 <form>
@@ -153,6 +213,35 @@
                     </button>
                     <span class="tooltip-text">Save Channel Details</span>
                 </div>
+=======
+        <!-- main content inputs -->
+        {% comment %} <div class="main-content-input">
+            <form>
+            <input type="text" name="" id="new-playlist-tit" placeholder="Play List Title">
+            <div style="color:red;" id="new-playlist-title-error"></div>
+            </form>
+        </div> {% endcomment %}
+        {% if user.is_authenticated %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
+                    <i class="fas fa-save"></i>
+                </button> {% endcomment %}
+                <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
+                    <i class="fas fa-save"></i>
+                </button>
+                <span class="tooltip-text">Create new genre</span>
+
+            </div>
+            <div class="record-btn tooltip-container">
+                {% comment %} <button id="start" onClick="validateModal()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button> {% endcomment %}
+                <button id="start" onClick="validateAll()">
+                    <i class="fas fa-record-vinyl"></i>
+                </button>
+                <span class="tooltip-text">Start Recording</span>
+>>>>>>> 53b7b6eedf0b6ea552e7df6fcec5dc1729d60a84
             </div>
             {% else %}
             <div class="main-content-btns">
@@ -278,7 +367,30 @@
             </div>
         </div>
     </div>
+        
+    <!-- Select camera Modal -->
+<div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a Camera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="closecameraModal"></button>
+            </div>
+            <div class="modal-body">
+                <select name="" class="form-control" id="video-source">
+                    <option value="">Select a Camera</option>
+                </select>
+                <div style="color:red;" id="camera-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+            </div>
 
+        </div>
+    </div>
+</div>
     <!-- Creating broadcast in progress-->
     <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -742,7 +854,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
+                <h5 class="modal-title" style="text-align: cen;">Create New Genre</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-new-playlist-details-modal"></button>
             </div>
@@ -751,9 +863,8 @@
                     <form id="create-playlist">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Playlist title</strong></label>
-                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
-                                id="p_title-error"></p>
+                            <label class="form-label plst required"><strong>Genre Name</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
                         </div>
                         <div class="mb-3">
