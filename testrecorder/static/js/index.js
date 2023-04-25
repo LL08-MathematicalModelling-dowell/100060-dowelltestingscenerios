@@ -160,15 +160,18 @@ async function captureScreen(mediaConstraints = {
 
 //@Muhammad Ahmed 
 // VOice mute/Unmute
-async function micphoneStatus(){
-  var microphoen_btn = null;
-  microphoen_btn= document.getElementById("audio-settings");
-  if (microphoen_btn.checked == true) {
-    return microphoen_btn = true;
+
+async function microphoneStatus() {
+  var microphone_btn = document.getElementById("audio-settings");
+  if (microphone_btn.checked == true) {
+    audioStream.getAudioTracks()[0].enabled = true; // unmute the audio track
+    return true;
   } else {
-   return microphoen_btn = false;
+    audioStream.getAudioTracks()[0].enabled = false; // mute the audio track
+    return false;
   }
 }
+
 
 
 // Records webcam and audio
@@ -223,7 +226,7 @@ async function recordMergedStream() {
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
-    let recordAudio = await micphoneStatus();
+    let recordAudio = await microphoneStatus();
     let muteState = !recordAudio;
     //console.log("muteState: ",muteState)
 
@@ -381,13 +384,16 @@ async function recordScreenAndAudio() {
   screenStream = await captureScreen();
 
   // Check if we need to add audio stream
-  let recordAudio = await micphoneStatus();
+  let recordAudio = await microphoneStatus();
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
     //stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
     try {
       const mergeAudioStreams = (desktopStream, voiceStream) => {
+        if (!voiceStream.getAudioTracks().length || !voiceStream.getAudioTracks()[0].enabled) {
+          throw new Error('No audio track or audio track is not enabled');
+        }
         const context = new AudioContext();
 
         // Create a couple of sources
@@ -419,7 +425,10 @@ async function recordScreenAndAudio() {
       stream = new MediaStream(tracks);
     } catch (error) {
       console.error("Error while creating merged audio streams: ", error)
-      stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+      stream = new MediaStream([
+        ...screenStream.getTracks(),
+        ...audioStream.getTracks()
+      ]);
     }
 
   } else {
@@ -427,18 +436,19 @@ async function recordScreenAndAudio() {
     //stream = new MediaStream([...screenStream.getVideoTracks()]);
   }
 
-  // Show screen record if webcam is not recording
-  let recordWebcam = cameraCheckbox.checked;
+  // by ahmed
+  // // Show screen record if webcam is not recording
+  // let recordWebcam = cameraCheckbox.checked;
 
-  if (recordWebcam == false) {
-    video.src = null
-    video.srcObject = stream
-    video.muted = true
-  } else {
-    video.src = null
-    video.srcObject = webCamStream
-    video.muted = true
-  }
+  // if (recordWebcam == false) {
+  //   video.src = null
+  //   video.srcObject = stream
+  //   video.muted = true
+  // } else {
+  //   video.src = null
+  //   video.srcObject = webCamStream
+  //   video.muted = true
+  // }
 
   let options = await getSupportedMediaType();
   if (options === null) {
@@ -455,11 +465,14 @@ async function recordScreenAndAudio() {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
         //console.log("Sending screen data to screen websocket");
-        let recordWebcam = cameraCheckbox.checked;
-        let recordScreen = screenCheckbox.checked;
-        if ((recordScreen == true) && (recordWebcam == true)) {
-          screenWebSocket.send(event.data);
-        }
+        
+        // ahmed 
+        // let recordWebcam = cameraCheckbox.checked;
+        // let recordScreen = screenCheckbox.checked;
+        // if ((recordScreen == true) && (recordWebcam == true)) {
+        //   screenWebSocket.send(event.data);
+        // }
+        screenWebSocket.send(event.data);
       }
     }
   }
@@ -492,7 +505,7 @@ async function startRecording() {
 
   // Enable or disable audio recording
   try {
-    let recordAudio = await micphoneStatus();
+    let recordAudio = await microphoneStatus();
 
     if (recordAudio == true) {
       // Enable audio recording for webcam
@@ -2415,7 +2428,7 @@ async function playlistSelected() {
 function sendRTMPURL() {
 
   // Check if we need to add audio stream
-  let recordAudio = micphoneStatus();
+  let recordAudio = microphoneStatus();
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
