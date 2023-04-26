@@ -165,7 +165,7 @@ async function captureScreen(mediaConstraints = {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
-  audio: false
+  //audio: true
 }) {
 
   try {
@@ -464,9 +464,6 @@ async function recordScreenAndAudio() {
     //stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
     try {
       const mergeAudioStreams = (desktopStream, voiceStream) => {
-        // if (!voiceStream.getAudioTracks().length || !voiceStream.getAudioTracks()[0].enabled) {
-        //   throw new Error('No audio track or audio track is not enabled');
-        // }
         const context = new AudioContext();
 
         // Create a couple of sources
