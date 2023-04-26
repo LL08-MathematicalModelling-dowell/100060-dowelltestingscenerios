@@ -5,6 +5,7 @@ const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
+const unlistVideosCheckbox = document.getElementById('unlist-videos')
 // const selectCamerabutton = document.getElementById('choose-camera');
 const selectVideo = document.getElementById('video-source');
 let currentStream;
@@ -86,29 +87,44 @@ let showNotificationPermission = 'default';
 
 
 
-// Initialize the playlist table
-// let playlistTable = $('#playlist-table').DataTable({
-//   data: tablePlaylists,
-//   columns: [
-//     { title: 'Playlists Titles' },
-//   ],
-// });
-// Initialize the channel table
-// let ChannelsTable = $('#channels-table').DataTable({
-//   data: tableChannels,
-//   columns: [
-//     { title: 'Channels Titles' },
-//   ],
-// });
+let userIcon = document.querySelector(".user-icon")
+let userDisplay = document.querySelector(".user-display")
 
+userIcon.addEventListener("click", function(){
+  userDisplay.classList.toggle("show-user-bar")
+})
 
-// Show selenium IDE installation modal, if not disabled
-// let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
-// if (dontShowSeleniumIDEModalAgain != "true") {
-//   let seleniumIDEModal = new bootstrap.Modal(document.getElementById('seleniumIDEModal'));
-//   seleniumIDEModal.show();
-// }
+// video timer
+let videoTimer = document.querySelector(".video-timer")
+let hourTime = document.querySelector(".hour-time")
+let minuteTime = document.querySelector(".minute-time")
+let secondTime = document.querySelector(".second-time")
+let timeInterval;
+let totalTime = 0;
+function displayTimer() {
+  videoTimer.classList.add("show-timer")
+  timeInterval = setInterval(setTime, 1000);
+}
+async function clearTimer() {
+  videoTimer.classList.add("show-timer")
+  clearInterval(timeInterval);
+}
 
+function setTime() {
+  ++totalTime;
+  secondTime.innerHTML = calcTime(totalTime % 60);
+  minuteTime.innerHTML = calcTime(parseInt(totalTime / 60));
+  hourTime.innerHTML = calcTime(parseInt(totalTime / 3600));
+}
+function calcTime(val) {
+  let valString = val + "";
+  if (valString.length
+    < 2) {
+    return "0" + valString;
+  } else {
+    return valString;
+  }
+}
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
@@ -459,7 +475,7 @@ async function stopRecording() {
 
   // Transition the broadcast to complete state
   await endBroadcast();
-
+  await clearTimer()
   // Enable start recording button
   document.getElementById("start").disabled = false;
   resetonStartRecording()
@@ -1472,6 +1488,7 @@ async function createBroadcast() {
   url = "youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
+  console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
@@ -1703,10 +1720,14 @@ async function checkNetworkStatus() {
 async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
   let makePublic = publicVideosCheckbox.checked;
+  let unlistVideo = unlistVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
   } else {
     videoPrivacyStatus = "private";
+  }
+  if (unlistVideo == true) {
+    videoPrivacyStatus = "unlist";
   }
 }
 
@@ -2617,6 +2638,7 @@ async function insertVideoIntoTodaysPlaylist() {
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
+  displayTimer()
   showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
   let recordAudio = micphoneStatus();
@@ -3203,7 +3225,7 @@ function displayUtilities() {
   // disable playlist button
   document.querySelector('#create-playlist').disabled = true;
   // disable channel button
-  document.querySelector('#view_records').disabled = true;
+  // document.querySelector('#view_records').disabled = true;
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = true;
   document.querySelector('#test-name').disabled = true;
@@ -3212,6 +3234,7 @@ function displayUtilities() {
   document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
+  document.querySelector('#unlist-videos').disabled = true;
 
   // clear navbar forms
   // document.getElementById("selectChannel").value = "";
@@ -3260,7 +3283,7 @@ async function fetchUserChannel() {
           opt_1.innerHTML = channel_title;
           channelSelect.append(opt);
           channelSelect_1.append(opt_1);
-          channelSelect.value = `Channel/${channel_title}`;
+          channelSelect.value = channel_title;
           channelSelect.name = channel_title;
           console.log(opt);
         })
@@ -3349,7 +3372,7 @@ function resetonStartRecording(){
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
-  document.querySelector('#view_records').disabled = false;
+  // document.querySelector('#view_records').disabled = false;
   document.querySelector('#test-name').disabled = false;
   document.querySelector('#create-playlist').disabled = false;
   document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
@@ -3357,5 +3380,6 @@ function resetonStartRecording(){
   document.querySelector('#screen-recording').disabled = false;
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
+  document.querySelector('#unlist-videos').disabled = false;
 
 }
