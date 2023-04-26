@@ -6,6 +6,8 @@ const screenCheckbox = document.getElementById('screen-recording')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 //const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
+const selectVideo = document.getElementById('video-source');
+let currentStream;
 
 let btnShareRecords = document.querySelector('.share-record-btn');
 let channelSelect = document.getElementById("selectChannel");
@@ -115,6 +117,28 @@ let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTas
 // Fill user email settings if it exists
 document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
 
+
+
+
+
+// show select camera modal
+async function showCameraModal() {
+  let webCam = cameraCheckbox.checked;
+  if (webCam == true){
+    // close modal if open
+    const btnCloseCameraModal = document.getElementById('closecameraModal');
+    btnCloseCameraModal.click();
+  
+    // Show modal
+    const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
+    showCamera.show();
+  }else{
+    // Show modal
+    const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
+    showCamera.hide();
+  }
+}
+
 // Gets webcam stream
 async function captureMediaDevices(currentMediaConstraints) {
   try {
@@ -141,7 +165,7 @@ async function captureScreen(mediaConstraints = {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
- // audio: true
+  audio: false
 }) {
 
   try {
@@ -162,16 +186,65 @@ async function captureScreen(mediaConstraints = {
 // VOice mute/Unmute
 
 async function microphoneStatus() {
-  var microphone_btn = document.getElementById("audio-settings");
-  if (microphone_btn.checked == true) {
-    audioStream.getAudioTracks()[0].enabled = true; // unmute the audio track
-    return true;
+  var microphoen_btn = null;
+  microphoen_btn = document.getElementById("audio-settings");
+  if (microphoen_btn.checked == true) {
+    return microphoen_btn = true;
   } else {
-    audioStream.getAudioTracks()[0].enabled = false; // mute the audio track
-    return false;
+    return microphoen_btn = false;
   }
 }
 
+
+
+// function stopMediaTracks(stream) {
+//   stream.getTracks().forEach(track => {
+//     track.stop();
+//   });
+// }
+
+async function gotDevices(mediaDevices) {
+  selectVideo.innerHTML = '';
+  selectVideo.appendChild(document.createElement('option'));
+  let count = 1;
+  mediaDevices.forEach(mediaDevice => {
+    if (mediaDevice.kind === 'videoinput') {
+      const option = document.createElement('option');
+      option.value = mediaDevice.deviceId;
+      const label = mediaDevice.label || `Camera ${count++}`;
+      const textNode = document.createTextNode(label);
+      option.appendChild(textNode);
+      selectVideo.appendChild(option);
+    }
+  });
+}
+navigator.mediaDevices.enumerateDevices().then(gotDevices);
+// selectCamerabutton.addEventListener('click', event => {
+//   if (typeof currentStream !== 'undefined') {
+//     stopMediaTracks(currentStream);
+//   }
+//   const videoConstraints = {};
+//   if (selectVideo.value === '') {
+//     videoConstraints.facingMode = 'environment';
+//   } else {
+//     videoConstraints.deviceId = { exact: selectVideo.value };
+//   }
+//   const constraints = {
+//     video: videoConstraints,
+//     audio: false
+//   };
+//   navigator.mediaDevices
+//     .getUserMedia(constraints)
+//     .then(stream => {
+//       currentStream = stream;
+//       video.srcObject = stream;
+//       return navigator.mediaDevices.enumerateDevices();
+//     })
+//     .then(gotDevices)
+//     .catch(error => {
+//       console.error(error);
+//     });
+// });
 
 
 // Records webcam and audio
@@ -298,7 +371,6 @@ async function recordMergedStream() {
   }
 }
 
-
 // Stops webcam and screen recording
 async function stopRecording() {
 
@@ -385,15 +457,16 @@ async function recordScreenAndAudio() {
 
   // Check if we need to add audio stream
   let recordAudio = await microphoneStatus();
+    
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
     //stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
     try {
       const mergeAudioStreams = (desktopStream, voiceStream) => {
-        if (!voiceStream.getAudioTracks().length || !voiceStream.getAudioTracks()[0].enabled) {
-          throw new Error('No audio track or audio track is not enabled');
-        }
+        // if (!voiceStream.getAudioTracks().length || !voiceStream.getAudioTracks()[0].enabled) {
+        //   throw new Error('No audio track or audio track is not enabled');
+        // }
         const context = new AudioContext();
 
         // Create a couple of sources
@@ -436,19 +509,18 @@ async function recordScreenAndAudio() {
     //stream = new MediaStream([...screenStream.getVideoTracks()]);
   }
 
-  // by ahmed
-  // // Show screen record if webcam is not recording
-  // let recordWebcam = cameraCheckbox.checked;
+  // Show screen record if webcam is not recording
+  let recordWebcam = cameraCheckbox.checked;
 
-  // if (recordWebcam == false) {
-  //   video.src = null
-  //   video.srcObject = stream
-  //   video.muted = true
-  // } else {
-  //   video.src = null
-  //   video.srcObject = webCamStream
-  //   video.muted = true
-  // }
+  if (recordWebcam == false) {
+    video.src = null
+    video.srcObject = stream
+    video.muted = true
+  } else {
+    video.src = null
+    video.srcObject = webCamStream
+    video.muted = true
+  }
 
   let options = await getSupportedMediaType();
   if (options === null) {
@@ -465,14 +537,11 @@ async function recordScreenAndAudio() {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
         //console.log("Sending screen data to screen websocket");
-        
-        // ahmed 
-        // let recordWebcam = cameraCheckbox.checked;
-        // let recordScreen = screenCheckbox.checked;
-        // if ((recordScreen == true) && (recordWebcam == true)) {
-        //   screenWebSocket.send(event.data);
-        // }
-        screenWebSocket.send(event.data);
+        let recordWebcam = cameraCheckbox.checked;
+        let recordScreen = screenCheckbox.checked;
+        if ((recordScreen == true) && (recordWebcam == true)) {
+          screenWebSocket.send(event.data);
+        }
       }
     }
   }
@@ -485,6 +554,151 @@ async function recordScreenAndAudio() {
 
   //screenRecorder.start(200)
 }
+
+  // Muhammad Ahmed
+// specific function for simultaneously share Cameras and  device screen  
+async function camAndScreenShare() {
+
+  try {
+    // set up the screen capture stream
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+
+    // set up the camera stream
+   // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    let webcamStreamWidth = 0;
+    let webcamStreamHeight = 0;
+    const screenWidth = screen.width;
+    const screenHeight = screen.height;
+
+    // if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    //   throw new Error("getUserMedia is not supported in this browser");
+    // }
+
+    if (cameraCheckbox.checked) {
+      webcamStreamWidth = Math.floor(0.15 * screenWidth);
+      webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
+    
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    //console.log("Camera stream dimensions: " + webcamStreamWidth + " x " + webcamStreamHeight);
+
+    // create a canvas element to hold the merged stream
+    const canvas = document.createElement('canvas');
+    canvas.width = screenStream.width;
+    canvas.height = screenStream.height;
+
+    // set up the merger and add the streams
+    const merger = new VideoStreamMerger();
+    merger.addStream(screenStream, {
+      x: 0,
+      y: 0,
+      width: merger.width,
+      height: merger.height,
+      mute: true
+    });
+
+    merger.addStream(cameraStream, {
+      x: 0, // position of the top-left corner
+      y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+      width: webcamStreamWidth,
+      height: webcamStreamHeight,
+      mute: true // we don't want sound from the camera
+      
+    });
+    
+
+    // start the merger
+    merger.start();
+
+    // set the video source to the merged stream
+    video.srcObject = merger.result;
+
+    // handle cameraCheckbox changes
+    cameraCheckbox.addEventListener('change', async () => {
+      // stop the old camera stream
+      cameraStream.getTracks().forEach(track => track.stop());
+    
+      // get a new camera stream with updated dimensions if checkbox is checked
+      if (cameraCheckbox.checked) {
+        webcamStreamWidth = Math.floor(0.15 * screenWidth);
+        webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: webcamStreamWidth, height: webcamStreamHeight } });
+      }
+    
+      // add the camera stream to the merger
+      merger.addStream(cameraStream, {
+        x: 0, // position of the top-left corner
+        y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+        width: webcamStreamWidth,
+        height: webcamStreamHeight,
+        mute: true // we don't want sound from the camera
+      });
+    
+      // re-render the merger
+      merger.reRender();
+    });
+    
+
+    // screenCheckbox.addEventListener('change', async () => {
+    //   if (screenCheckbox.checked) {
+    //     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    //   } else {
+    //     screenStream.getTracks().forEach(track => {
+    //       track.stop();
+    //     });
+    //     screenStream = null;
+    //   }
+
+    //   merger.reRender();
+    // });
+
+
+    screenCheckbox.addEventListener('change', async () => {
+      try {
+        if (screenCheckbox.checked) {
+          // get new screen stream and add it to the merger
+          const newScreenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+          merger.addStream(newScreenStream, {
+            x: 0,
+            y: 0,
+            width: merger.width,
+            height: merger.height,
+            mute: true
+          });
+        } else {
+          // stop the old screen stream and re-render the merger
+          screenStream.getTracks().forEach(track => {
+            track.stop();
+          });
+          merger.removeStream(screenStream);
+        }
+        merger.reRender();
+      } catch (error) {
+        console.error('Error: ', error);
+      }
+    });
+
+    // handle mute/unmute button click
+    const audioBtn = document.getElementById("audio-settings");
+    audioBtn.checked = true; // initialize as checked
+
+    audioBtn.addEventListener('click', () => {
+      const muteState = !audioBtn.checked; // if checked is false, mute the audio
+      merger.addStream(cameraStream, {
+        x: 0, // position of the top-left corner
+        y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+        width: webcamStreamWidth,
+        height: webcamStreamHeight,
+        mute: muteState // set the mute state of the audio
+      });
+      audioBtn.innerHTML = muteState ? "Unmute" : "Mute";
+    });
+
+  } catch (error) {
+    console.error('Error: ', error);
+  }
+}
+
 
 // Checks recording settings and starts the recording
 async function startRecording() {
@@ -549,12 +763,18 @@ async function startRecording() {
   let recordScreen = screenCheckbox.checked;
   if ((recordScreen == true) && (recordWebcam == true)) {
     try {
-      await recordStream();
-      //console.log("Done with webcam and audio.")
-      await recordScreenAndAudio();
-      //console.log("Done with screen and audio.")
-      await recordMergedStream();
-      //console.log("Done with merged.")
+
+      //old code commited Ahmed
+      // await recordStream();
+      // console.log("Done with webcam and audio.")
+      // await recordScreenAndAudio();
+      // console.log("Done with screen and audio.")
+      // await recordMergedStream();
+      // console.log("Done with merged.")
+
+      // Muhammad Ahmed
+      await camAndScreenShare();
+      console.log("cam and screen share at a time ")
 
       // Synchronize recording
       recordingSynched = true;
