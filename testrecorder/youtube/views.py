@@ -814,7 +814,8 @@ class FetchPlaylistsView(APIView):
 
             # Extract playlist id and names from data
             playlists = response['items']"""
-            print('=========================== ready to fetch playlist with pagination =====')
+            print(
+                '=========================== ready to fetch playlist with pagination =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 

@@ -130,15 +130,15 @@ document.getElementById("userClickupEmail").value = localStorage.getItem("userCl
 // show select camera modal
 async function showCameraModal() {
   let webCam = cameraCheckbox.checked;
-  if (webCam == true){
+  if (webCam == true) {
     // close modal if open
     const btnCloseCameraModal = document.getElementById('closecameraModal');
     btnCloseCameraModal.click();
-  
+
     // Show modal
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.show();
-  }else{
+  } else {
     // Show modal
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.hide();
@@ -227,18 +227,48 @@ async function captureMediaDevices(currentMediaConstraints) {
 }
 
 // Gets screen recording stream
+// async function captureScreen(mediaConstraints = {
+//   video: {
+//     cursor: 'always',
+//     resizeMode: 'crop-and-scale'
+//   },
+//  // audio: true
+// }) {
+
+//   try {
+//     const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+
+//     return screenStream
+//   }
+//   catch (err) {
+//     let msg = "STATUS: Error while getting screen stream."
+//     document.getElementById("app-status").innerHTML = msg;
+//     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
+//     // Tell user, stop the recording.
+//     resetStateOnError();
+//   }
+// }
 async function captureScreen(mediaConstraints = {
   video: {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
- // audio: true
-}) {
+  // audio: true
+}
+) {
 
   try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+    let screenStream;
 
-    return screenStream
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      // Use getUserMedia for mobile devices
+      screenStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    } else {
+      // Use getDisplayMedia for desktop devices
+      screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
+    }
+
+    return screenStream;
   }
   catch (err) {
     let msg = "STATUS: Error while getting screen stream."
@@ -761,7 +791,7 @@ async function startRecording() {
   }
 }
 
-async function validateAll(){
+async function validateAll() {
   let webCam = cameraCheckbox.checked;
   if (webCam == true) {
     webcamMediaConstraints = null
@@ -780,7 +810,7 @@ async function validateAll(){
     };
     document.getElementById("camera-error").innerHTML = cameraErrorMsg;
     validateModal()
-  }else{
+  } else {
     validateModal()
   }
 }
@@ -790,7 +820,7 @@ async function validateModal() {
   // Get permission to show notifications in system tray
   showNotificationPermission = await Notification.requestPermission();
   console.log("showNotificationPermission: ", showNotificationPermission);
-  
+
 
   // Clear previous test data
   userPlaylistSelection = null;
@@ -1494,7 +1524,7 @@ async function createBroadcast() {
             console.error(`Error: ${data.message}`);
             let errMsg = data.message;
             resetStateOnError();
-            if (errMsg === 'The user is not enabled for live streaming.'){
+            if (errMsg === 'The user is not enabled for live streaming.') {
               errMsg = 'This youtube account is not enabled for live streaming.';
             }
             showErrorModal(errMsg);
@@ -3308,7 +3338,7 @@ fetchUserChannel()
 //   console.log(channel);
 //   fetchUserPlaylists(channel)
 // }
-async function loadUserPlaylist(){
+async function loadUserPlaylist() {
   let channel = document.getElementById("selectChannel").name;
   fetchUserPlaylists(channel)
 }
