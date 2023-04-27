@@ -13,6 +13,19 @@
   margin: 0;
   box-sizing: border-box;
 }
+ul{
+  list-style-type: none;
+}
+
+button{
+  border: none;
+  cursor: pointer;
+  background: var(--light-primary_clr);
+  color: var(--white-clr);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.5rem;
+  font-size: 1.2rem;
+}
 body{
   line-height: 1.05!important;
   height: 100vh;
@@ -102,30 +115,61 @@ img {
 /* lower nav */
 .lower-nav{
   background: var(--light-primary_clr);
-  padding: 1rem 0;
-  display: flex;
-  justify-content: space-around;
+  padding: 1rem;
+  text-align: center;
+  /* gap: 1rem; */
+}
+
+.authenticated-user{
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
   align-items: center;
+  /* place-items: center; */
+}
+.authenticated-user{
+  display: grid;
+  grid-template-columns: repeat(4, 25%);
+  align-items: center;
+
+}
+.lower-nav-item{
+  margin: 0.5rem 0.5rem;
+}
+.lower-nav-item select,
+.lower-nav-item input,
+.lower-nav-item a{
+  display: block;
+  width: 80%;
+  margin: 0 auto;
+  background: var(--light-primary_clr);
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+  cursor: pointer;
+}
+.lower-nav-item-flex{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#username{
+  display: inline;
+  width: fit-content;
+  text-align: right;
+  padding-right: 0.2rem;
+  color: var(--white-clr);
+  background: transparent;
+}
+.lower-nav-item-flex a{
+  color: var(--white-clr);
 }
 #app-status{
   color: var(--white-clr);
 }
 
-.story-name input,
-.lower-nav select{
-  background: var(--light-primary_clr);
+.story-name a{
   color: var(--white-clr);
-  font-size: 1rem;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  margin: 0 1rem;
 }
-.story-name input{
-  width: 80%;
-  margin: 0 auto;
-}
-
 .story-name input::placeholder{
   color: var(--white-clr);
   text-align: center;
@@ -133,13 +177,14 @@ img {
 
 /* main contents */
 .input-start-record-btn{
-  position: relative;
-}
+  background: var(--white-clr);
+  padding: 0.5rem 2rem;
+  border-radius: 0.5rem;
+} 
 .main-content-btns{
-  position: absolute;
   display: flex;
-  top: 20%;
-  left: 40%;
+  justify-content: center;
+  align-items: center;
 }
 .main-contents{
   height: 70vh;
@@ -147,7 +192,10 @@ img {
   color: var(--white-clr);
   position: relative;
 }
-
+#test-name{
+  outline: 1px solid #fa3d4a;
+  border-radius: 0.5rem;
+}
 .video-component video{
   position: absolute;
   width: 90%;
@@ -245,9 +293,36 @@ img {
   outline: none;
   border: none;
 }
+.create-playlist-btn a {
+  background: var(--gray-clr);
+  padding: 0.1rem 0.6rem;
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.create-playlist-btn button:disabled {
+  background: rgba(128, 128, 128, 0.5);
+}
+
+
 .record-btn button{
   background: green;
   padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.record-btn a{
+  background: green;
+  padding: 0.1rem 0.6rem;
   font-size: 1.4rem;
   margin-right: 0.5rem;
   border-radius: 0.5rem;
@@ -291,15 +366,28 @@ img {
   outline: none;
   border: none;
 }
+.add-channel-btn a {
+  background: black;
+  padding: 0.1rem 0.6rem;
+  font-size: 1.4rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.add-channel-btn button:disabled {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+
 @media screen and (min-width:500px) {
   .main-content-btns {
     left: 50%;
   }
 }
 
-/* .stop-btn button:disabled{
-  background: var(--light-primary_clr);
-} */
+
 
 
 
@@ -433,4 +521,105 @@ img {
   background: none;
   border: none;
   outline: none;
+}
+/* account design */
+.save-btn,
+.primary-btn {
+  display: block;
+  width: 50%;
+  margin: 1rem auto;
+  padding: 0.6rem;
+  border: none;
+  cursor: pointer;
+  color: var(--white-clr);
+  background: var(--secondary-clr);
+  border-radius: var(--border-radius);
+}
+
+.delete-btn {
+  display: block;
+  width: 50%;
+  margin: 1rem auto;
+  padding: 0.6rem;
+  border: none;
+  cursor: pointer;
+  color: var(--white-clr);
+  background: #8a0f0f;
+  border-radius: var(--border-radius);
+}
+.form-wrapper {
+  width: 100%;
+  height: 75vh;
+  background: var(--dark-clr);
+  padding: 5rem 0;
+  color: var(--secondary-clr);
+}
+
+.form-container {
+  width: 80%;
+  margin: 0 auto;
+  background: var(--white-clr);
+  padding: 2rem;
+  border-radius: 0.5rem;
+  box-shadow: var(--light-shadow);
+}
+
+.form-container label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+.form-container input {
+  display: block;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.5rem;
+  outline: none;
+  border: 1px solid var(--dark-clr);
+  border-radius: 0.5rem;
+}
+.signup-url{
+  color: var(--light-primary_clr);
+}
+.form-container p{
+  margin: 1rem 0;
+}
+
+@media screen and (min-width:768px) {
+  .form-container {
+    width: 60%;
+  }
+}
+
+@media screen and (min-width:996px) {
+  .form-container {
+    width: 50%;
+  }
+}
+.select2-container--default .select2-selection--single  {
+  background-color: transparent !important;
+  border: none !important;
+  /* border-radius: 4px; */
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  color: var(--white-clr) !important;
+  /* border-radius: 4px; */
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+  border-color: var(--white-clr) transparent transparent transparent;
+}
+.select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
+  border-color: transparent transparent var(--white-clr) transparent !important;
+}
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+  color: var(--white-clr)!important;
+}
+.lower-nav-item select option{
+  background-color: var(--light-primary_clr)!important;
+}
+.select2 .select2-container .select2-container--default .select2-container--below .select2-container--focus .select2-container--open{
+  background-color: var(--light-primary_clr) !important;
+}
+.select2 .select2-container .select2-container--default .select2-container--below .select2-container--open .select2-container--focus{
+  background-color: var(--light-primary_clr) !important;
 }

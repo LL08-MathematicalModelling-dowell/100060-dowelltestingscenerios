@@ -5,12 +5,13 @@ const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
-//const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
+// const selectCamerabutton = document.getElementById('choose-camera');
 const selectVideo = document.getElementById('video-source');
 let currentStream;
 
 let btnShareRecords = document.querySelector('.share-record-btn');
 let channelSelect = document.getElementById("selectChannel");
+let channelSelect_1 = document.getElementById("selectChannel_1");
 // App global variables
 let usernameValue = null;
 let testNameValue = null;
@@ -25,9 +26,16 @@ let webcamRecorder = null
 let webCamStream = null;
 let screenStream = null;
 let audioStream = null;
-let webcamMediaConstraints = {
-  video: true, audio: true
-};
+let videoConstraints = {};
+// if (selectVideo.value === '') {
+//   videoConstraints.facingMode = 'environment';
+// } else {
+//   videoConstraints.deviceId = { exact: selectVideo.value };
+// }
+// let webcamMediaConstraints = {
+//   video: videoConstraints, audio: true
+// };
+let webcamMediaConstraints = null;
 let screenAudioConstraints = {
   audio: {
     echoCancellation: true,
@@ -78,12 +86,12 @@ let showNotificationPermission = 'default';
 
 
 // Initialize the playlist table
-let playlistTable = $('#playlist-table').DataTable({
-  data: tablePlaylists,
-  columns: [
-    { title: 'Playlists Titles' },
-  ],
-});
+// let playlistTable = $('#playlist-table').DataTable({
+//   data: tablePlaylists,
+//   columns: [
+//     { title: 'Playlists Titles' },
+//   ],
+// });
 // Initialize the channel table
 // let ChannelsTable = $('#channels-table').DataTable({
 //   data: tableChannels,
@@ -94,11 +102,11 @@ let playlistTable = $('#playlist-table').DataTable({
 
 
 // Show selenium IDE installation modal, if not disabled
-let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
-if (dontShowSeleniumIDEModalAgain != "true") {
-  let seleniumIDEModal = new bootstrap.Modal(document.getElementById('seleniumIDEModal'));
-  seleniumIDEModal.show();
-}
+// let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
+// if (dontShowSeleniumIDEModalAgain != "true") {
+//   let seleniumIDEModal = new bootstrap.Modal(document.getElementById('seleniumIDEModal'));
+//   seleniumIDEModal.show();
+// }
 
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
@@ -106,19 +114,16 @@ generateString(6).then((randomString) => {
 })
 
 // Clickup error modal
-let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
+// let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
 
-// user settings modal
-let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
+// // user settings modal
+// let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
 
 // Get task id from user modal
 let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
 
 // Fill user email settings if it exists
 document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
-
-
-
 
 
 // show select camera modal
@@ -137,66 +142,8 @@ async function showCameraModal() {
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.hide();
   }
+
 }
-
-// Gets webcam stream
-async function captureMediaDevices(currentMediaConstraints) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(currentMediaConstraints)
-
-    video.src = null
-    video.srcObject = stream
-    video.muted = true
-
-    return stream
-  }
-  catch (err) {
-    let msg = "STATUS: Error while getting webcam stream."
-    document.getElementById("app-status").innerHTML = msg;
-    // Reset app status
-    await resetStateOnError();
-    alert("Error while getting webcam stream!\n -Please give permission to webcam or mic when requested.\n -Try to start the recording again.");
-  }
-}
-
-// Gets screen recording stream
-async function captureScreen(mediaConstraints = {
-  video: {
-    cursor: 'always',
-    resizeMode: 'crop-and-scale'
-  },
-  //audio: true
-}) {
-
-  try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
-
-    return screenStream
-  }
-  catch (err) {
-    let msg = "STATUS: Error while getting screen stream."
-    document.getElementById("app-status").innerHTML = msg;
-    alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
-    // Tell user, stop the recording.
-    resetStateOnError();
-  }
-}
-
-//@Muhammad Ahmed 
-// VOice mute/Unmute
-
-async function microphoneStatus() {
-  var microphoen_btn = null;
-  microphoen_btn = document.getElementById("audio-settings");
-  if (microphoen_btn.checked == true) {
-    return microphoen_btn = true;
-  } else {
-    return microphoen_btn = false;
-  }
-}
-
-
-
 // function stopMediaTracks(stream) {
 //   stream.getTracks().forEach(track => {
 //     track.stop();
@@ -247,9 +194,80 @@ navigator.mediaDevices.enumerateDevices().then(gotDevices);
 // });
 
 
+
+// Gets webcam stream
+async function captureMediaDevices(currentMediaConstraints) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia(currentMediaConstraints)
+
+    video.src = null
+    video.srcObject = stream
+    video.muted = true
+
+    return stream
+    // navigator.mediaDevices
+    //   .getUserMedia(currentMediaConstraints)
+    //   .then(stream => {
+    //     currentStream = stream;
+    //     video.srcObject = stream;
+    //     return navigator.mediaDevices.enumerateDevices();
+    //   }).then(gotDevices)
+    //     .catch(error => {
+    //     console.error(error);
+    //   });
+  }
+  catch (err) {
+    let msg = "STATUS: Error while getting webcam stream."
+    document.getElementById("app-status").innerHTML = msg;
+    // Reset app status
+    await resetStateOnError();
+    alert("Error while getting webcam stream!\n -Please give permission to webcam or mic when requested.\n -Try to start the recording again.");
+  }
+}
+
+// Gets screen recording stream
+async function captureScreen(mediaConstraints = {
+  video: {
+    cursor: 'always',
+    resizeMode: 'crop-and-scale'
+  },
+  // audio: true
+}) {
+
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+
+    return screenStream
+  }
+  catch (err) {
+    let msg = "STATUS: Error while getting screen stream."
+    document.getElementById("app-status").innerHTML = msg;
+    alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
+    // Tell user, stop the recording.
+    resetStateOnError();
+  }
+}
+
+//@Muhammad Ahmed 
+// VOice mute/Unmute
+
+async function microphoneStatus() {
+  var microphoen_btn = null;
+  microphoen_btn = document.getElementById("audio-settings");
+  if (microphoen_btn.checked == true) {
+    return microphoen_btn = true;
+  } else {
+    return microphoen_btn = false;
+  }
+}
+
+
+
 // Records webcam and audio
 async function recordStream() {
+  // webCamStream = await getAllCamera();
   webCamStream = await captureMediaDevices(webcamMediaConstraints);
+  console.log(webcamMediaConstraints);
 
   video.src = null
   video.srcObject = webCamStream
@@ -269,7 +287,7 @@ async function recordStream() {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamWebcamToYT == true)) {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
-        //console.log("Sending screen data to webcam websocket");
+        //// // console.log("Sending screen data to webcam websocket");
         let recordWebcam = cameraCheckbox.checked;
         let recordScreen = screenCheckbox.checked;
         if ((recordScreen == true) && (recordWebcam == true)) {
@@ -288,20 +306,70 @@ async function recordStream() {
   //webcamRecorder.start(200)
 }
 
+/**
+ * Internal Polyfill to simulate
+ * window.requestAnimationFrame
+ * since the browser will kill canvas
+ * drawing when tab is inactive
+ */
+const requestVideoFrame = function (callback) {
+  return window.setTimeout(function () {
+    callback(Date.now());
+  }, 1000 / 60); // 60 fps - just like requestAnimationFrame
+};
+
+/**
+ * Internal polyfill to simulate
+ * window.cancelAnimationFrame
+ */
+const cancelVideoFrame = function (id) {
+  clearTimeout(id);
+};
+
+// make composite
+
+async function makeComposite() {
+  if (webCamStream && screenStream) {
+    canvasCtx.save();
+    canvasElement.setAttribute("width", `${screenStream.videoWidth}px`);
+    canvasElement.setAttribute("height", `${screenStream.videoHeight}px`);
+    canvasCtx.clearRect(0, 0, screenStream.videoWidth, screenStream.videoHeight);
+    canvasCtx.drawImage(screenStream, 0, 0, screenStream.videoWidth, screenStream.videoHeight);
+    canvasCtx.drawImage(
+      cam,
+      0,
+      Math.floor(screenStream.videoHeight - screenStream.videoHeight / 4),
+      Math.floor(screenStream.videoWidth / 4),
+      Math.floor(screenStream.videoHeight / 4)
+    ); // this is just a rough calculation to offset the webcam stream to bottom left
+    let imageData = canvasCtx.getImageData(
+      0,
+      0,
+      screenStream.videoWidth,
+      screenStream.videoHeight
+    ); // this makes it work
+    canvasCtx.putImageData(imageData, 0, 0); // properly on safari/webkit browsers too
+    canvasCtx.restore();
+    rafId = requestVideoFrame(makeComposite);
+  }
+}
+
+
 // Records merged screen and webcam stream
 async function recordMergedStream() {
   try {
     var merger = new VideoStreamMerger();
 
     // Set width and height of merger
-    let screenWidth = screen.width;
-    let screenHeight = screen.height;
+    let screenWidth = merger.width;
+    console.log(screenWidth);
+    let screenHeight = merger.height;
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
     let recordAudio = await microphoneStatus();
     let muteState = !recordAudio;
-    //console.log("muteState: ",muteState)
+    //// // console.log("muteState: ",muteState)
 
     // Add the screen capture. Position it to fill the whole stream (the default)
     merger.addStream(screenStream, {
@@ -316,16 +384,19 @@ async function recordMergedStream() {
 
     // Calculate dynamic webcam stream height and width
     let webcamStreamWidth = Math.floor(0.15 * screenWidth);
-    //console.log("webcamStreamWidth: " + webcamStreamWidth);
+    //// // console.log("webcamStreamWidth: " + webcamStreamWidth);
     let webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
-    //console.log("webcamStreamHeight: " + webcamStreamHeight);
+    //// // console.log("webcamStreamHeight: " + webcamStreamHeight);
 
     // Add the webcam stream. Position it on the bottom left and resize it to 0.15 of screen width.
     merger.addStream(webCamStream, {
       x: 0,
-      y: merger.height - webcamStreamHeight,
-      width: webcamStreamWidth,
-      height: webcamStreamHeight,
+      y: merger.height - 100,
+      width: 100,
+      height: 100,
+      // y: merger.height - webcamStreamHeight,
+      // width: webcamStreamWidth,
+      // height: webcamStreamHeight,
       mute: false
     })
 
@@ -341,6 +412,7 @@ async function recordMergedStream() {
       document.location.reload();
     }
 
+    // mergedStreamRecorder = new MediaRecorder(mergedStream, options);
     mergedStreamRecorder = new MediaRecorder(mergedStream, options);
 
     mergedStreamRecorder.ondataavailable = event => {
@@ -364,7 +436,7 @@ async function recordMergedStream() {
     let msg = "STATUS: Error while recording merged stream stream."
     document.getElementById("app-status").innerHTML = msg;
     alert("Error while recording merged stream stream.");
-    console.log("Error while recording merged stream stream: " + err.message);
+    // // console.log("Error while recording merged stream stream: " + err.message);
 
     // Reset app status
     resetStateOnError();
@@ -388,8 +460,7 @@ async function stopRecording() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-
-
+  resetonStartRecording()
   // Show upload in progress modal
   let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
   uploadModal.show();
@@ -491,7 +562,7 @@ async function recordScreenAndAudio() {
         ...mergeAudioStreams(screenStream, audioStream)
       ];
 
-      //console.log('Tracks to add to stream', tracks);
+      //// // console.log('Tracks to add to stream', tracks);
       stream = new MediaStream(tracks);
     } catch (error) {
       console.error("Error while creating merged audio streams: ", error)
@@ -528,12 +599,12 @@ async function recordScreenAndAudio() {
   screenRecorder = new MediaRecorder(stream, options);
 
   screenRecorder.ondataavailable = event => {
-    //console.log("Data available");
+    //// // console.log("Data available");
     if (recordinginProgress == true) {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
-        //console.log("Sending screen data to screen websocket");
+        //// // console.log("Sending screen data to screen websocket");
         let recordWebcam = cameraCheckbox.checked;
         let recordScreen = screenCheckbox.checked;
         if ((recordScreen == true) && (recordWebcam == true)) {
@@ -711,7 +782,7 @@ async function startRecording() {
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
     fileRandomString = randomString;
-    //console.log("fileRandomString: ", fileRandomString)
+    //// // console.log("fileRandomString: ", fileRandomString)
   })
 
   // Enable or disable audio recording
@@ -721,9 +792,9 @@ async function startRecording() {
     if (recordAudio == true) {
       // Enable audio recording for webcam
       webcamMediaConstraints = {
-        video: true, audio: true
+        video: videoConstraints, audio: true
       };
-
+      console.log(videoConstraints);
       // Enable audio recording for screen recording
       screenAudioConstraints = {
         audio: {
@@ -736,7 +807,7 @@ async function startRecording() {
     } else {
       // Disable audio recording for webcam
       webcamMediaConstraints = {
-        video: true, audio: false
+        video: videoConstraints, audio: false
       };
 
       // Disable audio recording for screen recording
@@ -843,6 +914,29 @@ async function startRecording() {
   }
 }
 
+async function validateAll(){
+  let webCam = cameraCheckbox.checked;
+  if (webCam == true) {
+    webcamMediaConstraints = null
+    let currentCameraIsValid = true
+    let cameraErrorMsg = "";
+    if (selectVideo.value === '') {
+      cameraErrorMsg = "Please select one Camera";
+      // videoConstraints.facingMode = 'environment';
+      currentCameraIsValid = false
+    } else {
+      videoConstraints.deviceId = { exact: selectVideo.value };
+      currentCameraIsValid = true
+    }
+    webcamMediaConstraints = {
+      video: videoConstraints, audio: true
+    };
+    document.getElementById("camera-error").innerHTML = cameraErrorMsg;
+    validateModal()
+  }else{
+    validateModal()
+  }
+}
 // Validates test details
 async function validateModal() {
 
@@ -851,30 +945,57 @@ async function validateModal() {
   console.log("showNotificationPermission: ", showNotificationPermission);
 
   // Clear previous test data
+  userPlaylistSelection = null;
   currentChannelTitle = null;
   usernameValue = null;
   testNameValue = null;
   testDescriptionValue = null;
   testRecordingData = null;
 
+  // let currentCameraIsValid = true
+  // let cameraErrorMsg = "";
+  // if (selectVideo.value === '') {
+  //   cameraErrorMsg = "Please select one Camera";
+  //   // videoConstraints.facingMode = 'environment';
+  //   currentCameraIsValid = false
+  // } else {
+  //   videoConstraints.deviceId = { exact: selectVideo.value };
+  //   currentCameraIsValid = true
+  // }
+  // webcamMediaConstraints = {
+  //   video: videoConstraints, audio: true
+  // };
+  // document.getElementById("camera-error").innerHTML = cameraErrorMsg;
   // validate channel name
   let currentChannelTitleIsValid = true
-  currentChannelTitle = document.getElementById("selectChannel").value;
+  currentChannelTitle = document.getElementById("selectChannel").name;
   // Remove leading and trailling white space
   currentChannelTitle = currentChannelTitle.trim();
   let channelTitleErrorMsg = "";
 
-  console.log("currentChannelTitle:", currentChannelTitle);
+  // // console.log("currentChannelTitle:", currentChannelTitle);
 
   if (currentChannelTitle === "") {
-    channelTitleErrorMsg = "Please select on channel";
+    channelTitleErrorMsg = "Please select one channel";
     currentChannelTitleIsValid = false;
   }
   document.getElementById("channelname-error").innerHTML = channelTitleErrorMsg;
 
+  // validate playlist name
+  let playlistIsValid = true;
+  userPlaylistSelection = document.getElementById("selectPlaylist").value;
+  userPlaylistSelection = userPlaylistSelection.trim();
+  // // console.log("userPlaylistSelection:", userPlaylistSelection);
+  let playlistError = "";
+  if (userPlaylistSelection === "") {
+    playlistError = "Please select a playlist";
+    playlistIsValid = false;
+  }
+  document.getElementById("playlist-error").innerHTML = playlistError;
+
   // Validate username
   let docIsValid = true;
-  usernameValue = document.getElementById("username").value;
+  usernameValue = document.getElementById("username").name;
   // Remove leading and trailling white space
   usernameValue = usernameValue.trim();
   let msg = "";
@@ -917,12 +1038,16 @@ async function validateModal() {
 
   // Get test description
   // testDescriptionValue = document.getElementById("test-description").value;
+  // check if camera btn is checked
+  // let webCam = cameraCheckbox.checked;
+  // if (webCam == true) {
+  //   await showCameraModal()
+  // }
 
   // All test details are available now
-  if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true)) {
+  if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true) && (playlistIsValid == true)) {
     // Click on close modal button
     // document.getElementById("close-test-details-modal").click();
-
     // Disable start recording button
     document.getElementById("start").disabled = true;
 
@@ -945,7 +1070,7 @@ async function validateModal() {
 async function sendAvailableData(prevProgress) {
 
 
-   // show record button
+  // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
 
@@ -971,9 +1096,9 @@ async function sendAvailableData(prevProgress) {
       body: testRecordingData
     })
       .then(response => {
-        console.log(response)
+        // // console.log(response)
         responseStatus = response.status;
-        console.log("Response Status", responseStatus);
+        // // console.log("Response Status", responseStatus);
         // Return json data
         return response.json();
       })
@@ -1012,14 +1137,14 @@ async function sendAvailableData(prevProgress) {
           //Set current video file links on vps
           try {
             let newFileLinks = json;
-            console.log("newFileLinks: ", newFileLinks)
+            // // console.log("newFileLinks: ", newFileLinks)
             set_video_links(newFileLinks)
           } catch (error) {
             console.error("Error while setting video links: ", error)
           }
         } else {
           // Server error message
-          console.log("Server Error Message: ", json)
+          // // console.log("Server Error Message: ", json)
           msg = "STATUS: Files Upload Failed."
           document.getElementById("app-status").innerHTML = msg;
 
@@ -1039,8 +1164,8 @@ async function sendAvailableData(prevProgress) {
             const faultyTaskIDArray = errorMessage.split(";");
             faultyTaskID = faultyTaskIDArray[1];
             faultyTaskID = faultyTaskID.trim();
-            console.log("faultyTaskIDArray: ", faultyTaskIDArray)
-            console.log("faultyTaskID: ", faultyTaskID)
+            // // console.log("faultyTaskIDArray: ", faultyTaskIDArray)
+            // // console.log("faultyTaskID: ", faultyTaskID)
 
             // Set the value of the task id input
             clickupTaskIdRetryInput = document.getElementById('clickup-task-id-retry');
@@ -1082,7 +1207,7 @@ async function retryTestFilesUpload() {
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
     fileRandomString = randomString;
-    //console.log("fileRandomString: ", fileRandomString);
+    //// // console.log("fileRandomString: ", fileRandomString);
 
     // Try to Send test data again
     stopRecording();
@@ -1122,7 +1247,7 @@ async function uploadSeleniumIdeFile() {
     //let newBeanoteFileName = filesTimestamp + "_" + currentBeanoteFile.name;
     let newBeanoteFileName = testNameValue + "_" + filesTimestamp + "_" + currentBeanoteFile.name;
     testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
-    console.log("newBeanoteFileName: ", newBeanoteFileName);
+    // // console.log("newBeanoteFileName: ", newBeanoteFileName);
   }
 
 
@@ -1140,7 +1265,7 @@ async function uploadSeleniumIdeFile() {
     //testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
     let newFileName = testNameValue + "_" + filesTimestamp + "_" + currentKeyLogFile.name;
     testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
-    console.log("newFileName: ", newFileName);
+    // // console.log("newFileName: ", newFileName);
 
   }
 
@@ -1170,7 +1295,7 @@ async function keyLogFileCheck() {
   catch (err) {
     let msg = "STATUS: Checking For Key Log File error."
     document.getElementById("app-status").innerHTML = msg;
-    console.log("Checking For Key Log File error: " + err.message);
+    // // console.log("Checking For Key Log File error: " + err.message);
   }
 }
 
@@ -1194,7 +1319,7 @@ async function storeSeleniumIDEInstallModalSettings() {
 // A function to start the selenium ide extension
 async function startSeleniumIDEExtension() {
   try {
-    console.log("Starting Selenium IDE Extension");
+    // // console.log("Starting Selenium IDE Extension");
     url = "chrome-extension://mooikfkahbdckldjjndioackbalphokd/index.html";
     let seleniumIDEWindow = window.open(url, '_blank').focus();
     //seleniumIDEWindow.location.reload();
@@ -1220,15 +1345,7 @@ async function resetStateOnError() {
   // Stop video display tracks
   stopVideoElemTracks(video);
 
-
-  // show record button
-  document.querySelector('.record-btn').style.display = 'block';
-
-
-// reset video title 
-  document.querySelector(".video-title").innerHTML = ""
-
-
+  // resetonStart()
   // Stop the webcam stream
   if (recordWebcam == true) {
     try {
@@ -1258,7 +1375,7 @@ async function resetStateOnError() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-  
+
 
   // Close any open websocket
   try {
@@ -1293,7 +1410,7 @@ async function resetStateOnError() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: true, audio: true
+    video: videoConstraints, audio: true
   };
   screenAudioConstraints = {
     audio: {
@@ -1354,17 +1471,17 @@ async function generateString(length) {
 // Shows upload failed modal
 async function showUploadFailedModal() {
   modalstate = document.getElementById('uploadFailed').classList.contains('show');
-  //console.log("modalstate", modalstate);
+  //// // console.log("modalstate", modalstate);
 
   if (modalstate != true) {
     let uploadFailedModal = document.getElementById('uploadFailed');
     uploadFailedModal.classList.add('show');
-    //console.log("modal shown");
+    //// // console.log("modal shown");
   }
 }
 
 async function set_video_links(linksData) {
-  //console.log("linksData", linksData)
+  //// // console.log("linksData", linksData)
   let webcamLink = document.getElementById('webcam_link');
   let screenLink = document.getElementById('screen_link');
   let mergedLink = document.getElementById('merged_link');
@@ -1406,15 +1523,15 @@ async function createWebsocket() {
   //let endpoint = "wss://liveuxstoryboard.com/ws/app/"
 
   appWebsocket = new WebSocket(endpoint)
-  console.log(endpoint)
+  // // console.log(endpoint)
 
   appWebsocket.onopen = function (evt) {
-    console.log(evt)
+    // // console.log(evt)
 
     // Alert user websocket is open
     let msg = "STATUS: Websocket created."
     document.getElementById("app-status").innerHTML = msg;
-    console.log(msg);
+    // // console.log(msg);
 
     // No need to reconnect
     websocketReconnect = false;
@@ -1443,7 +1560,7 @@ async function createWebsocket() {
 
   let errorStop = false;
   appWebsocket.onclose = function (evt) {
-    console.log("Websocket Closed: ", evt)
+    // // console.log("Websocket Closed: ", evt)
     if (evt.code != 1000) {
       if (errorStop == false) {
         errorStop = true;
@@ -1463,13 +1580,13 @@ async function createWebsocket() {
   };
 
   appWebsocket.onmessage = function (e) {
-    //console.log('message', e)
+    //// // console.log('message', e)
     let receivedMsg = e.data;
-    //console.log("Received data: ", receivedMsg)
+    //// // console.log("Received data: ", receivedMsg)
     msgRcvdFlag = true;
 
     if (receivedMsg.includes("RTMP url received: rtmp://")) {
-      console.log('RTMP url ACK received');
+      // // console.log('RTMP url ACK received');
 
       // Indicate that recording is in progress
       recordinginProgress = true;
@@ -1494,7 +1611,7 @@ async function createWebsocket() {
       // Start the task id websocket
       /*let getClickupTaskIDs = clickupTaskNotesCheckbox.checked;
       if (getClickupTaskIDs == true) {
-        console.log("Creating Task ID websocket connection")
+        // // console.log("Creating Task ID websocket connection")
         createTaskidWebsocket();
       }*/
     } else {
@@ -1510,7 +1627,7 @@ async function createBroadcast() {
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
-  console.log("Broadcast title:", currentChannelTitle);
+  // // console.log("Broadcast title:", currentChannelTitle);
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
   //headers: {"Content-type":"application/json;charset=UTF-8"}
@@ -1524,26 +1641,45 @@ async function createBroadcast() {
   await fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders })
     .then((response) => {
       if (response.status != 201) {
-        throw new Error("Error when creating broadcast!");
+        if (response.status === 403) {
+          return response.json().then(data => {
+            console.error(`Error: ${data.message}`);
+            let errMsg = data.message;
+            resetStateOnError();
+            if (errMsg === 'The user is not enabled for live streaming.') {
+              errMsg = 'This youtube account is not enabled for live streaming.';
+            }
+            showErrorModal(errMsg);
+          });
+        } else {
+          throw new Error("Error when creating broadcast!");
+        }
       } else {
         broadcastCreated = true;
         return response.json();
       }
     })
     .then((json) => {
-      data = json;
-      console.log("data: ", data);
-      newStreamId = data.newStreamId;
-      newStreamName = data.newStreamName;
-      newStreamIngestionAddress = data.newStreamIngestionAddress;
-      //newRtmpUrl=data.newRtmpUrl;
-      newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
-      newBroadcastID = data.new_broadcast_id;
-      console.log("newStreamId:", newStreamId);
-      console.log("newStreamName:", newStreamName);
-      console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-      console.log("newRtmpUrl:", newRtmpUrl);
-      console.log("new_broadcast_id:", newBroadcastID);
+      try {
+        data = json;
+        // // // console.log("data: ", data);
+        newStreamId = data.newStreamId;
+        newStreamName = data.newStreamName;
+        newStreamIngestionAddress = data.newStreamIngestionAddress;
+        //newRtmpUrl=data.newRtmpUrl;
+        newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
+        newBroadcastID = data.new_broadcast_id;
+        // // // console.log("newStreamId:", newStreamId);
+        // // // console.log("newStreamName:", newStreamName);
+        // // // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
+        // // // console.log("newRtmpUrl:", newRtmpUrl);
+        // // // console.log("new_broadcast_id:", newBroadcastID);
+      }
+      catch {
+        // resetStateOnError();
+        // showErrorModal();
+        return
+      }
     })
     .catch((err) => {
       console.error("Broadcast creation error: ", err)
@@ -1553,7 +1689,9 @@ async function createBroadcast() {
 
   if (broadcastCreated == true) {
     // Request user to select a Channel
-    showSelectYoutubePlaylistModal();
+    // showSelectYoutubePlaylistModal();
+    // // console.log("broadcast created");
+    insertVideoIntoPlaylist()
   }
 }
 
@@ -1580,7 +1718,7 @@ async function endBroadcast() {
     })
     .then((json) => {
       data = json;
-      console.log("data: ", data);
+      // // console.log("data: ", data);
     })
     .then(console.log("Broadcast Trasitioned to complete state!"))
     .catch((err) => {
@@ -1686,9 +1824,16 @@ async function shareLinkModal() {
 
 
 // Shows upload failed modal
-async function showErrorModal() {
-  let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
-  errorModal.show();
+async function showErrorModal(liveStreamError = null) {
+  if (liveStreamError != null) {
+    let errorModal = new bootstrap.Modal(document.getElementById('livestreamErrorModal'));
+    // let msg_p = errorModal.querySelector('#livestreamErrorOccurred');
+    document.querySelector('#livestreamErrorOccurred').innerHTML = liveStreamError;
+    errorModal.show();
+  } else {
+    let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
+    errorModal.show();
+  }
 }
 
 // Timer to check network status every second
@@ -1698,15 +1843,15 @@ networkTimer = setInterval(() => {
 
 // Function to check network status
 async function checkNetworkStatus() {
-  //console.log("Checking network status:");
+  //// // console.log("Checking network status:");
   let currentDateTime = new Date();
-  //console.log("The current date time is as follows:");
-  //console.log(currentDateTime);
+  //// // console.log("The current date time is as follows:");
+  //// // console.log(currentDateTime);
   let resultInSeconds = currentDateTime.getTime() / 1000;
-  //console.log("The current date time in seconds is as follows:")
-  //console.log(resultInSeconds);
+  //// // console.log("The current date time in seconds is as follows:")
+  //// // console.log(resultInSeconds);
   let timeNow = resultInSeconds;
-  //console.log("Disconnect time count: ", ((timeNow - lastMsgRcvTime)*1000));
+  //// // console.log("Disconnect time count: ", ((timeNow - lastMsgRcvTime)*1000));
 
   if (msgRcvdFlag == true) {
     lastMsgRcvTime = timeNow;
@@ -1728,7 +1873,6 @@ async function checkNetworkStatus() {
       // Show system tray notification and alert
       showNetworkErrorOccurredModal();
     }
-
   }
 }
 
@@ -1843,7 +1987,7 @@ async function getBeanoteFile() {
     // Append key log file
     let newFileName = fileRandomString + "_" + currentBeanoteFile.name;
     testRecordingData.set('beanote_file', currentBeanoteFile, newFileName);
-    console.log("newBeanoteFileName: ", newFileName);
+    // // console.log("newBeanoteFileName: ", newFileName);
 
     // Hide the get key log file modal and proceed to stop test
     const btnCloseBeanoteFileModal = document.getElementById('closeBeanoteFileModal');
@@ -1875,10 +2019,10 @@ async function createWebcamScreenSocket(socketType) {
   } else {
     screenWebSocket = socket;
   }
-  console.log(endpoint)
+  // // console.log(endpoint)
 
   socket.onopen = function (e) {
-    console.log('open', e)
+    // // console.log('open', e)
     let msg = "";
 
     if (socketType === "webcam") {
@@ -1894,13 +2038,13 @@ async function createWebcamScreenSocket(socketType) {
 
 
   socket.onmessage = function (e) {
-    //console.log('message', e)
+    //// // console.log('message', e)
     let receivedMsg = e.data;
-    //console.log("Received data: ", receivedMsg)
+    //// // console.log("Received data: ", receivedMsg)
     msgRcvdFlag = true;
 
     if (receivedMsg.includes("Received Recording File Name")) {
-      console.log('Socket received file name');
+      // // console.log('Socket received file name');
       // ToDo: Enable streaming of video using websocket
 
       // webcam socket was created, create screen socket
@@ -1924,8 +2068,8 @@ async function createWebcamScreenSocket(socketType) {
       }
     } else {
       //Handle next message;
-      //console.log(receivedMsg);
-      //console.log("Received data: ", receivedMsg)
+      //// // console.log(receivedMsg);
+      //// // console.log("Received data: ", receivedMsg)
     }
   }
 
@@ -1971,7 +2115,7 @@ async function createRecordingTimestamp() {
 
   // Set the files timestamp
   filesTimestamp = newTimestamp;
-  console.log("New File Timestamp: ", filesTimestamp);
+  // // console.log("New File Timestamp: ", filesTimestamp);
 }
 
 // Replace a faulty clickup task id
@@ -1979,14 +2123,14 @@ async function replaceClickupTaskID() {
   // Validate clickup task ID
   let taskIDIsValid = true;
   let newClickupTaskID = document.getElementById("clickup-task-id-retry").value;
-  //console.log("newClickupTaskID: ",newClickupTaskID);
+  //// // console.log("newClickupTaskID: ",newClickupTaskID);
   // Remove leading and trailling white space
   newClickupTaskID = newClickupTaskID.trim();
   // Remove forward slashes
   newClickupTaskID = newClickupTaskID.replaceAll('/', '');
   // Remove hash symbol
   newClickupTaskID = newClickupTaskID.replaceAll('#', '');
-  //console.log("newClickupTaskID: ", newClickupTaskID);
+  //// // console.log("newClickupTaskID: ", newClickupTaskID);
   let idMsg = "";
 
   // Check for empty string
@@ -2027,33 +2171,33 @@ async function createTaskidWebsocket() {
 
   var socket = new WebSocket(endpoint)
   taskIdWebSocket = socket;
-  console.log(endpoint)
+  // // console.log(endpoint)
 
   socket.onopen = function (e) {
-    console.log('Task ID websocket open', e)
+    // // console.log('Task ID websocket open', e)
   }
 
 
   socket.onmessage = function (e) {
-    //console.log('message', e)
+    //// // console.log('message', e)
     let receivedMsg = e.data;
-    console.log("Received data: ", receivedMsg)
+    // // console.log("Received data: ", receivedMsg)
     let task_json_infor = JSON.parse(receivedMsg);
 
     if ("message" in task_json_infor.payload) {
       let storedUserEmail = localStorage.getItem("userClickupEmail");
-      console.log("storedUserEmail: ", storedUserEmail);
+      // // console.log("storedUserEmail: ", storedUserEmail);
       let receivedUserEmail = task_json_infor.payload.message.history_items[0].user.email;
-      console.log("receivedUserEmail: ", receivedUserEmail);
+      // // console.log("receivedUserEmail: ", receivedUserEmail);
 
       // Make sure task id is for current user
       if (storedUserEmail === receivedUserEmail) {
         receivedTaskID.push(task_json_infor.payload.message.task_id);
         taskIDwasRreceived = true;
-        console.log("Received Task ID: ", receivedTaskID);
+        // // console.log("Received Task ID: ", receivedTaskID);
         alert("Received Task ID: " + receivedTaskID);
       } else {
-        console.log("None user task id received");
+        // // console.log("None user task id received");
       }
     }
   }
@@ -2067,21 +2211,21 @@ async function createTaskidWebsocket() {
 
 // Makes task id websocket connection retrys
 async function taskidWebsocketReconnection() {
-  console.log("Retrying connection to task id websocket in 5 Seconds")
+  // // console.log("Retrying connection to task id websocket in 5 Seconds")
   setTimeout(createTaskidWebsocket(), 5000);
 }
 
 // Handle task id checkbox state changes
 async function handleTaskIdCheckbox(e) {
   const { checked } = e.target;
-  console.log("Task ID Checked? ", checked)
+  // // console.log("Task ID Checked? ", checked)
 
   if (checked === true) {
-    //console.log("Creating Task ID websocket connection")
+    //// // console.log("Creating Task ID websocket connection")
     //createTaskidWebsocket();
     showUserSettingsModal();
   } else {
-    console.log("Closing Task ID websocket connection")
+    // // console.log("Closing Task ID websocket connection")
 
     receivedTaskID = [];
     taskIDwasRreceived = false;
@@ -2099,7 +2243,7 @@ async function handleTaskIdCheckbox(e) {
 async function getClickupUser() {
   let clickupExtension = "chrome-extension://pliibjocnfmkagafnbkfcimonlnlpghj";
   let userDetails = window.localStorage.getItem(clickupExtension);
-  console.log("Clickup user details: ", userDetails)
+  // console.log("Clickup user details: ", userDetails)
 }
 
 // Save clickup user email address
@@ -2107,7 +2251,7 @@ async function saveClickupUserEmail() {
   // Validate email
   let emailIsValid = true;
   let userClickupEmail = document.getElementById("userClickupEmail").value;
-  console.log("userClickupEmail: ", userClickupEmail);
+  // console.log("userClickupEmail: ", userClickupEmail);
   // Remove leading and trailling white space
   userClickupEmail = userClickupEmail.trim();
 
@@ -2224,8 +2368,8 @@ async function showGetTaskIdFromUserModal() {
   } catch (err) {
     let msg = "STATUS: Error While Getting Clickup Task ID From User."
     document.getElementById("app-status").innerHTML = msg;
-    //console.log("Error While Getting Clickup Task ID From User: " + error.message);
-    console.log("Error While Getting Clickup Task ID From User: " + err.message);
+    //// console.log("Error While Getting Clickup Task ID From User: " + error.message);
+    // console.log("Error While Getting Clickup Task ID From User: " + err.message);
   }
 }
 
@@ -2234,14 +2378,14 @@ async function saveTaskIDFromUser() {
   // Validate clickup task ID
   let taskIDIsValid = true;
   let newClickupTaskIDs = document.getElementById("clickupTaskIdFromUser").value;
-  //console.log("newClickupTaskIDs: ",newClickupTaskIDs);
+  //// console.log("newClickupTaskIDs: ",newClickupTaskIDs);
   // Remove leading and trailling white space
   newClickupTaskIDs = newClickupTaskIDs.trim();
   // Remove forward slashes
   newClickupTaskIDs = newClickupTaskIDs.replaceAll('/', '');
   // Remove hash symbol
   newClickupTaskIDs = newClickupTaskIDs.replaceAll('#', '');
-  console.log("newClickupTaskIDs: ", newClickupTaskIDs);
+  // console.log("newClickupTaskIDs: ", newClickupTaskIDs);
   let idMsg = "";
 
   // Check for empty string
@@ -2256,10 +2400,10 @@ async function saveTaskIDFromUser() {
   if (taskIDIsValid) {
     // Add the new task id to global list of task ids
     const newTaskIDsArray = newClickupTaskIDs.split(",");
-    console.log("newTaskIDsArray: ", newTaskIDsArray)
+    // console.log("newTaskIDsArray: ", newTaskIDsArray)
     for (taskID in newTaskIDsArray) {
       let tempTaskID = newTaskIDsArray[taskID].trim();
-      console.log("tempTaskID: ", tempTaskID);
+      // console.log("tempTaskID: ", tempTaskID);
 
       if (tempTaskID !== null) {
         receivedTaskID.push(tempTaskID);
@@ -2309,7 +2453,7 @@ async function stopVideoElemTracks(videoElem) {
 // for debugging formdata object
 async function debugFormData(formdataObject) {
   for (var pair of formdataObject.entries()) {
-    console.log(pair[0] + ', ' + pair[1]);
+    // console.log(pair[0] + ', ' + pair[1]);
   }
 }
 // Removes clickup ids from upload data
@@ -2336,209 +2480,213 @@ async function uploadWithoutClickupNotes() {
   });
 }
 
-// Shows youtube playlist selection modal
-async function showSelectYoutubePlaylistModal(channel_title=null) {
+// Shows youtube playlist selection modal removal
+// async function showSelectYoutubePlaylistModal(channel_title = null) {
 
-  // hide the creating broadcast modal
-  showCreatingBroadcastModal(false);
+//   // hide the creating broadcast modal
+//   showCreatingBroadcastModal(false);
 
-  // close modal if open
-  // const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
-  // btnCloseChannelSelectionModal.click();
+//   // close modal if open
+//   // const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
+//   // btnCloseChannelSelectionModal.click();
 
-  // Show loading playlists message
-  const receivedPlaylistsDiv = document.getElementById('received-playlists');
-  const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-  const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-  receivedPlaylistsDiv.hidden = true;
-  loadingPlaylistsDiv.hidden = false;
-  failedToReceivePlaylistsDiv.hidden = true;
+//   // Show loading playlists message
+//   const receivedPlaylistsDiv = document.getElementById('received-playlists');
+//   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
+//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
+//   receivedPlaylistsDiv.hidden = true;
+//   loadingPlaylistsDiv.hidden = false;
+//   failedToReceivePlaylistsDiv.hidden = true;
 
-  // close modal if open
-  const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-  btnClosePlaylistSelectionModal.click();
+//   // close modal if open
+//   const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
+//   btnClosePlaylistSelectionModal.click();
 
-  // Show modal
-  const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('playlist-selection-modal'));
-  playlistSelectionlModal.show();
+//   // Show modal
+//   const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('playlist-selection-modal'));
+//   playlistSelectionlModal.show();
 
-  // Make attempt to fetch playlist
-  currentRadioButtonID = null;
-  // if (!channel_title){
-  //   fetchPlaylists(defaultChannel)
-  // }
-  // else{
-  //   fetchPlaylists(channel_title);
-  // }
-  fetchPlaylists();
-}
+//   // Make attempt to fetch playlist
+//   currentRadioButtonID = null;
+//   // if (!channel_title){
+//   //   fetchPlaylists(defaultChannel)
+//   // }
+//   // else{
+//   //   fetchPlaylists(channel_title);
+//   // }
+//   fetchPlaylists();
+// }
 
 // creates a list of radio buttons
-async function createRadioButtons(id_title_dict) {
+// async function createRadioButtons(id_title_dict) {
 
-  // clear the table's playlist array
-  tablePlaylists = [];
-  // Create and add radio buttons to their HTML container
-  for (const key in id_title_dict) {
+//   // clear the table's playlist array
+//   tablePlaylists = [];
+//   // Create and add radio buttons to their HTML container
+//   for (const key in id_title_dict) {
 
-    console.log(`${key}: ${id_title_dict[key]}`);
-    var radiobox = document.createElement('input');
-    radiobox.type = 'radio';
-    radiobox.id = key; // playlist id
-    radiobox.value = id_title_dict[key]; // playlist title
-    radiobox.name = "user_playlist"
-    radiobox.classList.add("form-check-input");
-    radiobox.classList.add("ms-2");
-    radiobox.onchange = function () {
-      getSelectedRadioButton();
-    }
+//     // console.log(`${key}: ${id_title_dict[key]}`);
+//     var radiobox = document.createElement('input');
+//     radiobox.type = 'radio';
+//     radiobox.id = key; // playlist id
+//     radiobox.value = id_title_dict[key]; // playlist title
+//     radiobox.name = "user_playlist"
+//     radiobox.classList.add("form-check-input");
+//     radiobox.classList.add("ms-2");
+//     radiobox.onchange = function () {
+//       getSelectedRadioButton();
+//     }
 
 
-    var label = document.createElement('label')
-    label.classList.add("ms-2");
-    label.htmlFor = key;
+//     var label = document.createElement('label')
+//     label.classList.add("ms-2");
+//     label.htmlFor = key;
 
-    var description = document.createTextNode(id_title_dict[key]);
-    label.appendChild(description);
+//     var description = document.createTextNode(id_title_dict[key]);
+//     label.appendChild(description);
 
-    var newline = document.createElement('br');
+//     var newline = document.createElement('br');
 
-    let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedRadioButton(event);" />');
-    let oneRow = radiboxString + label.outerHTML + newline.outerHTML
-    let tempArray = [];
-    tempArray.push(oneRow);
+//     let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedRadioButton(event);" />');
+//     let oneRow = radiboxString + label.outerHTML + newline.outerHTML
+//     let tempArray = [];
+//     tempArray.push(oneRow);
 
-    // console.log('TempAray  ',tempArray)
-    tablePlaylists.push(tempArray)
-  }
-  console.log(tablePlaylists);
-}
+//     // // console.log('TempAray  ',tempArray)
+//     tablePlaylists.push(tempArray)
+//   }
+//   // console.log(tablePlaylists);
+// }
 
-// Checks which radio button was pressed
-function getSelectedRadioButton(event) {
-  //console.log(event);
-  currentRadioButtonID = null;
+// Checks which radio button was pressed removal
+// function getSelectedRadioButton(event) {
+//   //// console.log(event);
+//   currentRadioButtonID = null;
 
-  let currentRadioButton = event.currentTarget;
-  //console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
-  currentRadioButtonID = currentRadioButton.id;
-  userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
-  console.log("userPlaylistSelection: ", userPlaylistSelection);
-}
+//   let currentRadioButton = event.currentTarget;
+//   //// console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
+//   currentRadioButtonID = currentRadioButton.id;
+//   userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
+//   // console.log("userPlaylistSelection: ", userPlaylistSelection);
+// }
 
-// fetches the playlists
-async function fetchPlaylists() {
-  // Show loading playlists message
-  const receivedPlaylistsDiv = document.getElementById('received-playlists');
-  const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-  const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-  receivedPlaylistsDiv.hidden = true;
-  loadingPlaylistsDiv.hidden = false;
-  failedToReceivePlaylistsDiv.hidden = true;
+// fetches the playlists removal
+// async function fetchPlaylists() {
+//   // Show loading playlists message
+//   const receivedPlaylistsDiv = document.getElementById('received-playlists');
+//   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
+//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
+//   receivedPlaylistsDiv.hidden = true;
+//   loadingPlaylistsDiv.hidden = false;
+//   failedToReceivePlaylistsDiv.hidden = true;
 
-  let broadcast_data = new Object();
-  broadcast_data.channel_title = currentChannelTitle;
-  // broadcast_data.channel_title = Channel_title;
-  json_broadcast_data = JSON.stringify(broadcast_data);
-  let csrftoken = await getCookie('csrftoken');
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-  myHeaders.append('X-CSRFToken', csrftoken);
+//   let broadcast_data = new Object();
+//   broadcast_data.channel_title = currentChannelTitle;
+//   // broadcast_data.channel_title = Channel_title;
+//   json_broadcast_data = JSON.stringify(broadcast_data);
+//   let csrftoken = await getCookie('csrftoken');
+//   const myHeaders = new Headers();
+//   myHeaders.append('Accept', 'application/json');
+//   myHeaders.append('Content-type', 'application/json');
+//   myHeaders.append('X-CSRFToken', csrftoken);
 
-  let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-  let responseStatus = null;
-  await fetch(fetchPlaylistsApiUrl, {
-    method: 'POST',
-    body: json_broadcast_data, 
-    headers: myHeaders 
-  })
-    .then(response => {
-      console.log(response)
-      responseStatus = response.status;
-      console.log("Fetch playlists Response Status", responseStatus);
-      // Return json data
-      return response.json();
-    })
-    .then((json) => {
-      if (responseStatus == 200) {
-        msg = "STATUS: Playlists Received."
-        document.getElementById("app-status").innerHTML = msg;
+//   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
+//   let responseStatus = null;
+//   await fetch(fetchPlaylistsApiUrl, {
+//     method: 'POST',
+//     body: json_broadcast_data,
+//     headers: myHeaders
+//   })
+//     .then(response => {
+//       // console.log(response)
+//       responseStatus = response.status;
+//       // console.log("Fetch playlists Response Status", responseStatus);
+//       // Return json data
+//       return response.json();
+//     })
+//     .then((json) => {
+//       if (responseStatus == 200) {
+//         msg = "STATUS: Playlists Received."
+//         document.getElementById("app-status").innerHTML = msg;
 
-        // set global plalist value
-        userPlaylists = json.id_title_dict;
+//         // set global plalist value
+//         userPlaylists = json.id_title_dict;
 
-        // Get today's playlist id
-        let todaysPlaylistObject = json.todays_playlist_dict
-        //console.log("todaysPlaylistObject: ", todaysPlaylistObject);
-        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
-        console.log("todaysPlaylistId: ", todaysPlaylistId);
+//         // Get today's playlist id
+//         let todaysPlaylistObject = json.todays_playlist_dict
+//         //// console.log("todaysPlaylistObject: ", todaysPlaylistObject);
+//         todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
+//         // console.log("todaysPlaylistId: ", todaysPlaylistId);
 
-        // Use data to display radio buttons
-        channelTitle = json.channel_title;
-        console.log("Received playlists Information: ", json)
-        createRadioButtons(json.id_title_dict)
+//         // Use data to display radio buttons
+//         channelTitle = json.channel_title;
+//         // console.log("Received playlists Information: ", json)
+//         createRadioButtons(json.id_title_dict)
 
-        // show the radio buttons
-        const receivedPlaylistsDiv = document.getElementById('received-playlists');
-        const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-        const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-        receivedPlaylistsDiv.hidden = false;
-        loadingPlaylistsDiv.hidden = true;
-        failedToReceivePlaylistsDiv.hidden = true;
+//         // show the radio buttons
+//         const receivedPlaylistsDiv = document.getElementById('received-playlists');
+//         const loadingPlaylistsDiv = document.getElementById('loading-playlists');
+//         const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
+//         receivedPlaylistsDiv.hidden = false;
+//         loadingPlaylistsDiv.hidden = true;
+//         failedToReceivePlaylistsDiv.hidden = true;
 
-        // Refresh the playlist selection table
-        $('#playlist-table').DataTable().clear().rows.add(tablePlaylists).draw();
-        //console.log("tablePlaylists: ", tablePlaylists);
+//         // Refresh the playlist selection table
+//         $('#playlist-table').DataTable().clear().rows.add(tablePlaylists).draw();
+//         //// console.log("tablePlaylists: ", tablePlaylists);
 
-      } else {
-        // Server error message
-        console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to Fetch Playlists."
-        document.getElementById("app-status").innerHTML = msg;
+//       } else {
+//         // Server error message
+//         // console.log("Server Error Message: ", json)
+//         msg = "STATUS: Failed to Fetch Playlists."
+//         document.getElementById("app-status").innerHTML = msg;
 
-        // Show loading playlists failed message
-        const receivedPlaylistsDiv = document.getElementById('received-playlists');
-        const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-        const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-        receivedPlaylistsDiv.hidden = true;
-        loadingPlaylistsDiv.hidden = true;
-        failedToReceivePlaylistsDiv.hidden = false;
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to Fetch Playlists."
-      document.getElementById("app-status").innerHTML = msg;
+//         // Show loading playlists failed message
+//         const receivedPlaylistsDiv = document.getElementById('received-playlists');
+//         const loadingPlaylistsDiv = document.getElementById('loading-playlists');
+//         const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
+//         receivedPlaylistsDiv.hidden = true;
+//         loadingPlaylistsDiv.hidden = true;
+//         failedToReceivePlaylistsDiv.hidden = false;
+//       }
+//     })
+//     .catch(error => {
+//       console.error(error);
+//       msg = "STATUS: Failed to Fetch Playlists."
+//       document.getElementById("app-status").innerHTML = msg;
 
-      // Show loading playlists failed message
-      const receivedPlaylistsDiv = document.getElementById('received-playlists');
-      const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-      const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-      receivedPlaylistsDiv.hidden = true;
-      loadingPlaylistsDiv.hidden = true;
-      failedToReceivePlaylistsDiv.hidden = false;
-    });
-}
+//       // Show loading playlists failed message
+//       const receivedPlaylistsDiv = document.getElementById('received-playlists');
+//       const loadingPlaylistsDiv = document.getElementById('loading-playlists');
+//       const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
+//       receivedPlaylistsDiv.hidden = true;
+//       loadingPlaylistsDiv.hidden = true;
+//       failedToReceivePlaylistsDiv.hidden = false;
+//     });
+// }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
+  // hide the creating broadcast modal
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let csrftoken = await getCookie('csrftoken');
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
     body: JSON.stringify({
       videoId: newBroadcastID,
-      playlistId: currentRadioButtonID,
+      // playlistId: currentRadioButtonID,
+      playlistId: userPlaylistSelection,
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      'X-CSRFToken': csrftoken
     }
   })
     .then(response => {
-      console.log(response)
+      // console.log(response)
       responseStatus = response.status;
-      console.log("Insert video into user playlist Response Status", responseStatus);
+      // console.log("Insert video into user playlist Response Status", responseStatus);
       // Return json data
       return response.json();
     })
@@ -2556,7 +2704,7 @@ async function insertVideoIntoPlaylist() {
 
       } else {
         // Server error message
-        console.log("Server Error Message: ", json)
+        // console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to Insert Video Into User Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -2578,7 +2726,9 @@ async function insertVideoIntoPlaylist() {
 
 // Inserts a video into the current day's youtube playlist
 async function insertVideoIntoTodaysPlaylist() {
+  showCreatingBroadcastModal(false);
   let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  let csrftoken = await getCookie('csrftoken');
   let responseStatus = null;
   await fetch(playlistItemsInsertURL, {
     method: 'POST',
@@ -2588,13 +2738,14 @@ async function insertVideoIntoTodaysPlaylist() {
       channel_title: currentChannelTitle
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": csrftoken
     }
   })
     .then(response => {
-      console.log(response)
+      // console.log(response)
       responseStatus = response.status;
-      console.log("Insert video into daily playlist Response Status", responseStatus);
+      // console.log("Insert video into daily playlist Response Status", responseStatus);
       // Return json data
       return response.json();
     })
@@ -2608,7 +2759,7 @@ async function insertVideoIntoTodaysPlaylist() {
 
       } else {
         // Server error message
-        console.log("Server Error Message: ", json)
+        // console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to Insert Video Into Daily Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -2627,32 +2778,32 @@ async function insertVideoIntoTodaysPlaylist() {
 }
 
 // Proceeds after playlist is selected
-async function playlistSelected() {
-  // Don't proceed if user has not selected a playlist
-  if (currentRadioButtonID == null) {
-    alert("Please select a playlist first!")
-  } else {
-    // Hide modal
-    const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-    btnClosePlaylistSelectionModal.click();
+// async function playlistSelected() {
+//   // Don't proceed if user has not selected a playlist
+//   if (currentRadioButtonID == null) {
+//     alert("Please select a playlist first!")
+//   } else {
+//     // Hide modal
+//     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
+//     btnClosePlaylistSelectionModal.click();
 
-    // confirm playlist selection
-    confirmPlaylistSelection();
-  }
-}
+//     // confirm playlist selection
+//     confirmPlaylistSelection();
+//   }
+// }
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
-
+  showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
   let recordAudio = microphoneStatus();
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
-    console.log("Sent RTMP URL: ", msg)
+    // console.log("Sent RTMP URL: ", msg)
   } else {
     appWebsocket.send(newRtmpUrl)
-    console.log("Sent RTMP URL: ", newRtmpUrl)
+    // console.log("Sent RTMP URL: ", newRtmpUrl)
   }
   // display some buttons and remove some
   displayUtilities()
@@ -2687,52 +2838,53 @@ async function showCreatingBroadcastModal(showModal) {
   }
 }
 
-// Confirms playlist selection
-function confirmPlaylistSelection1() {
-  try {
-    let playlist = userPlaylistSelection[currentRadioButtonID];
-    let text = "Are you sure you want to use the playlist:\n" + playlist + ".";
-    if (confirm(text) == true) {
-      playlistSelected();
-    } else {
-      //showSelectYoutubePlaylistModal();
-    }
-  } catch (error) {
-    console.error("Error while showing confirm playlist selection: ", error)
-  }
-}
+// Confirms playlist selection removal
+// function confirmPlaylistSelection1() {
+//   try {
+//     let playlist = userPlaylistSelection[currentRadioButtonID];
+//     let text = "Are you sure you want to use the playlist:\n" + playlist + ".";
+//     if (confirm(text) == true) {
+//       playlistSelected();
+//     } else {
+//       //showSelectYoutubePlaylistModal();
+//     }
+//   } catch (error) {
+//     console.error("Error while showing confirm playlist selection: ", error)
+//   }
+// }
 
-function confirmPlaylistSelection() {
+// removal
+// function confirmPlaylistSelection() {
 
-  try {
-    // close playlist selection modal
-    const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-    btnClosePlaylistSelectionModal.click();
+//   try {
+//     // close playlist selection modal
+//     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
+//     btnClosePlaylistSelectionModal.click();
 
-    let playlist = userPlaylistSelection[currentRadioButtonID];
-    //let playlist = "VOC"
-    let text = "Are you sure you want to use the <strong>" + playlist + "</strong> playlist?";
-    // close modal if open
-    const btnCloseConfirmPlaylistSelectionModal = document.getElementById('btn-close-confirm-playlist-selection-modal');
-    btnCloseConfirmPlaylistSelectionModal.click();
+//     let playlist = userPlaylistSelection[currentRadioButtonID];
+//     //let playlist = "VOC"
+//     let text = "Are you sure you want to use the <strong>" + playlist + "</strong> playlist?";
+//     // close modal if open
+//     const btnCloseConfirmPlaylistSelectionModal = document.getElementById('btn-close-confirm-playlist-selection-modal');
+//     btnCloseConfirmPlaylistSelectionModal.click();
 
-    // Add playlist confirmation message
-    document.getElementById('playlist-confirmation-message').innerHTML = text;
+//     // Add playlist confirmation message
+//     document.getElementById('playlist-confirmation-message').innerHTML = text;
 
-    // Show modal
-    const confirmPlaylistSelectionModal = new bootstrap.Modal(document.getElementById('confirm-playlist-selection-modal'));
-    confirmPlaylistSelectionModal.show();
-  } catch (error) {
-    console.error("Error while showing confirm playlist selection modal: ", error)
-  }
-}
+//     // Show modal
+//     const confirmPlaylistSelectionModal = new bootstrap.Modal(document.getElementById('confirm-playlist-selection-modal'));
+//     confirmPlaylistSelectionModal.show();
+//   } catch (error) {
+//     console.error("Error while showing confirm playlist selection modal: ", error)
+//   }
+// }
 // close channel list selection modal
 // async function closeYoutubeChannelSelectionModal(){
 //   showTestDetailsModal()
 //   resetStateOnClosingPlaylistModal()
 // }
 // close youtube list selection modal
-async function closeYoutubePlaylistSelectionModal(){
+async function closeYoutubePlaylistSelectionModal() {
   resetStateOnClosingPlaylistModal()
 }
 
@@ -2752,7 +2904,7 @@ async function resetStateOnClosingPlaylistModal() {
 
 
 
-// show record button
+  // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
   // Stop the webcam stream
@@ -2784,7 +2936,7 @@ async function resetStateOnClosingPlaylistModal() {
 
   // Enable start recording button
   document.getElementById("start").disabled = false;
-  
+
 
   // Close any open websocket
   try {
@@ -2819,7 +2971,7 @@ async function resetStateOnClosingPlaylistModal() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: true, audio: true
+    video: videoConstraints, audio: true
   };
   screenAudioConstraints = {
     audio: {
@@ -2877,16 +3029,17 @@ async function handleCreatePlaylistRequest() {
   document.getElementById("p_title-error").innerHTML = msg;
 
   // Get playlist description
-  let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
+  // let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
 
   // Get playlist privacy status
-  let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
-  if (newPlaylistPrivacyStatus === true) {
-    newPlaylistPrivacyStatus = "public"
-  } else {
-    newPlaylistPrivacyStatus = "private"
-  }
-  
+  // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
+  let newPlaylistPrivacyStatus = document.querySelector('input[name="privacy_status"]:checked').value;
+  // if (newPlaylistPrivacyStatus === true) {
+  //   newPlaylistPrivacyStatus = "public"
+  // } else {
+  //   newPlaylistPrivacyStatus = "private"
+  // }
+
 
   if (docIsValid) {
     // close create new playlist modal
@@ -2909,31 +3062,36 @@ async function handleCreatePlaylistRequest() {
 
 // Makes api request to create playlist
 async function createNewPlaylist() {
-// async function createNewPlaylist(title, description, privacyStatus) {
+  // async function createNewPlaylist(title, description, privacyStatus) {
   let createPlaylistURL = '/youtube/createplaylist/api/';
   let responseStatus = null;
   // const form = document.getElementById("create-playlist");
-  const channel = document.getElementById("playlist_channel_modal").value;
-  const description = document.getElementById("playlist_description_modal").value;
+  const form = document.getElementById("create-playlist");
+  const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+  // const csrf_token = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  const channel = document.getElementById("selectChannel_1").value;
+  // const description = document.getElementById("playlist_description_modal").value;
   const title = document.getElementById("playlist_title_modal").value;
-  const privacy = document.getElementById("playlist_privacy_status_modal").value;
+  let privacy = document.querySelector('input[name="privacy_status"]:checked').value;
+  // const privacy = document.getElementById("playlist_privacy_status_modal").value;
   // const data = new FormData(form);
   await fetch(createPlaylistURL, {
     method: 'POST',
     body: JSON.stringify({
       new_playlist_title: title,
-      new_playlist_description: description,
+      new_playlist_description: "",
       new_playlist_privacy: privacy,
       channel_title: channel
     }),
     headers: {
-      "Content-type": "application/json; charset=UTF-8"
+      "Content-type": "application/json; charset=UTF-8",
+      "X-CSRFToken": csrf_token
     }
   })
     .then(response => {
-      console.log(response)
+      // console.log(response)
       responseStatus = response.status;
-      console.log("Create playlist Response Status", responseStatus);
+      // console.log("Create playlist Response Status", responseStatus);
       // Return json data
       return response.json();
     })
@@ -2949,13 +3107,13 @@ async function createNewPlaylist() {
         showPlaylistCreatedModal();
 
         // clear modal input fields
+        document.getElementById("selectChannel_1").value = "";
         document.getElementById("playlist_title_modal").value = "";
-        document.getElementById("playlist_description_modal").value = "";
-        document.getElementById("playlist_privacy_status_modal").value = "";
-        document.getElementById("playlist_channel_modal").value = "";
+        document.querySelector('input[name="privacy_status"]:checked').value = "";
+        // document.getElementById("playlist_description_modal").value = "";
       } else if (responseStatus == 409) {
         // Server error message
-        console.log("Server Error Message: ", json)
+        // console.log("Server Error Message: ", json)
         msg = "STATUS: Playlist Already Exists."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -2966,7 +3124,7 @@ async function createNewPlaylist() {
         showPlaylistAlreadyExistsModal();
       } else {
         // Server error message
-        console.log("Server Error Message: ", json)
+        // console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to create playlist."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -3049,23 +3207,6 @@ async function showPlaylistAlreadyExistsModal() {
   playlistAlreadyExistsModal.show();
 }
 
-/***************** deprecated ************************/
-/***************** deprecated ************************/
-// Shows the test details modal
-// async function showTestDetailsModal() {
-
-//   // close modal if open
-//   const btnCloseTestDetailsModal = document.getElementById('close-test-details-modal');
-//   btnCloseTestDetailsModal.click();
-
-//   // Get permission to show notifications in system tray
-//   showNotificationPermission = await Notification.requestPermission();
-//   console.log("showNotificationPermission: ", showNotificationPermission);
-
-//   // Show modal
-//   const testDetailsModal = new bootstrap.Modal(document.getElementById('test-details-modal'));
-//   testDetailsModal.show();
-// }
 
 // show network error system tray notification
 async function showNetworkErrorSystemTrayNotification() {
@@ -3140,54 +3281,54 @@ async function showAddChannelModal() {
   createChannelModal.show();
 }
 let channel_id = document.querySelector('input[name=channel_id');
-channel_id.addEventListener('keyup', () =>{
+channel_id.addEventListener('keyup', () => {
   document.getElementById('id-error').innerText = '';
 })
 // Confiqure error display 
 let channel_title = document.querySelector('input[name=channel_title]');
-channel_title.addEventListener('keyup', () =>{
+channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
-  }
-);
-let channel_credential = document.querySelector('textarea[name=channel_credentials]');
-channel_credential.addEventListener('keyup', () =>{
-  document.getElementById('credential-error').innerText = '';
-});
-// Checks if a string is JSON serializable
-const isJSON = (str) => {
-  try {
-    JSON.parse(str);
-  } catch (e) {
-    return false;
-  }
-  return true;
 }
-document.getElementById("add-channel-btn").addEventListener("click", async function(event){
+);
+// let channel_credential = document.querySelector('textarea[name=channel_credentials]');
+// channel_credential.addEventListener('keyup', () =>{
+//   document.getElementById('credential-error').innerText = '';
+// });
+// Checks if a string is JSON serializable
+// const isJSON = (str) => {
+//   try {
+//     JSON.parse(str);
+//   } catch (e) {
+//     return false;
+//   }
+//   return true;
+// }
+document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
   event.preventDefault();
-  
+
   const idMsg = 'Invalid channel ID format'
   const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
-  const credentialMsg = 'Invalid credential format';
+  // const credentialMsg = 'Invalid credential format';
   let channelId = document.getElementById("channel_id_modal").value;
   let channelTitle = document.getElementById("channel_title_modal").value;
-  let channelCredentials = document.getElementById("channel_credentials_modal").value;
+  // let channelCredentials = document.getElementById("channel_credentials_modal").value;
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
-  const credentialError = document.getElementById('credential-error');  
-  let valid_input = true; 
+  // const credentialError = document.getElementById('credential-error');  
+  let valid_input = true;
 
-  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) { 
-      idError.innerText = idMsg;
-      valid_input = false;
-  } 
+  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
+    idError.innerText = idMsg;
+    valid_input = false;
+  }
   if (!channelTitle.match(/^[a-zA-Z0-9_ -]{3,50}$/)) {
-      titleError.innerText = titleMsg;
-      valid_input = false;
-  } 
-  if (!isJSON(channelCredentials)) { 
-      credentialError.innerText = credentialMsg;
-      valid_input = false;
-  } 
+    titleError.innerText = titleMsg;
+    valid_input = false;
+  }
+  // if (!isJSON(channelCredentials)) { 
+  //     credentialError.innerText = credentialMsg;
+  //     valid_input = false;
+  // } 
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -3195,238 +3336,42 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
       method: 'POST',
       body: formData
     })
-    .then(async response => {
-      const resp = await response.json()
-      const { channel_id, channel_title, channel_credential} = resp;
-      if (channel_id) {
-        idError.innerText = channel_id[0]
-      }
-      if (channel_title) {
-        titleError.innerText = channel_title[0]
-      }
-      if (channel_credential) {
-        credentialError.innerText = channel_credential[0]
-      }
-      if ('message' in resp) {
-        if (resp['message'] === 'Invalid channel!'){
-          document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
-          document.getElementById('add-status').innerText = resp['message'];
-        } else {
-          document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';   
-          document.getElementById('add-status').innerText = resp['message'];
+      .then(async response => {
+        const resp = await response.json()
+        const { channel_id, channel_title, channel_credential } = resp;
+        if (channel_id) {
+          idError.innerText = channel_id[0]
         }
-        console.log(resp['message'])
-      }
-    })
+        if (channel_title) {
+          titleError.innerText = channel_title[0]
+        }
+        if (channel_credential) {
+          credentialError.innerText = channel_credential[0]
+        }
+        if ('message' in resp) {
+          if (resp['message'] === 'Invalid channel!') {
+            document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
+            document.getElementById('add-status').innerText = resp['message'];
+          } else {
+            document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';
+            document.getElementById('add-status').innerText = resp['message'];
+          }
+          // console.log(resp['message'])
+        }
+      })
   }
 })
 
 
-// ======================================= Selecting a channel ===============================================
 
-// Proceeds after channel is selected
-// async function channelSelected() {
-//   // Don't proceed if user has not selected a playlist
-//   if (currentRadioButtonID == null) {
-//     alert("Please select a channel!")
-//   } else {
-//     // Hide modal
-//     const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
-//     btnCloseChannelSelectionModal.click();
-  
-//     confirmChannelSelection();
-//   }
-// }
-
-// confirm playlist selection
-// async function confirmChannelSelection() {
-//   try {
-//     // close playlist selection modal
-//     const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
-//     btnClosePlaylistSelectionModal.click();
-//     // Begins loading of playlists of the seleted channel
-//     showSelectYoutubePlaylistModal(currentChannelTitle);
-//   } catch (error) {
-//     console.error("Error while showing confirm channel selection modal: ", error.message)
-//   }
-// }
-
-// creates a list of CHANNEL radio buttons
-async function createchannelRadioButtons(id_title_dict) {
-
-  // clear the table's playlist array
-  tablePlaylists = [];
-  // Create and add radio buttons to their HTML container
-  for (const key in id_title_dict) {
-
-    console.log(`${key}: ${id_title_dict[key]}`);
-    var radiobox = document.createElement('input');
-    radiobox.type = 'radio';
-    radiobox.id = key; // playlist id
-    radiobox.value = id_title_dict[key]; // playlist title
-    radiobox.name = "user_playlist"
-    radiobox.classList.add("form-check-input");
-    radiobox.classList.add("ms-2");
-    radiobox.onchange = function () {
-      getSelectedChannelRadioButton();
-    }
-    let label = document.createElement('label')
-    label.classList.add("ms-2");
-    label.htmlFor = key;
-
-    let description = document.createTextNode(id_title_dict[key]);
-    label.appendChild(description);
-
-    let newline = document.createElement('br');
-
-    let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedChannelRadioButton(event);" />');
-    let oneRow = radiboxString + label.outerHTML + newline.outerHTML
-    let tempArray = [];
-    tempArray.push(oneRow);
-
-    // console.log('TempAray  ',tempArray)
-    tableChannels.push(tempArray)
-  }
-  // console.log('Table Channels', tableChannels);
-}
-
-// Checks which radio button was pressed
-async function getSelectedChannelRadioButton(event) {
-  //console.log(event);
-  currentRadioButtonID = null;
-  let currentRadioButton = event.currentTarget;
-
-  // console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
-  currentRadioButtonID = currentRadioButton.id;
-  currentChannelTitle = currentRadioButton.value;
-  // console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC')
-  // console.log("userChanelSelection: ", currentChannelTitle); 
-}
-
-
-// plan to remove
-// Show modal window for user o select a channel
-// async function showSelectYoutubeChannelModal() {
-//   tableChannels = [];
-//   // hide the creating broadcast modal
-//   showCreatingBroadcastModal(false);
-
-//   // Show loading playlists message
-//   const receivedPlaylistsDiv = document.getElementById('received-channels');
-//   const loadingPlaylistsDiv = document.getElementById('loading-channels');
-//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-//   receivedPlaylistsDiv.hidden = true;
-//   loadingPlaylistsDiv.hidden = false;
-//   failedToReceivePlaylistsDiv.hidden = true;
-
-//   // close modal if open
-//   const btnClosePlaylistSelectionModal = document.getElementById('close-channels-selection-modal');
-//   btnClosePlaylistSelectionModal.click();
-
-//   // Show modal
-//   const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('channels-selection-modal'));
-//   playlistSelectionlModal.show();
-
-//   // Make attempt to fetch playlist
-//   currentRadioButtonID = null;
-//   // fetching the channels
-//   fetchChannels();
-// }
-
-// // fetches the channels
-// async function fetchChannels() {
-//   // Show loading playlists message
-//   const receivedChannelDiv = document.getElementById('received-channels');
-//   const loadingChannelDiv = document.getElementById('loading-channels');
-//   const failedToRetrieveChannelDiv = document.getElementById('failed-to-receive-channels');
-//   receivedChannelDiv.hidden = true;
-//   loadingChannelDiv.hidden = false;
-//   failedToRetrieveChannelDiv.hidden = true;
-
-//   let channels = {};
-
-//   let fetchChannelsApiUrl = 'youtube/fetchchannels/api/';
-//   // console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-//   let status = null
-//   await fetch(fetchChannelsApiUrl, {
-//     method: 'GET',
-//   })
-//     .then(response =>{
-//       status = response.status;
-//       return response.json()
-//     }
-//   )
-//   .then((data) => {
-//     // console.log('ssssssssssssssssss  ', status);
-//     let channels_list = data.channels_list;
-//     console.log(channels_list);
-//     channels_list.map(obj =>{
-//       channels[obj.channel_id] = obj.channel_title;
-//       console.log('obj id ',obj.channel_id);
-//     })
-//     console.log('channels: ', channels)
-//     if (status == 200) {
-//       msg = "STATUS: Channels Received."
-//       document.getElementById("app-status").innerHTML = msg;
-
-//       // Use data to display radio buttons
-//       // console.log("Received channels Information: ", data)
-
-//       // Create Radio butttions for reieved/fetched channels
-//       createchannelRadioButtons(channels);
-
-//       // show the radio buttons
-//       const receivedChannelsDiv = document.getElementById('received-channels');
-//       const loadingChannelsDiv = document.getElementById('loading-channels');
-//       const failedToReceiveChannelsDiv = document.getElementById('failed-to-receive-channels');
-//       receivedChannelsDiv.hidden = false;
-//       loadingChannelsDiv.hidden = true;
-//       failedToReceiveChannelsDiv.hidden = true;
-
-//       // Refresh the channel selection table
-//       $('#channels-table').DataTable().clear().rows.add(tableChannels).draw();
-//       // console.log("tableChannels:  ", tableChannels);
-//     }
-//     else {
-//       // Server error message
-//       console.log("Server Error Message: ", json)
-//       msg = "STATUS: Failed to Fetch Playlists."
-//       document.getElementById("app-status").innerHTML = msg;
-
-//       // Show loading channels failed message
-//       const receivedPlaylistsDiv = document.getElementById('received-channels');
-//       const loadingPlaylistsDiv = document.getElementById('loading-channels');
-//       const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-//       receivedPlaylistsDiv.hidden = true;
-//       loadingPlaylistsDiv.hidden = true;
-//       failedToReceivePlaylistsDiv.hidden = false;
-//     }    
-//   })
-//   .catch(error => {
-//     // console.error(error)
-//     msg = "STATUS: Failed to Fetch Playlists."
-//     document.getElementById("app-status").innerHTML = msg;
-
-//     //  Show loading channels failed message
-//     const receivedPlaylistsDiv = document.getElementById('received-channels');
-//     const loadingPlaylistsDiv = document.getElementById('loading-channels');
-//     const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-channels');
-//     receivedPlaylistsDiv.hidden = true;
-//     loadingPlaylistsDiv.hidden = true;
-//     failedToReceivePlaylistsDiv.hidden = false;
-//   });
-// }
-
-// ============================Handle Create playlist====================================
-
-document.getElementById("create-playlist-btn").addEventListener("click", async function(event){
+document.getElementById("create-playlist-btn").addEventListener("click", async function (event) {
   event.preventDefault();
   handleCreatePlaylistRequest();
 })
 
-    // display some buttons and remove some
-function displayUtilities(){
-    // show stop button
+// display some buttons and remove some
+function displayUtilities() {
+  // show stop button
   document.querySelector('.stop-btn').style.display = 'block';
 
 
@@ -3436,11 +3381,18 @@ function displayUtilities(){
   document.querySelector('#create-playlist').disabled = true;
   // disable channel button
   document.querySelector('#view_records').disabled = true;
+  document.querySelector('#selectChannel').disabled = true;
+  document.querySelector('.selectPlaylist').disabled = true;
+  document.querySelector('#test-name').disabled = true;
+  document.querySelector('.logout-disable').removeAttribute("href");
+  document.querySelector('#webcam-recording').disabled = true;
+  document.querySelector('#screen-recording').disabled = true;
+  document.querySelector('#audio-settings').disabled = true;
+  document.querySelector('#public-videos').disabled = true;
 
   // clear navbar forms
-  document.getElementById("selectChannel").value = "";
-  document.getElementById("username").value = "";
-  document.getElementById("test-name").value = "";
+  // document.getElementById("selectChannel").value = "";
+  // document.getElementById("test-name").value = "";
   // Enable share records button
   if (publicVideosCheckbox.checked) {
     btnShareRecords.style.display = "block";
@@ -3453,9 +3405,9 @@ function displayUtilities(){
   document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
 }
 
-/* fetch channels for navbar */
-async function fectchChannelForNav() {
-  let channelsApiUrl = 'youtube/fetchchannels/api/';
+/* fetch channels for user */
+async function fetchUserChannel() {
+  let channelsApiUrl = 'youtube/channels/';
 
   let status = null
   await fetch(channelsApiUrl, {
@@ -3466,21 +3418,120 @@ async function fectchChannelForNav() {
       return response.json();
     })
     .then((data) => {
-      let channel_list = data.channels_list;
-      // console.log(channel_list);
-      // let channelSelect = document.getElementById("selectChannel");
-      channel_list.map((obj) => {
-        let opt = document.createElement("option");
-        let channel_id = obj.channel_id;
-        console.log(channel_id);
-        let channel_title = obj.channel_title;
-        console.log(channel_title);
-        // opt.value = channel_id;
-        opt.value = channel_title;
-        opt.innerHTML = channel_title;
-        channelSelect.append(opt);
-        console.log(opt);
-      })
-    })
+      if (status == 200) {
+        msg = "STATUS: User Channel Received."
+        document.getElementById("app-status").innerHTML = msg;
+        let userChannels = data;
+        // console.log("channel_list:", userChannels);
+        userChannels.map((obj) => {
+          let opt = document.createElement("option");
+          let opt_1 = document.createElement("option");
+          let channel_id = obj.channel_id;
+          // console.log(channel_id);
+          let channel_title = obj.channel_title;
+          // console.log(channel_title);
+          // opt.value = channel_id;
+          opt.value = channel_title;
+          opt_1.value = channel_title;
+          opt.innerHTML = channel_title;
+          opt_1.innerHTML = channel_title;
+          channelSelect.append(opt);
+          channelSelect_1.append(opt_1);
+          channelSelect.value = `Channel/${channel_title}`;
+          channelSelect.name = channel_title;
+          // console.log(opt);
+        })
+      } else {
+        // Server error message
+        // console.log("Server Error Message: ", data)
+        msg = "STATUS: Failed to Fetch Channel."
+        document.getElementById("app-status").innerHTML = msg;
+      }
+    }).catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to Fetch Channel."
+      document.getElementById("app-status").innerHTML = msg;
+    });
 }
-fectchChannelForNav()
+fetchUserChannel()
+// function getSelectedChannelName(selectObject){
+//   let channel = selectObject.value;
+//   // console.log(channel);
+//   fetchUserPlaylists(channel)
+// }
+async function loadUserPlaylist() {
+  let channel = document.getElementById("selectChannel").name;
+  fetchUserPlaylists(channel)
+}
+loadUserPlaylist()
+
+let selectUserPlaylist = document.querySelector(".selectPlaylist")
+async function fetchUserPlaylists(channel_title) {
+  let csrftoken = await getCookie('csrftoken');
+  const myHeaders = new Headers();
+  myHeaders.append('Accept', 'application/json');
+  myHeaders.append('Content-type', 'application/json');
+  myHeaders.append('X-CSRFToken', csrftoken);
+  let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
+  let responseStatus = null;
+  await fetch(fetchPlaylistsApiUrl, {
+    method: 'POST',
+    headers: myHeaders,
+  })
+    .then(response => {
+      responseStatus = response.status;
+      // console.log(responseStatus);
+      return response.json();
+    })
+    .then((json) => {
+      if (responseStatus == 200) {
+        msg = "STATUS: Playlists Received."
+        document.getElementById("app-status").innerHTML = msg;
+        let userPlaylists = json.id_title_dict;
+        // console.log("userPlaylists:", userPlaylists);
+        for (const key in userPlaylists) {
+          // // console.log(`${key}: ${userPlaylists[key]}`);
+          let opt = document.createElement("option");
+          opt.innerHTML = userPlaylists[key];
+          opt.value = key;
+          selectUserPlaylist.append(opt)
+          // selectUserPlaylist.innerHTML = opt
+        }
+        // Get today's playlist id
+        let todaysPlaylistObject = json.todays_playlist_dict
+        //// // console.log("todaysPlaylistObject: ", todaysPlaylistObject);
+        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
+        // // console.log("todaysPlaylistId: ", todaysPlaylistId);
+      } else {
+        // Server error message
+        // // console.log("Server Error Message: ", json)
+        msg = "STATUS: Failed to Fetch Playlists."
+        document.getElementById("app-status").innerHTML = msg;
+      }
+
+    }).catch(error => {
+      console.error(error);
+      msg = "STATUS: Failed to Fetch Playlists."
+      document.getElementById("app-status").innerHTML = msg;
+    });
+}
+
+function resetonStartRecording() {
+
+  // show record button
+  document.querySelector('.record-btn').style.display = 'block';
+
+  // reset video title 
+  document.querySelector(".video-title").innerHTML = "";
+  document.querySelector('#selectChannel').disabled = true;
+  document.querySelector('.selectPlaylist').disabled = false;
+  document.querySelector('#view_records').disabled = false;
+  document.querySelector('#test-name').disabled = false;
+  document.querySelector('#create-playlist').disabled = false;
+  document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
+  document.querySelector('#webcam-recording').disabled = false;
+  document.querySelector('#screen-recording').disabled = false;
+  document.querySelector('#audio-settings').disabled = false;
+  document.querySelector('#public-videos').disabled = false;
+
+}
