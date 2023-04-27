@@ -163,7 +163,7 @@ img {
   background: var(--light-primary_clr);
   color: var(--white-clr);
   position: absolute;
-  top: 15%;
+  top: 18%;
   text-align: left;
   right: 0;
   height: 0;
@@ -192,6 +192,7 @@ img {
 .user-display input {
   outline: none;
   border: none;
+  width: 100%;
   text-align: left;
 }
 .lower-nav-label{

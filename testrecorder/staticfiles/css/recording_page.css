@@ -1,0 +1,43 @@
+@charset "utf-8";
+
+.centered {
+    width: 60vw;
+    height: 51vh;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.modal-header {
+    background: #ff000e;
+    color: #fff;
+}
+
+.green-header {
+    background: #00941E;
+    color: #fff;
+}
+
+.required:after {
+    content: "*";
+    color: red;
+}
+
+.white-text {
+    color: white;
+}
+.bodyStyle
+{
+background-image:url('{{ STATIC_URL }}images/app-background.jpg');
+background-repeat:no-repeat;
+background-size:100%;
+}
+
+#radio-buttons-container{
+    /*height: 43vh;*/
+    /*overflow-x: auto;
+    overflow-y: auto;*/
+    max-height:80vh;
+}

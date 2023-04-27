@@ -125,6 +125,17 @@ function calcTime(val) {
     return valString;
   }
 }
+// diasble unlist if public is checked
+function disableUnlist(){
+  let publicChecked = publicVideosCheckbox.checked;
+  let unlistChecked = unlistVideosCheckbox.checked;
+  if (publicChecked == true) {
+    unlistChecked == false
+    if (unlistChecked == true) {
+      unlistVideosCheckbox.click()
+    }
+  } 
+}
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
@@ -1488,7 +1499,7 @@ async function createBroadcast() {
   url = "youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
-  console.log(videoPrivacyStatus);
+  // console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
@@ -1727,7 +1738,7 @@ async function setVideoPrivacyStatus() {
     videoPrivacyStatus = "private";
   }
   if (unlistVideo == true) {
-    videoPrivacyStatus = "unlist";
+    videoPrivacyStatus = "unlisted";
   }
 }
 
