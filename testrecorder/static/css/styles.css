@@ -147,10 +147,59 @@ img {
   border: none;
   cursor: pointer;
 }
-.lower-nav-item-flex{
+/* .lower-nav-item-flex{
   display: flex;
   justify-content: center;
   align-items: center;
+} */
+.user-icon{
+  cursor: pointer;
+}
+.user-icon i{
+  color: var(--white-clr);
+  font-size: 1.2rem;
+}
+.user-display {
+  background: var(--light-primary_clr);
+  color: var(--white-clr);
+  position: absolute;
+  top: 15%;
+  text-align: left;
+  right: 0;
+  height: 0;
+  transition: var(--transition);
+  z-index: 3;
+  overflow: hidden;
+}
+
+@media screen and (min-width:768px) {
+  .user-display{
+    top: 22%;
+    right: 5%;
+  }
+  .user-icon i {
+    font-size: 1.5rem;
+  }
+}
+.user-display div {
+  padding: 0.5rem;
+}
+
+.user-display a {
+  color: var(--white-clr);
+  padding-left: 0.5rem;
+}
+.user-display input {
+  outline: none;
+  border: none;
+  text-align: left;
+}
+.lower-nav-label{
+  color: var(--primary_clr);
+}
+
+.show-user-bar {
+  height: 90px;
 }
 #username{
   display: inline;
@@ -160,9 +209,9 @@ img {
   color: var(--white-clr);
   background: transparent;
 }
-.lower-nav-item-flex a{
+/* .lower-nav-item-flex a{
   color: var(--white-clr);
-}
+} */
 #app-status{
   color: var(--white-clr);
 }
@@ -196,15 +245,29 @@ img {
   outline: 1px solid #fa3d4a;
   border-radius: 0.5rem;
 }
+
+
+.video-timer {
+  position: absolute;
+  bottom: 20%;
+  right: 10%;
+  display: none;
+  z-index: 99;
+  color: var(--primary_clr);
+}
+.show-timer{
+  display: block;
+}
 .video-component video{
   position: absolute;
   width: 90%;
-  height: 90%;
+  height: 80%;
   /* background: white; */
   top: 3%;
   left: 5%;
   transform: tranlate(-50%, -50%);
 }
+
 .input-start-record-btn {
   position: absolute;
   bottom: 3%;
@@ -220,7 +283,7 @@ img {
 }
 .main-content-check-boxes{
   position: absolute;
-  top: 35%;
+  top: 30%;
   left: 5%;
 }
 .setting-icon{
@@ -237,6 +300,7 @@ img {
 #webcam-recording:checked~label,
 #screen-recording:checked~label,
 #audio-settings:checked~label,
+#unlist-videos:checked~label,
 #public-videos:checked~label {
   color: var(--light-primary_clr);
 }
@@ -406,6 +470,10 @@ img {
     height: 70%;
     top: 10%;
     left: 15%;
+  }
+  .video-timer {
+    bottom: 27%;
+    right: 20%;
   }
 }
 @media screen and (min-width:996px) {
