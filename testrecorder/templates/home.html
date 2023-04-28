@@ -87,7 +87,7 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="microphoneStatus()"  checked>
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
@@ -908,6 +908,32 @@
         </div>
     </div>
 </div>
+
+
+    <!-- Select camera Modal -->
+    <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select a Camera</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="closecameraModal"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="" class="form-control" id="video-source">
+                        <option value="">Select a Camera</option>
+                    </select>
+                    <div style="color:red;" id="camera-error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    
 <!-- ============================================================= -->
 <!-- Add Channel Modal-->
 <div class="modal" id="add-channel-modal" data-bs-backdrop="static" data-bs-keyboard="false">
