@@ -1783,7 +1783,7 @@ async function setVideoPrivacyStatus() {
     videoPrivacyStatus = "private";
   }
   if (unlistVideo == true) {
-    videoPrivacyStatus = "unlist";
+    videoPrivacyStatus = "unlisted";
   }
 }
 

@@ -96,8 +96,8 @@
             <label for="public-videos"><i class="fas fa-globe"></i><p>Public</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="unlist" id="unlist-videos">
-            <label for="unlist-videos"><i class="fas fa-eye-slash"></i><p>Unlist</p></label>
+            <input type="checkbox" name="unlisted" id="unlist-videos">
+            <label for="unlist-videos"><i class="fas fa-eye-slash"></i><p>Unlisted</p></label>
         </div>
         </div>
         <div class="input-start-record-btn">
@@ -120,34 +120,7 @@
                     <span class="tooltip-text">Create new genre</span>
 
                 </div>
-                <div class="record-btn tooltip-container">
-                    {% comment %} <button id="start" onClick="validateModal()">
-                        <i class="fas fa-record-vinyl"></i>
-                    </button> {% endcomment %}
-                    <button id="start" onClick="validateAll()">
-                        <i class="fas fa-record-vinyl"></i>
-                    </button>
-                    <span class="tooltip-text">Start Recording</span>
-                </div>
-                <div class="stop-btn tooltip-container" style="display:none">
-                    <button id="stop" onClick="showGetTaskIdFromUserModal()">
-                        <i class="fas fa-stop-circle"></i>
-                    </button>
-                    <span class="tooltip-text">Stop Recording</span>
-                </div>
-                <div class="share-record-btn tooltip-container" style="display:none">
-                    <button id="share_records" onClick="shareLinkModal()">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                    <span class="tooltip-text">Share Video</span>
-                </div>
-                <div class="add-channel-btn tooltip-container">
-                    <button id="view_records" onClick="showAddChannelModal()">
-                        <i class="fab fa-youtube"></i>
-                    </button>
-                    <span class="tooltip-text">Save Channel Details</span>
-                </div>
-            </div>
+                
             <div class="record-btn tooltip-container">
                 {% comment %} <button id="start" onClick="validateModal()">
                     <i class="fas fa-record-vinyl"></i>
