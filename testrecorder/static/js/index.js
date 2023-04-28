@@ -1664,7 +1664,7 @@ async function createBroadcast() {
   url = "youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
-  // console.log(videoPrivacyStatus);
+  console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
@@ -1924,11 +1924,12 @@ async function setVideoPrivacyStatus() {
   let unlistVideo = unlistVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
-  } else {
-    videoPrivacyStatus = "private";
-  }
-  if (unlistVideo == true) {
+  } 
+  else if (unlistVideo == true) {
     videoPrivacyStatus = "unlisted";
+  }
+  else {
+    videoPrivacyStatus = "private";
   }
 }
 
@@ -3441,7 +3442,7 @@ function displayUtilities() {
   // document.getElementById("selectChannel").value = "";
   // document.getElementById("test-name").value = "";
   // Enable share records button
-  if (publicVideosCheckbox.checked) {
+  if (publicVideosCheckbox.checked || unlistVideosCheckbox.checked ) {
     btnShareRecords.style.display = "block";
   } else {
     btnShareRecords.style.display = "none";
