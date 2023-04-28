@@ -11,4 +11,4 @@ testrecorder/youtube/credentials-old.json
 testrecorder/.env
 env
 venv
-staticfiles
+testrecorder/staticfiles
