@@ -86,7 +86,6 @@ let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
 
-
 let userIcon = document.querySelector(".user-icon")
 let userDisplay = document.querySelector(".user-display")
 
@@ -135,6 +134,17 @@ function disableUnlist(){
       unlistVideosCheckbox.click()
     }
   } 
+}
+// diasble unlist if public is checked
+function disableUnlist() {
+  let publicChecked = publicVideosCheckbox.checked;
+  let unlistChecked = unlistVideosCheckbox.checked;
+  if (publicChecked == true) {
+    unlistChecked == false
+    if (unlistChecked == true) {
+      unlistVideosCheckbox.click()
+    }
+  }
 }
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {

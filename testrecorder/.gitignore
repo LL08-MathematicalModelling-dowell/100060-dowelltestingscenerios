@@ -3,3 +3,4 @@ client_secret.json
 db.sqlite3
 /static/
 *.sqlite3
+staticfiles

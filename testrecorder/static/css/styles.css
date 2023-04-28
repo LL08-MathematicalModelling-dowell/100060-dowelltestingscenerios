@@ -146,6 +146,7 @@ img {
   outline: none;
   border: none;
   cursor: pointer;
+  text-align: center;
 }
 /* .lower-nav-item-flex{
   display: flex;
@@ -171,6 +172,7 @@ img {
   z-index: 3;
   overflow: hidden;
 }
+
 
 @media screen and (min-width:768px) {
   .user-display{
@@ -205,8 +207,8 @@ img {
 #username{
   display: inline;
   width: fit-content;
-  text-align: right;
-  padding-right: 0.2rem;
+  text-align: left;
+  padding-left: 0.5rem;
   color: var(--white-clr);
   background: transparent;
 }
