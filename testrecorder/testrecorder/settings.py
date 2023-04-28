@@ -51,10 +51,7 @@ INSTALLED_APPS = [
     'youtube',
     'corsheaders',
     'voc_stories_websocket',
-
-
     'django.contrib.sites',
-
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -116,6 +113,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
 
+
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
 ASGI_APPLICATION = 'testrecorder.asgi.application'
 
@@ -154,7 +152,7 @@ This resulted in errors during google login through allauth
 Djongo can't the "booblean condition" and expects "table"."bool_field" = True.
 Django has an option for enabling these "boolean conditions".
 By overriding  the config by adding this code snipet to djongo/operations.py,
-it is compared against TRUE in the SQL and Djongo can handle it
+it is compared against TRUE in the SQL and Djongo can handle it.
 '''
 DatabaseOperations.conditional_expression_supported_in_where_clause = (
     lambda *args, **kwargs: False
@@ -194,11 +192,8 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
-# STATIC_URL = '/static/'
 
 # default static files settings for PythonAnywhere.
 # see https://help.pythonanywhere.com/pages/DjangoStaticFiles for more info

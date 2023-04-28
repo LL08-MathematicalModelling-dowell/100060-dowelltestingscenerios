@@ -1,11 +1,11 @@
 # youtube/urls.py
 from django.urls import path
-from .views import (logout_view, index,test_api_request, create_broadcast,
-                    authorize, oauth2callback, revoke, clear_credentials, 
-                    CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView, 
-                    FetchPlaylistsView, CreatePlaylistView,FetchPlaylistsViewV2,FetchChannels
-)
-from .views_w import CreateChannel, UserChannels, create_channel
+from .views import (logout_view, index, test_api_request, create_broadcast,
+                    authorize, oauth2callback, revoke, clear_credentials,
+                    CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView,
+                    FetchPlaylistsView, CreatePlaylistView, FetchPlaylistsViewV2, FetchChannels
+                    )
+from .views_w import UserChannels
 
 urlpatterns = [
     path('', index, name='index'),
@@ -24,11 +24,10 @@ urlpatterns = [
          name='playlist-items-insert-api'),
     path('fetchplaylists/api/', FetchPlaylistsView.as_view(), name='fetch-playlists'),
     path('createplaylist/api/', CreatePlaylistView.as_view(), name='create-playlist'),
-    path('fetchplaylists/api/v2', FetchPlaylistsViewV2.as_view(), name='fetch-playlists-v2'),
+    path('fetchplaylists/api/v2', FetchPlaylistsViewV2.as_view(),
+         name='fetch-playlists-v2'),
     path('fetchchannels/api/', FetchChannels.as_view(), name='fetch-channels'),
     # URL pattern tha logs a user out
     path('logout/', logout_view, name='logout'),
     path('channels/', UserChannels.as_view(), name='user_channel'),
-    path('createchannel/', create_channel, name='create_channel'),
-
 ]

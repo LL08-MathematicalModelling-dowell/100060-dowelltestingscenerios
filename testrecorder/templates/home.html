@@ -87,7 +87,7 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="microphoneStatus()"  checked>
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
@@ -117,7 +117,7 @@
                 <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
                     <i class="fas fa-save"></i>
                 </button>
-                <span class="tooltip-text">Create Play List</span>
+                <span class="tooltip-text">Create new genre</span>
 
             </div>
             <div class="record-btn tooltip-container">
@@ -361,6 +361,32 @@
             </div>
         </div>
     </div>
+    <!-- Error occurred modal -->
+    <div class="modal" id="livestreamErrorModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">LiveStream Error!!</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="livestreamErrorOccurred" style="font-size: 1.15rem; color: rgb(255, 0, 0);">
+                        <i class="bi-x"></i>
+                    </p>
+                    <p>
+                        <i>For more information on how to activate your youtube account for livestreaming click <a
+                                href="https://support.google.com/youtube/answer/2474026?hl=en&co=GENIE.Platform%3DDesktop&oco=0"
+                                target="_blank" rel="noopener noreferrer">here!</a><i>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                        id="btnCloseErrorModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Task Error occurred modal -->
     <div class="modal" id="taskErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -614,16 +640,16 @@
 
                 </div>
             </div>-->
-            <!-- Shown initially when getting the playlists -->
-            <!--<div id="loading-playlists">
+<!-- Shown initially when getting the playlists -->
+<!--<div id="loading-playlists">
                 <div class="modal-body">
                     <p style="font-size: 1rem; text-align: center; color: rgb(0, 0, 0);">
                         <i class="bi-x"></i>Loading Playlists...
                     </p>
                 </div>
             </div>-->
-            <!-- Shown when failure to receive playlists occurs -->
-            <!--<div id="failed-to-receive-playlists">
+<!-- Shown when failure to receive playlists occurs -->
+<!--<div id="failed-to-receive-playlists">
                 <div class="modal-body">
                     <p style="font-size: 1rem; color: rgb(255, 0, 0);">
                         <i class="bi-x"></i>Failed to get playlists for the selected channel!
@@ -739,7 +765,8 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Select channel</strong></label>
-                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_channel-error"></p>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                                id="p_channel-error"></p>
                             <!-- {{ add_playlist.channel }} -->
                             <select class='form-control' name="channel" id="selectChannel_1" >
                                 {% comment %} <option value="">Select Channel</option> {% endcomment %}
@@ -752,24 +779,25 @@
                                 id="p_privacy-error"></p>
                             <div style='display: flex; justify-content:flex-start; width: 100%'>
                                 {% for radio in add_playlist.privacy_status %}
-                                    <div style='padding-right:20px; margin: 0'> {{ radio }}</div>
+                                <div style='padding-right:20px; margin: 0'> {{ radio }}</div>
                                 {% endfor %}
                             </div>
                         </div>
-                        
+
                         <div class="modal-footer">
-                            <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit" value="Submit">
-                            <button type="submit" class="btn btn-success" id="create-playlist-btn" >Add</button>
+                            <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit"
+                                value="Submit">
+                            <button type="submit" class="btn btn-success" id="create-playlist-btn">Add</button>
                             <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                         </div>
                     </form>
-                </div>              
-            </div>
-            </div>
-            </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
+</div>
+</div>
 </div>
 
 <!-- Playlist created modal-->
@@ -868,6 +896,32 @@
         </div>
     </div>
 </div>
+
+
+    <!-- Select camera Modal -->
+    <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select a Camera</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="closecameraModal"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="" class="form-control" id="video-source">
+                        <option value="">Select a Camera</option>
+                    </select>
+                    <div style="color:red;" id="camera-error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    
 <!-- ============================================================= -->
 <!-- Add Channel Modal-->
 <div class="modal" id="add-channel-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -881,15 +935,18 @@
             <div class="modal-body">
                 <form id="add-channel">
                     {% csrf_token %}
-                    <p style="font-size: 1em; width: 100%; text-align: center; font-style: italic; font-weight: 400;" id="add-status"></p>
+                    <p style="font-size: 1em; width: 100%; text-align: center; font-style: italic; font-weight: 400;"
+                        id="add-status"></p>
                     <div class="mb-3">
                         <label class="form-label required"><strong>Channel ID</strong></label>
-                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="id-error"></p>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                            id="id-error"></p>
                         {{ form.channel_id }}
                     </div>
                     <div class="mb-3">
                         <label class="form-label required"><strong>Channel Title</strong></label>
-                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="title-error"></p>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                            id="title-error"></p>
                         {{ form.channel_title }}
                     </div>
                     <div class="modal-footer">
@@ -899,7 +956,7 @@
                     </div>
                 </form>
             </div>
-          
+
         </div>
     </div>
 </div>

@@ -44,9 +44,11 @@ class CreatePlaylist(forms.Form):
     #     # self.fields['channel'].choices = self.get_channel_choices()
 
     PRIVATE = 'private'
+    UNLISTED = 'unlisted'
     PUBLIC = 'Public'
     PRIVACY_STATUS = [
         (PRIVATE, 'private'),
+        (UNLISTED, 'unlisted'),
         (PUBLIC, 'public')
     ]
 
