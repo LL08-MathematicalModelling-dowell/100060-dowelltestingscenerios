@@ -5,10 +5,10 @@ const screenCheckbox = document.getElementById('screen-recording')
 //const keyLogCheckbox = document.getElementById('key-logging')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
+const unlistVideosCheckbox = document.getElementById('unlist-videos')
 // const selectCamerabutton = document.getElementById('choose-camera');
 const selectVideo = document.getElementById('video-source');
 let currentStream;
-//const clickupTaskNotesCheckbox = document.getElementById('clickupTaskNotesCheckbox')
 
 let btnShareRecords = document.querySelector('.share-record-btn');
 let channelSelect = document.getElementById("selectChannel");
@@ -86,29 +86,44 @@ let showNotificationPermission = 'default';
 
 
 
-// Initialize the playlist table
-// let playlistTable = $('#playlist-table').DataTable({
-//   data: tablePlaylists,
-//   columns: [
-//     { title: 'Playlists Titles' },
-//   ],
-// });
-// Initialize the channel table
-// let ChannelsTable = $('#channels-table').DataTable({
-//   data: tableChannels,
-//   columns: [
-//     { title: 'Channels Titles' },
-//   ],
-// });
+let userIcon = document.querySelector(".user-icon")
+let userDisplay = document.querySelector(".user-display")
 
+userIcon.addEventListener("click", function(){
+  userDisplay.classList.toggle("show-user-bar")
+})
 
-// Show selenium IDE installation modal, if not disabled
-// let dontShowSeleniumIDEModalAgain = localStorage.getItem("dontShowSelIDEInstallAgain");
-// if (dontShowSeleniumIDEModalAgain != "true") {
-//   let seleniumIDEModal = new bootstrap.Modal(document.getElementById('seleniumIDEModal'));
-//   seleniumIDEModal.show();
-// }
+// video timer
+let videoTimer = document.querySelector(".video-timer")
+let hourTime = document.querySelector(".hour-time")
+let minuteTime = document.querySelector(".minute-time")
+let secondTime = document.querySelector(".second-time")
+let timeInterval;
+let totalTime = 0;
+function displayTimer() {
+  videoTimer.classList.add("show-timer")
+  timeInterval = setInterval(setTime, 1000);
+}
+async function clearTimer() {
+  videoTimer.classList.add("show-timer")
+  clearInterval(timeInterval);
+}
 
+function setTime() {
+  ++totalTime;
+  secondTime.innerHTML = calcTime(totalTime % 60);
+  minuteTime.innerHTML = calcTime(parseInt(totalTime / 60));
+  hourTime.innerHTML = calcTime(parseInt(totalTime / 3600));
+}
+function calcTime(val) {
+  let valString = val + "";
+  if (valString.length
+    < 2) {
+    return "0" + valString;
+  } else {
+    return valString;
+  }
+}
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
@@ -130,15 +145,15 @@ document.getElementById("userClickupEmail").value = localStorage.getItem("userCl
 // show select camera modal
 async function showCameraModal() {
   let webCam = cameraCheckbox.checked;
-  if (webCam == true){
+  if (webCam == true) {
     // close modal if open
     const btnCloseCameraModal = document.getElementById('closecameraModal');
     btnCloseCameraModal.click();
-  
+
     // Show modal
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.show();
-  }else{
+  } else {
     // Show modal
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.hide();
@@ -227,18 +242,48 @@ async function captureMediaDevices(currentMediaConstraints) {
 }
 
 // Gets screen recording stream
+// async function captureScreen(mediaConstraints = {
+//   video: {
+//     cursor: 'always',
+//     resizeMode: 'crop-and-scale'
+//   },
+//  // audio: true
+// }) {
+
+//   try {
+//     const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+
+//     return screenStream
+//   }
+//   catch (err) {
+//     let msg = "STATUS: Error while getting screen stream."
+//     document.getElementById("app-status").innerHTML = msg;
+//     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
+//     // Tell user, stop the recording.
+//     resetStateOnError();
+//   }
+// }
 async function captureScreen(mediaConstraints = {
   video: {
     cursor: 'always',
     resizeMode: 'crop-and-scale'
   },
   // audio: true
-}) {
+}
+) {
 
   try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+    let screenStream;
 
-    return screenStream
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      // Use getUserMedia for mobile devices
+      screenStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+    } else {
+      // Use getDisplayMedia for desktop devices
+      screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
+    }
+
+    return screenStream;
   }
   catch (err) {
     let msg = "STATUS: Error while getting screen stream."
@@ -252,7 +297,7 @@ async function captureScreen(mediaConstraints = {
 //@Muhammad Ahmed 
 // VOice mute/Unmute
 
-async function micphoneStatus() {
+async function microphoneStatus() {
   var microphoen_btn = null;
   microphoen_btn = document.getElementById("audio-settings");
   if (microphoen_btn.checked == true) {
@@ -368,7 +413,7 @@ async function recordMergedStream() {
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
-    let recordAudio = await micphoneStatus();
+    let recordAudio = await microphoneStatus();
     let muteState = !recordAudio;
     //// // console.log("muteState: ",muteState)
 
@@ -444,7 +489,6 @@ async function recordMergedStream() {
   }
 }
 
-
 // Stops webcam and screen recording
 async function stopRecording() {
 
@@ -459,7 +503,7 @@ async function stopRecording() {
 
   // Transition the broadcast to complete state
   await endBroadcast();
-
+  await clearTimer()
   // Enable start recording button
   document.getElementById("start").disabled = false;
   resetonStartRecording()
@@ -529,7 +573,8 @@ async function recordScreenAndAudio() {
   screenStream = await captureScreen();
 
   // Check if we need to add audio stream
-  let recordAudio = await micphoneStatus();
+  let recordAudio = await microphoneStatus();
+    
   let stream = null;
   if (recordAudio == true) {
     audioStream = await captureMediaDevices(screenAudioConstraints);
@@ -567,7 +612,10 @@ async function recordScreenAndAudio() {
       stream = new MediaStream(tracks);
     } catch (error) {
       console.error("Error while creating merged audio streams: ", error)
-      stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+      stream = new MediaStream([
+        ...screenStream.getTracks(),
+        ...audioStream.getTracks()
+      ]);
     }
 
   } else {
@@ -621,6 +669,151 @@ async function recordScreenAndAudio() {
   //screenRecorder.start(200)
 }
 
+  // Muhammad Ahmed
+// specific function for simultaneously share Cameras and  device screen  
+async function camAndScreenShare() {
+
+  try {
+    // set up the screen capture stream
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+
+    // set up the camera stream
+   // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    let webcamStreamWidth = 0;
+    let webcamStreamHeight = 0;
+    const screenWidth = screen.width;
+    const screenHeight = screen.height;
+
+    // if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    //   throw new Error("getUserMedia is not supported in this browser");
+    // }
+
+    if (cameraCheckbox.checked) {
+      webcamStreamWidth = Math.floor(0.15 * screenWidth);
+      webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
+    
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    //console.log("Camera stream dimensions: " + webcamStreamWidth + " x " + webcamStreamHeight);
+
+    // create a canvas element to hold the merged stream
+    const canvas = document.createElement('canvas');
+    canvas.width = screenStream.width;
+    canvas.height = screenStream.height;
+
+    // set up the merger and add the streams
+    const merger = new VideoStreamMerger();
+    merger.addStream(screenStream, {
+      x: 0,
+      y: 0,
+      width: merger.width,
+      height: merger.height,
+      mute: true
+    });
+
+    merger.addStream(cameraStream, {
+      x: 0, // position of the top-left corner
+      y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+      width: webcamStreamWidth,
+      height: webcamStreamHeight,
+      mute: true // we don't want sound from the camera
+      
+    });
+    
+
+    // start the merger
+    merger.start();
+
+    // set the video source to the merged stream
+    video.srcObject = merger.result;
+
+    // handle cameraCheckbox changes
+    cameraCheckbox.addEventListener('change', async () => {
+      // stop the old camera stream
+      cameraStream.getTracks().forEach(track => track.stop());
+    
+      // get a new camera stream with updated dimensions if checkbox is checked
+      if (cameraCheckbox.checked) {
+        webcamStreamWidth = Math.floor(0.15 * screenWidth);
+        webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: webcamStreamWidth, height: webcamStreamHeight } });
+      }
+    
+      // add the camera stream to the merger
+      merger.addStream(cameraStream, {
+        x: 0, // position of the top-left corner
+        y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+        width: webcamStreamWidth,
+        height: webcamStreamHeight,
+        mute: true // we don't want sound from the camera
+      });
+    
+      // re-render the merger
+      merger.reRender();
+    });
+    
+
+    // screenCheckbox.addEventListener('change', async () => {
+    //   if (screenCheckbox.checked) {
+    //     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    //   } else {
+    //     screenStream.getTracks().forEach(track => {
+    //       track.stop();
+    //     });
+    //     screenStream = null;
+    //   }
+
+    //   merger.reRender();
+    // });
+
+
+    screenCheckbox.addEventListener('change', async () => {
+      try {
+        if (screenCheckbox.checked) {
+          // get new screen stream and add it to the merger
+          const newScreenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+          merger.addStream(newScreenStream, {
+            x: 0,
+            y: 0,
+            width: merger.width,
+            height: merger.height,
+            mute: true
+          });
+        } else {
+          // stop the old screen stream and re-render the merger
+          screenStream.getTracks().forEach(track => {
+            track.stop();
+          });
+          merger.removeStream(screenStream);
+        }
+        merger.reRender();
+      } catch (error) {
+        console.error('Error: ', error);
+      }
+    });
+
+    // handle mute/unmute button click
+    const audioBtn = document.getElementById("audio-settings");
+    audioBtn.checked = true; // initialize as checked
+
+    audioBtn.addEventListener('click', () => {
+      const muteState = !audioBtn.checked; // if checked is false, mute the audio
+      merger.addStream(cameraStream, {
+        x: 0, // position of the top-left corner
+        y: merger.height - webcamStreamHeight, // position of the bottom-left corner
+        width: webcamStreamWidth,
+        height: webcamStreamHeight,
+        mute: muteState // set the mute state of the audio
+      });
+      audioBtn.innerHTML = muteState ? "Unmute" : "Mute";
+    });
+
+  } catch (error) {
+    console.error('Error: ', error);
+  }
+}
+
+
 // Checks recording settings and starts the recording
 async function startRecording() {
 
@@ -640,7 +833,7 @@ async function startRecording() {
 
   // Enable or disable audio recording
   try {
-    let recordAudio = await micphoneStatus();
+    let recordAudio = await microphoneStatus();
 
     if (recordAudio == true) {
       // Enable audio recording for webcam
@@ -684,12 +877,18 @@ async function startRecording() {
   let recordScreen = screenCheckbox.checked;
   if ((recordScreen == true) && (recordWebcam == true)) {
     try {
-      await recordStream();
-      //// // console.log("Done with webcam and audio.")
-      await recordScreenAndAudio();
-      //// // console.log("Done with screen and audio.")
-      await recordMergedStream();
-      //// // console.log("Done with merged.")
+
+      //old code commited Ahmed
+      // await recordStream();
+      // console.log("Done with webcam and audio.")
+      // await recordScreenAndAudio();
+      // console.log("Done with screen and audio.")
+      // await recordMergedStream();
+      // console.log("Done with merged.")
+
+      // Muhammad Ahmed
+      await camAndScreenShare();
+      console.log("cam and screen share at a time ")
 
       // Synchronize recording
       recordingSynched = true;
@@ -761,7 +960,7 @@ async function startRecording() {
   }
 }
 
-async function validateAll(){
+async function validateAll() {
   let webCam = cameraCheckbox.checked;
   if (webCam == true) {
     webcamMediaConstraints = null
@@ -780,7 +979,7 @@ async function validateAll(){
     };
     document.getElementById("camera-error").innerHTML = cameraErrorMsg;
     validateModal()
-  }else{
+  } else {
     validateModal()
   }
 }
@@ -1471,6 +1670,7 @@ async function createBroadcast() {
   url = "youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
+  console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
@@ -1727,10 +1927,14 @@ async function checkNetworkStatus() {
 async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
   let makePublic = publicVideosCheckbox.checked;
+  let unlistVideo = unlistVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
   } else {
     videoPrivacyStatus = "private";
+  }
+  if (unlistVideo == true) {
+    videoPrivacyStatus = "unlisted";
   }
 }
 
@@ -2641,9 +2845,10 @@ async function insertVideoIntoTodaysPlaylist() {
 
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
+  displayTimer()
   showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
-  let recordAudio = micphoneStatus();
+  let recordAudio = microphoneStatus();
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
@@ -3227,7 +3432,7 @@ function displayUtilities() {
   // disable playlist button
   document.querySelector('#create-playlist').disabled = true;
   // disable channel button
-  document.querySelector('#view_records').disabled = true;
+  // document.querySelector('#view_records').disabled = true;
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = true;
   document.querySelector('#test-name').disabled = true;
@@ -3236,6 +3441,7 @@ function displayUtilities() {
   document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
+  document.querySelector('#unlist-videos').disabled = true;
 
   // clear navbar forms
   // document.getElementById("selectChannel").value = "";
@@ -3284,7 +3490,7 @@ async function fetchUserChannel() {
           opt_1.innerHTML = channel_title;
           channelSelect.append(opt);
           channelSelect_1.append(opt_1);
-          channelSelect.value = `Channel/${channel_title}`;
+          channelSelect.value = channel_title;
           channelSelect.name = channel_title;
           // console.log(opt);
         })
@@ -3372,7 +3578,7 @@ function resetonStartRecording() {
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
-  document.querySelector('#view_records').disabled = false;
+  // document.querySelector('#view_records').disabled = false;
   document.querySelector('#test-name').disabled = false;
   document.querySelector('#create-playlist').disabled = false;
   document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
@@ -3380,5 +3586,6 @@ function resetonStartRecording() {
   document.querySelector('#screen-recording').disabled = false;
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
+  document.querySelector('#unlist-videos').disabled = false;
 
 }

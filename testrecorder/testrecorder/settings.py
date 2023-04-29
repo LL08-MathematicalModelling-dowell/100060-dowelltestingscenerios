@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+from djongo.operations import DatabaseOperations
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -146,7 +147,6 @@ DATABASES = {
 # }
 
 
-from djongo.operations import DatabaseOperations
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
 This resulted in errors during google login through allauth
@@ -241,5 +241,3 @@ AUTHENTICATION_BACKENDS = [
 ]
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
-

@@ -541,7 +541,7 @@ class CreateBroadcastView(APIView):
                 videoPrivacyStatus, testNameValue, request)
             # stream_dict = {"Hello":"Testing for now!"}
             print("stream_dict: ", stream_dict)
-        except Exception as e:
+        except  HttpError as e: # Exception as e:
             # HttpError as e:
             error_data = {
                 'message': e.reason,
