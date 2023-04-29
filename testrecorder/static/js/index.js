@@ -86,13 +86,6 @@ let showNotificationPermission = 'default';
 
 
 
-let userIcon = document.querySelector(".user-icon")
-let userDisplay = document.querySelector(".user-display")
-
-userIcon.addEventListener("click", function(){
-  userDisplay.classList.toggle("show-user-bar")
-})
-
 // video timer
 let videoTimer = document.querySelector(".video-timer")
 let hourTime = document.querySelector(".hour-time")
@@ -124,6 +117,37 @@ function calcTime(val) {
     return valString;
   }
 }
+// diasble unlist if public is checked
+function disableUnlist(){
+  let publicChecked = publicVideosCheckbox.checked;
+  let unlistChecked = unlistVideosCheckbox.checked;
+  if (publicChecked == true) {
+    unlistChecked == false
+    if (unlistChecked == true) {
+      unlistVideosCheckbox.click()
+    }
+  } 
+}
+// diasble public if unlist is checked
+function disablePublic() {
+  let publicChecked = publicVideosCheckbox.checked;
+  let unlistChecked = unlistVideosCheckbox.checked;
+  if (unlistChecked == true) {
+    publicChecked == false
+    if (publicChecked == true) {
+      publicVideosCheckbox.click()
+    }
+  }
+}
+
+// display user
+let userIcon = document.querySelector(".user-icon")
+let userDisplay = document.querySelector(".user-display")
+
+userIcon.addEventListener("click", function () {
+  userDisplay.classList.toggle("show-user-bar")
+})
+
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
@@ -692,7 +716,7 @@ async function camAndScreenShare() {
       webcamStreamWidth = Math.floor(0.15 * screenWidth);
       webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
     
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
     }
     //console.log("Camera stream dimensions: " + webcamStreamWidth + " x " + webcamStreamHeight);
 
@@ -1930,11 +1954,12 @@ async function setVideoPrivacyStatus() {
   let unlistVideo = unlistVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
-  } else {
-    videoPrivacyStatus = "private";
-  }
-  if (unlistVideo == true) {
+  } 
+  else if (unlistVideo == true) {
     videoPrivacyStatus = "unlisted";
+  }
+  else {
+    videoPrivacyStatus = "private";
   }
 }
 
@@ -3437,8 +3462,8 @@ function displayUtilities() {
   document.querySelector('.selectPlaylist').disabled = true;
   document.querySelector('#test-name').disabled = true;
   document.querySelector('.logout-disable').removeAttribute("href");
-  document.querySelector('#webcam-recording').disabled = true;
-  document.querySelector('#screen-recording').disabled = true;
+  // document.querySelector('#webcam-recording').disabled = true;
+  // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
   document.querySelector('#unlist-videos').disabled = true;
@@ -3447,7 +3472,7 @@ function displayUtilities() {
   // document.getElementById("selectChannel").value = "";
   // document.getElementById("test-name").value = "";
   // Enable share records button
-  if (publicVideosCheckbox.checked) {
+  if (publicVideosCheckbox.checked || unlistVideosCheckbox.checked ) {
     btnShareRecords.style.display = "block";
   } else {
     btnShareRecords.style.display = "none";
@@ -3582,8 +3607,8 @@ function resetonStartRecording() {
   document.querySelector('#test-name').disabled = false;
   document.querySelector('#create-playlist').disabled = false;
   document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
-  document.querySelector('#webcam-recording').disabled = false;
-  document.querySelector('#screen-recording').disabled = false;
+  // document.querySelector('#webcam-recording').disabled = false;
+  // document.querySelector('#screen-recording').disabled = false;
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#unlist-videos').disabled = false;
