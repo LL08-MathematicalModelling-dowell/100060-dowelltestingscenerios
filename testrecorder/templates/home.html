@@ -16,38 +16,34 @@
         {% load socialaccount %}
         {% if user.is_authenticated %}
         <div class="authenticated-user">
-            
-            <div class="story-name lower-nav-item">
-                <input type="text" name="" id="test-name" placeholder="Title">
-              <div style="color:red;" id="test-name-error"></div>
-            </div>
+
              <div class="lower-nav-item">
-            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
-                <div style="color:red;" id="channelname-error"></div>
+                 <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                 <div class="lower-nav-label">Channel</div>
+                 <div style="color:red;" id="channelname-error"></div>
             </div> 
             <!-- end single select -->
+                        
+            <div class="story-name lower-nav-item">
+                <input type="text" name="" id="test-name" placeholder="Title">
+                <div class="lower-nav-label"></div>
+              <div style="color:red;" id="test-name-error"></div>
+            </div>
             <div class="lower-nav-item">
                 <!-- single select -->
                 <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
                     <option value=""></option>
                 </select>
+                <div class="lower-nav-label"></div>
                 <div style="color:red;" id="playlist-error"></div>
                 <!-- end single select -->
             </div>
             <!-- Story Name -->
             <!-- Story Name -->
-                <div class="lower-nav-item-flex lower-nav-item">
-                    <span>
-                        <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="User/{{ user.username }}" disabled>
-                        <div style="color:red;" id="username-error"></div>
-                    </span>
-                    <span>
-                        <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
-                        <div style="color:red;" id="username-error"></div>
-                    </span>
-                {% comment %} </div> {% endcomment %}
-    
-                </div>
+            <div class="user-icon lower-nav-item">
+                <i class="fas fa-user-circle"></i>
+                <div class="lower-nav-label">User</div>
+            </div>
         </div>
         {% else %}
             <div class="story-name lower-nav-item">
@@ -57,6 +53,16 @@
         <!-- user Name -->
     </div>                      
     <!-- end lower nav -->
+    <div class="user-display">
+        <div>
+            <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}" disabled>
+            <div style="color:red;" id="username-error"></div>
+        </div>
+        <div>
+            <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
+            <div style="color:red;" id="username-error"></div>
+        </div>
+    </div>
 <!-- Main container -->
 <div class="contain">
 
@@ -66,9 +72,12 @@
         <!-- Video component -->
         <div class="video-component" id="screen">
         <video id="video" autoplay muted></video>
+        <div class="video-timer">
+            <p><span class="hour-time">00</span>:<span class="minute-time">00</span>:<span class="second-time">00</span></p>
+        </div>
         </div>
         <!-- Settings and controls -->
-                <div class="main-content-check-boxes">
+    <div class="main-content-check-boxes">
         <div class="setting-icon">
             <input type="checkbox" name="webcam" id="webcam-recording" onClick="showCameraModal()">
             <label for="webcam-recording"><i class="fas fa-camera"></i><p>Webcam</p></label>
@@ -78,13 +87,17 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="micphoneStatus()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="microphoneStatus()"  checked>
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
         <div class="setting-icon">
-            <input type="checkbox" name="public" id="public-videos">
+            <input type="checkbox" name="public" id="public-videos" onClick="disableUnlist()">
             <label for="public-videos"><i class="fas fa-globe"></i><p>Public</p></label>
+        </div>
+        <div class="setting-icon">
+            <input type="checkbox" name="unlist" id="unlist-videos" onClick="disablePublic()">
+            <label for="unlist-videos"><i class="fas fa-eye-slash"></i><p>Unlist</p></label>
         </div>
         </div>
         <div class="input-start-record-btn">
@@ -128,12 +141,12 @@
                 </button>
                 <span class="tooltip-text">Share Video</span>
             </div>
-            <div class="add-channel-btn tooltip-container">
+            {% comment %} <div class="add-channel-btn tooltip-container">
                 <button id="view_records" onClick="showAddChannelModal()">
                     <i class="fab fa-youtube"></i>
                 </button>
                 <span class="tooltip-text" >Save Channel Details</span>
-            </div>
+            </div> {% endcomment %}
         </div>
         {% else %}
         <div class="main-content-btns">
@@ -144,10 +157,6 @@
             </div>
             <div class="record-btn tooltip-container">
                 <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
-                <span class="tooltip-text">Login First</span>
-            </div>
-            <div class="add-channel-btn tooltip-container">
-                <a href="{% provider_login_url 'google' %}?next=/"><i class="fab fa-youtube"></i></a>
                 <span class="tooltip-text">Login First</span>
             </div>
         </div>
@@ -887,6 +896,32 @@
         </div>
     </div>
 </div>
+
+
+    <!-- Select camera Modal -->
+    <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select a Camera</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="closecameraModal"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="" class="form-control" id="video-source">
+                        <option value="">Select a Camera</option>
+                    </select>
+                    <div style="color:red;" id="camera-error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    
 <!-- ============================================================= -->
 <!-- Add Channel Modal-->
 <div class="modal" id="add-channel-modal" data-bs-backdrop="static" data-bs-keyboard="false">

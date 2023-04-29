@@ -10,3 +10,5 @@ testrecorder/youtube/credentials.json
 testrecorder/youtube/credentials-old.json
 testrecorder/.env
 env
+venv
+testrecorder/staticfiles
