@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
+from djongo.operations import DatabaseOperations
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -25,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # ALLOWED_HOSTS = ['100034.pythonanywhere.com']
 ALLOWED_HOSTS = ['*']
@@ -126,26 +127,25 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': os.getenv("DATABASE_NAME"),
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': os.getenv("DATABASE_HOST")
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': os.getenv("DATABASE_NAME"),
+#         'ENFORCE_SCHEMA': False,
+#         'CLIENT': {
+#             'host': os.getenv("DATABASE_HOST")
+#         }
+#     }
+# }
 
-from djongo.operations import DatabaseOperations
+
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
 This resulted in errors during google login through allauth
@@ -242,5 +242,3 @@ AUTHENTICATION_BACKENDS = [
 ]
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
-
-
