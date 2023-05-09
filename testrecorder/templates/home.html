@@ -137,7 +137,7 @@
                 <span class="tooltip-text">Stop Recording</span>
             </div>
             <div class="share-record-btn tooltip-container" style="display:none">
-                <button id="share_records" onClick="shareLinkModal()">
+                <button id="share_records" onClick="shareLink.shareLinkModal()">
                     <i class="fas fa-share-alt"></i>
                 </button>
                 <span class="tooltip-text">Share Video</span>
@@ -192,16 +192,16 @@
                 </div>
                 <div class="modal-body modal-link">
                     <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareToFacebook()"></i></a>
+                            onClick="shareLink.shareToFacebook()"></i></a>
                     <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareToTwitter()"></i></a>
+                            onClick="shareLink.shareToTwitter()"></i></a>
                     <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareToLinkedin()"></i></a>
+                            onClick="shareLink.shareToLinkedin()"></i></a>
                     <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareToEmail()"></i></a>
+                            onClick="shareLink.shareToEmail()"></i></a>
                     <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareToWhatsapp()"></i></a>
-                    <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
+                            onClick="shareLink.shareToWhatsapp()"></i></a>
+                    <button class="copylink" onClick="shareLink.copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
         </div>
@@ -977,9 +977,24 @@
     </div>
 </div>
 <!-- ====================================================================== -->
-<!-- Select Channel Modal -->
-<!-- YouTube channels Selection Modal  -->
-<!-- deleted deleted -->
+
+
+<!-- Generic Error Modal -->
+<div class="modal" id="errorModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="title">Playlist Creation Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p class='errorMessage' style="font-size: 1.25rem; color: rgb(255, 0, 0);"> Error message </p>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
 
 
 

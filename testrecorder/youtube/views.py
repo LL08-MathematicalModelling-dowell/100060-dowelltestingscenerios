@@ -595,7 +595,7 @@ class CreateBroadcastView(APIView):
         return stream_dict
 
 
-# Transitions a broadcast to complete status
+# Transitions a broadcast to complete status 
 def transition_broadcast(the_broadcast_id, request):
 
     # Opening JSON file
