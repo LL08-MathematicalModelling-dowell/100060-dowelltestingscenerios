@@ -3618,3 +3618,53 @@ function resetonStartRecording() {
   document.querySelector('#public-videos').disabled = false;
 
 }
+
+// Muhammad Ahmed
+async function load_gallery() {
+
+  console.log('load_gallery ')
+  // Selectors for the HTML elements
+  const channelSelect = document.getElementById("channelSelect");
+  const selectUserPlaylist = document.getElementById("selectUserPlaylist");
+  const videoContainer = document.getElementById("videoContainer");
+
+  // Fetch user's All channels
+  await fetchUserChannel();
+  console.log('fetchUserChannel result :' ,fetchUserChannel)
+
+  // Fetch user's playlists for the selected channel
+  const selectedChannel = channelSelect.value;
+  await fetchUserPlaylists(selectedChannel);
+
+    console.log('fetchUserPlaylists result :' ,fetchUserPlaylists)
+
+  // Display videos from selected playlist in selected channel
+  const selectedPlaylistId = selectUserPlaylist.value;
+  const fetchVideosApiUrl = `/youtube/playlists/${selectedPlaylistId}/videos/`;
+  const response = await fetch(fetchVideosApiUrl, {
+    method: 'GET',
+  });
+  if (response.status === 200) {
+    const videos = await response.json();
+    videoContainer.innerHTML = ""; // Clear previous video results
+    videos.forEach(video => {
+      const videoLink = `https://www.youtube.com/watch?v=${video.video_id}`;
+      const videoTitle = video.video_title;
+      const thumbnailUrl = video.thumbnail_url;
+      const videoElement = `
+        <div class="video-thumbnail">
+          <a href="${videoLink}">
+            <img src="${thumbnailUrl}" alt="${videoTitle}">
+            <p>${videoTitle}</p>
+          </a>
+        </div>
+      `;
+      videoContainer.insertAdjacentHTML('beforeend', videoElement);
+    });
+  } else {
+    // Handle error
+    const errorMsg = await response.json();
+    videoContainer.innerHTML = `<p>${errorMsg.detail}</p>`;
+  }
+}
+

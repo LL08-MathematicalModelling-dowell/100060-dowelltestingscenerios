@@ -101,6 +101,27 @@
         </div>
         </div>
         <div class="input-start-record-btn">
+
+
+{#        Muhammad Ahmed#}
+       <div class="setting-icon">
+          <button id="gallery-btn" onclick="load_gallery()">Gallery</button>
+          <div id="channel-select" style="display: none;">
+            <h2 style="color:blue;">Select A Channel</h2>
+            <select id="channelSelect"></select>
+            <button id="channel-submit-btn" onclick="showPlaylists()">Next</button>
+          </div>
+          <div id="playlist-select" style="display: none;">
+            <h2 style="color:blue;">Select A Playlist</h2>
+            <select id="selectUserPlaylist"></select>
+            <button id="playlist-submit-btn" onclick="showVideos()">Next</button>
+          </div>
+          <div id="video-list" style="display: none;"></div>
+        </div>
+
+
+<br>
+
         <!-- main content inputs -->
         {% comment %} <div class="main-content-input">
             <form>
