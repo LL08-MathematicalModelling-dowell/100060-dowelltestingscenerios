@@ -2,11 +2,12 @@
 const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
+let switchCamera = document.querySelector(".switch-btn")
 //const keyLogCheckbox = document.getElementById('key-logging')
 //const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
-const unlistVideosCheckbox = document.getElementById('unlist-videos')
-// const selectCamerabutton = document.getElementById('choose-camera');
+const privateVideosCheckbox = document.getElementById('private-videos')
+const selectCamerabutton = document.getElementById('choose-camera');
 const selectVideo = document.getElementById('video-source');
 let currentStream;
 
@@ -27,7 +28,11 @@ let webcamRecorder = null
 let webCamStream = null;
 let screenStream = null;
 let audioStream = null;
-let videoConstraints = {};
+let currentCamera = "user";
+// let videoConstraints = {};
+let videoConstraints = {
+    facingMode: currentCamera
+};
 // if (selectVideo.value === '') {
 //   videoConstraints.facingMode = 'environment';
 // } else {
@@ -59,7 +64,7 @@ let newBroadcastID = null;
 let newRtmpUrl = null;
 let websocketReconnect = false;
 let recordinginProgress = false;
-let videoPrivacyStatus = "private";
+let videoPrivacyStatus = "unlisted";
 let lastMsgRcvTime = 0;
 let msgRcvdFlag = false;
 let networkTimer = false;
@@ -88,17 +93,23 @@ let showNotificationPermission = 'default';
 
 // video timer
 let videoTimer = document.querySelector(".video-timer")
+let switchCamBtn = document.querySelector(".switch-btn")
 let hourTime = document.querySelector(".hour-time")
 let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
 function displayTimer() {
-  videoTimer.classList.add("show-timer")
+  videoTimer.classList.add("show-cam-timer")
+  switchCamBtn.classList.add("show-cam-timer")
   timeInterval = setInterval(setTime, 1000);
+  if (totalTime > 0) {
+    totalTime = 0
+  }
 }
+
 async function clearTimer() {
-  videoTimer.classList.add("show-timer")
+  videoTimer.classList.add("show-cam-timer")
   clearInterval(timeInterval);
 }
 
@@ -118,27 +129,52 @@ function calcTime(val) {
   }
 }
 // diasble unlist if public is checked
-function disableUnlist(){
+function disablePrivate(){
   let publicChecked = publicVideosCheckbox.checked;
-  let unlistChecked = unlistVideosCheckbox.checked;
+  let unlistChecked = privateVideosCheckbox.checked;
   if (publicChecked == true) {
     unlistChecked == false
     if (unlistChecked == true) {
-      unlistVideosCheckbox.click()
+      privateVideosCheckbox.click()
     }
   } 
 }
 // diasble public if unlist is checked
 function disablePublic() {
   let publicChecked = publicVideosCheckbox.checked;
-  let unlistChecked = unlistVideosCheckbox.checked;
-  if (unlistChecked == true) {
+  let privateChecked = privateVideosCheckbox.checked;
+  if (privateChecked == true) {
     publicChecked == false
     if (publicChecked == true) {
       publicVideosCheckbox.click()
     }
   }
 }
+
+// switch camera button
+switchCamera.addEventListener("click", () => {
+  currentCamera = currentCamera === "user" ? "environment" : "user";
+  video.srcObject.getTracks().forEach(track => track.stop());
+  videoConstraints = {
+    facingMode: currentCamera
+  };
+  webcamMediaConstraints = {
+    video: videoConstraints, audio: true
+  };
+  console.log(videoConstraints.facingMode);
+
+  // console.log(currentCamera);
+  navigator.mediaDevices
+    .getUserMedia(webcamMediaConstraints)
+    .then(stream => {
+      currentStream = stream;
+      video.srcObject = stream;
+      return stream;
+    })
+    .catch(error => {
+      console.log("Error getting the camera: ", error);
+    })
+})
 
 // display user
 let userIcon = document.querySelector(".user-icon")
@@ -184,54 +220,57 @@ async function showCameraModal() {
   }
 
 }
-// function stopMediaTracks(stream) {
-//   stream.getTracks().forEach(track => {
-//     track.stop();
-//   });
-// }
-
-async function gotDevices(mediaDevices) {
-  selectVideo.innerHTML = '';
-  selectVideo.appendChild(document.createElement('option'));
-  let count = 1;
-  mediaDevices.forEach(mediaDevice => {
-    if (mediaDevice.kind === 'videoinput') {
-      const option = document.createElement('option');
-      option.value = mediaDevice.deviceId;
-      const label = mediaDevice.label || `Camera ${count++}`;
-      const textNode = document.createTextNode(label);
-      option.appendChild(textNode);
-      selectVideo.appendChild(option);
-    }
+function stopMediaTracks(stream) {
+  stream.getTracks().forEach(track => {
+    track.stop();
   });
 }
-navigator.mediaDevices.enumerateDevices().then(gotDevices);
-// selectCamerabutton.addEventListener('click', event => {
-//   if (typeof currentStream !== 'undefined') {
-//     stopMediaTracks(currentStream);
-//   }
-//   const videoConstraints = {};
-//   if (selectVideo.value === '') {
-//     videoConstraints.facingMode = 'environment';
-//   } else {
-//     videoConstraints.deviceId = { exact: selectVideo.value };
-//   }
-//   const constraints = {
-//     video: videoConstraints,
-//     audio: false
-//   };
-//   navigator.mediaDevices
-//     .getUserMedia(constraints)
-//     .then(stream => {
-//       currentStream = stream;
-//       video.srcObject = stream;
-//       return navigator.mediaDevices.enumerateDevices();
-//     })
-//     .then(gotDevices)
-//     .catch(error => {
-//       console.error(error);
-//     });
-// });
+
+// async function gotDevices(mediaDevices) {
+//   selectVideo.innerHTML = '';
+//   selectVideo.appendChild(document.createElement('option'));
+//   let count = 1;
+//   mediaDevices.forEach(mediaDevice => {
+//     if (mediaDevice.kind === 'videoinput') {
+//       const option = document.createElement('option');
+//       option.value = mediaDevice.deviceId;
+//       const label = mediaDevice.label || `Camera ${count++}`;
+//       const textNode = document.createTextNode(label);
+//       option.appendChild(textNode);
+//       selectVideo.appendChild(option);
+//     }
+//   });
+// }
+// navigator.mediaDevices.enumerateDevices().then(gotDevices);
+
+selectCamerabutton.addEventListener('click', event => {
+  if (typeof currentStream !== 'undefined') {
+    stopMediaTracks(currentStream);
+  }
+  const videoConstraints = {};
+  if (selectVideo.value === 'environment') {
+    videoConstraints.facingMode = 'environment';
+  } else if (selectVideo.value === 'user'){
+    videoConstraints.facingMode = 'user';
+  }else {
+    videoConstraints.facingMode = 'user';
+    // videoConstraints.deviceId = { exact: selectVideo.value };
+  }
+  webcamMediaConstraints = {
+    video: videoConstraints,
+    audio: true
+  };
+  navigator.mediaDevices
+    .getUserMedia(webcamMediaConstraints)
+    .then(stream => {
+      currentStream = stream;
+      video.srcObject = stream;
+      return stream;
+    })
+    .catch(error => {
+      console.error(error);
+    });
+});
 
 
 
@@ -245,16 +284,6 @@ async function captureMediaDevices(currentMediaConstraints) {
     video.muted = true
 
     return stream
-    // navigator.mediaDevices
-    //   .getUserMedia(currentMediaConstraints)
-    //   .then(stream => {
-    //     currentStream = stream;
-    //     video.srcObject = stream;
-    //     return navigator.mediaDevices.enumerateDevices();
-    //   }).then(gotDevices)
-    //     .catch(error => {
-    //     console.error(error);
-    //   });
   }
   catch (err) {
     let msg = "STATUS: Error while getting webcam stream."
@@ -275,8 +304,7 @@ async function captureScreen(mediaConstraints = {
 }) {
 
   try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
-
+    screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
     return screenStream
   }
   catch (err) {
@@ -368,31 +396,31 @@ const cancelVideoFrame = function (id) {
 
 // make composite
 
-async function makeComposite() {
-  if (webCamStream && screenStream) {
-    canvasCtx.save();
-    canvasElement.setAttribute("width", `${screenStream.videoWidth}px`);
-    canvasElement.setAttribute("height", `${screenStream.videoHeight}px`);
-    canvasCtx.clearRect(0, 0, screenStream.videoWidth, screenStream.videoHeight);
-    canvasCtx.drawImage(screenStream, 0, 0, screenStream.videoWidth, screenStream.videoHeight);
-    canvasCtx.drawImage(
-      cam,
-      0,
-      Math.floor(screenStream.videoHeight - screenStream.videoHeight / 4),
-      Math.floor(screenStream.videoWidth / 4),
-      Math.floor(screenStream.videoHeight / 4)
-    ); // this is just a rough calculation to offset the webcam stream to bottom left
-    let imageData = canvasCtx.getImageData(
-      0,
-      0,
-      screenStream.videoWidth,
-      screenStream.videoHeight
-    ); // this makes it work
-    canvasCtx.putImageData(imageData, 0, 0); // properly on safari/webkit browsers too
-    canvasCtx.restore();
-    rafId = requestVideoFrame(makeComposite);
-  }
-}
+// async function makeComposite() {
+//   if (webCamStream && screenStream) {
+//     canvasCtx.save();
+//     canvasElement.setAttribute("width", `${screenStream.videoWidth}px`);
+//     canvasElement.setAttribute("height", `${screenStream.videoHeight}px`);
+//     canvasCtx.clearRect(0, 0, screenStream.videoWidth, screenStream.videoHeight);
+//     canvasCtx.drawImage(screenStream, 0, 0, screenStream.videoWidth, screenStream.videoHeight);
+//     canvasCtx.drawImage(
+//       cam,
+//       0,
+//       Math.floor(screenStream.videoHeight - screenStream.videoHeight / 4),
+//       Math.floor(screenStream.videoWidth / 4),
+//       Math.floor(screenStream.videoHeight / 4)
+//     ); // this is just a rough calculation to offset the webcam stream to bottom left
+//     let imageData = canvasCtx.getImageData(
+//       0,
+//       0,
+//       screenStream.videoWidth,
+//       screenStream.videoHeight
+//     ); // this makes it work
+//     canvasCtx.putImageData(imageData, 0, 0); // properly on safari/webkit browsers too
+//     canvasCtx.restore();
+//     rafId = requestVideoFrame(makeComposite);
+//   }
+// }
 
 
 // Records merged screen and webcam stream
@@ -668,8 +696,8 @@ async function recordScreenAndAudio() {
 async function camAndScreenShare() {
 
   try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
     // set up the screen capture stream
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
     // set up the camera stream
    // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -720,7 +748,28 @@ async function camAndScreenShare() {
 
     // set the video source to the merged stream
     video.srcObject = merger.result;
+    const mergedStream = merger.result
+    let options = await getSupportedMediaType();
 
+    if (options === null) {
+      alert("None of the required codecs was found!\n - Please update your browser and try again.");
+      document.location.reload();
+    }
+    mergedStreamRecorder = new MediaRecorder(mergedStream, options);
+
+    mergedStreamRecorder.ondataavailable = event => {
+      if (recordinginProgress == true) {
+        if ((event.data.size > 0) && (recordingSynched == true) && (streamMergedToYT == true)) {
+          //mergedStreamChunks.push(event.data);
+          appWebsocket.send(event.data);
+        }
+      }
+    }
+    webcamRecorder.onstop = () => {
+      // Show that webcam recording has stopped
+      msg = "STATUS: Merged Stream Recording stopped."
+      document.getElementById("app-status").innerHTML = msg;
+    }
     // handle cameraCheckbox changes
     cameraCheckbox.addEventListener('change', async () => {
       // stop the old camera stream
@@ -958,16 +1007,29 @@ async function validateAll(){
   let webCam = cameraCheckbox.checked;
   if (webCam == true) {
     webcamMediaConstraints = null
-    let currentCameraIsValid = true
+    currentCamera = null
+    // let currentCameraIsValid = true
     let cameraErrorMsg = "";
-    if (selectVideo.value === '') {
-      cameraErrorMsg = "Please select one Camera";
-      // videoConstraints.facingMode = 'environment';
-      currentCameraIsValid = false
+    if (selectVideo.value === 'environment') {
+      currentCamera = 'environment';
+      videoConstraints.facingMode = currentCamera;
+
+      // currentCameraIsValid = false
+    } else if (selectVideo.value === 'user') {
+      currentCamera = 'user';
+      videoConstraints.facingMode = currentCamera;
     } else {
-      videoConstraints.deviceId = { exact: selectVideo.value };
-      currentCameraIsValid = true
+      currentCamera = 'user';
+      videoConstraints.facingMode = currentCamera;
     }
+    // if (selectVideo.value === '') {
+    //   cameraErrorMsg = "Please select one Camera";
+    //   // videoConstraints.facingMode = 'environment';
+    //   currentCameraIsValid = false
+    // } else {
+    //   videoConstraints.deviceId = { exact: selectVideo.value };
+    //   currentCameraIsValid = true
+    // }
     webcamMediaConstraints = {
       video: videoConstraints, audio: true
     };
@@ -1384,6 +1446,7 @@ async function resetStateOnError() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
+  stopMediaTracks(currentStream);
 
   // resetonStart()
   // Stop the webcam stream
@@ -1921,15 +1984,15 @@ async function checkNetworkStatus() {
 async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
   let makePublic = publicVideosCheckbox.checked;
-  let unlistVideo = unlistVideosCheckbox.checked;
+  let privateVideo = privateVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
   } 
-  else if (unlistVideo == true) {
-    videoPrivacyStatus = "unlisted";
+  else if (privateVideo == true) {
+    videoPrivacyStatus = "private";
   }
   else {
-    videoPrivacyStatus = "private";
+    videoPrivacyStatus = "unlisted";
   }
 }
 
@@ -3436,13 +3499,13 @@ function displayUtilities() {
   // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
-  document.querySelector('#unlist-videos').disabled = true;
+  document.querySelector('#private-videos').disabled = true;
 
   // clear navbar forms
   // document.getElementById("selectChannel").value = "";
   // document.getElementById("test-name").value = "";
   // Enable share records button
-  if (publicVideosCheckbox.checked || unlistVideosCheckbox.checked ) {
+  if (publicVideosCheckbox.checked || privateVideosCheckbox.checked == false ) {
     btnShareRecords.style.display = "block";
   } else {
     btnShareRecords.style.display = "none";
@@ -3581,6 +3644,6 @@ function resetonStartRecording() {
   // document.querySelector('#screen-recording').disabled = false;
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
-  document.querySelector('#unlist-videos').disabled = false;
+  document.querySelector('#private-videos').disabled = false;
 
 }

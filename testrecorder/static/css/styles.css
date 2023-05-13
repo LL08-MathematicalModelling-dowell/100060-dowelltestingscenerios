@@ -248,7 +248,19 @@ img {
   outline: 1px solid #fa3d4a;
   border-radius: 0.5rem;
 }
-
+.switch-btn {
+  padding: 0.2rem 0.5rem;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+  color: var(--light-primary_clr);
+  background: transparent;
+  position: absolute;
+  top: 30%;
+  right: 10%;
+  display: none;
+  z-index: 99;
+}
 
 .video-timer {
   position: absolute;
@@ -258,7 +270,7 @@ img {
   z-index: 99;
   color: var(--primary_clr);
 }
-.show-timer{
+.show-cam-timer{
   display: block;
 }
 .video-component video{
