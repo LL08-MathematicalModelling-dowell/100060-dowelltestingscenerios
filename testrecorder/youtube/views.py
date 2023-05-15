@@ -595,6 +595,30 @@ class CreateBroadcastView(APIView):
         return stream_dict
 
 
+
+class TransitionBroadcastView(APIView):
+    renderer_classes = [JSONRenderer]
+
+    def post(self, request, *args, **kwargs):
+        """
+            Transitions broadcast using API
+        """
+
+        print("Request: ", request)
+        print("Request Data: ", request.data)
+        print("Request Data Type: ", type(request.data))
+        # videoPrivacyStatus = "private"
+        # testNameValue = "Test1"
+        the_broadcast_id = request.data.get("the_broadcast_id")
+        print("the_broadcast_id: ", the_broadcast_id)
+
+        transition_response = self.transition_broadcast(the_broadcast_id, request)
+        # transition_response = {"Hello":"Testing for now!"}
+        print("transition_response: ", transition_response)
+
+        return Response(transition_response, status=status.HTTP_200_OK)
+    
+    
 # Transitions a broadcast to complete status 
 def transition_broadcast(the_broadcast_id, request):
 
@@ -623,29 +647,6 @@ def transition_broadcast(the_broadcast_id, request):
 
     return broadcast_transition_response
 
-
-class TransitionBroadcastView(APIView):
-    # parser_classes = (MultiPartParser, FormParser)
-    renderer_classes = [JSONRenderer]
-
-    def post(self, request, *args, **kwargs):
-        """
-            Transitions broadcast using API
-        """
-
-        print("Request: ", request)
-        print("Request Data: ", request.data)
-        print("Request Data Type: ", type(request.data))
-        # videoPrivacyStatus = "private"
-        # testNameValue = "Test1"
-        the_broadcast_id = request.data.get("the_broadcast_id")
-        print("the_broadcast_id: ", the_broadcast_id)
-
-        transition_response = transition_broadcast(the_broadcast_id, request)
-        # transition_response = {"Hello":"Testing for now!"}
-        print("transition_response: ", transition_response)
-
-        return Response(transition_response, status=status.HTTP_200_OK)
 
 
 class PlaylistItemsInsertView(APIView):
@@ -850,22 +851,6 @@ class FetchPlaylistsView(APIView):
 
             print("id_title_dict: ", id_title_dict)
 
-            # Dummy dictionary for testing
-            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
-
-            """# Get playlists in user db list and in youtube
-            new_user_id = "Walter"
-            user_db_playlists = get_user_playlists_from_db(new_user_id)
-            filtered_playlists = {}
-            for playlist in user_db_playlists:
-                print(playlist["playlist_title"])
-                if playlist["playlist_id"] in id_title_dict.keys():
-                    filtered_playlists[playlist["playlist_id"]] = id_title_dict[playlist["playlist_id"]]
-
-            print("filtered_playlists: ", filtered_playlists)
-            return Response(filtered_playlists, status=status.HTTP_200_OK)"""
-
             # add channel title
             print("channel_title: ", channel_title)
 
@@ -943,22 +928,7 @@ def fetch_user_playlists():
 
         print("id_title_dict: ", id_title_dict)
 
-        # Dummy dictionary for testing
-        # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-        # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
-
-        """# Get playlists in user db list and in youtube
-        new_user_id = "Walter"
-        user_db_playlists = get_user_playlists_from_db(new_user_id)
-        filtered_playlists = {}
-        for playlist in user_db_playlists:
-            print(playlist["playlist_title"])
-            if playlist["playlist_id"] in id_title_dict.keys():
-                filtered_playlists[playlist["playlist_id"]] = id_title_dict[playlist["playlist_id"]]
-
-        print("filtered_playlists: ", filtered_playlists)
-        return Response(filtered_playlists, status=status.HTTP_200_OK)"""
-
+        
         # add channel title
         print("channel_title: ", channel_title)
 

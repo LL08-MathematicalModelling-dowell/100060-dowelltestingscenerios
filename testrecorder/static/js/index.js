@@ -1,42 +1,31 @@
-// import BroadcastManager from "./broadcast";
-// import ShareLink from "./share";
-// import ErrorHandler from "./error_handler";
+import ShareLink from '/static/js/share.js';
+import { fetchUserChannel } from '/static/js/fetchChannel.js';
+import { loadUserPlaylist } from '/static/js/fetchPlaylist.js';
+import { getCookie } from '/static/js/getCookie.js';
 
-// const shareLink = new ShareLink(newBroadcastID);
+// import { validateAll } from '/static/js/validation_manager.js';
 
-// example use case of ErrorHandler
-// const error = ErrorHandler('Title', 'Message');
-// error.showModal(); 
 
-// Some app controls
-const video = document.getElementById('video')
-const cameraCheckbox = document.getElementById('webcam-recording')
-const screenCheckbox = document.getElementById('screen-recording')
-const publicVideosCheckbox = document.getElementById('public-videos')
-const unlistVideosCheckbox = document.getElementById('unlist-videos')
-const selectVideo = document.getElementById('video-source');
-let currentStream;
+// include('/static/js/selenium_manager.js');
+// include('/static/js/validation_manager.js');
+// include('/static/js/privacy_mode.js');
 
-let btnShareRecords = document.querySelector('.share-record-btn');
-let channelSelect = document.getElementById("selectChannel");
-let channelSelect_1 = document.getElementById("selectChannel_1");
-// App global variables
 let usernameValue = null;
 let testNameValue = null;
-let testDescriptionValue = null;
-let screenRecorderChunks = [];
-let webcamChunks = [];
-let mergedStreamChunks = [];
-let testRecordingData = null;
-let screenRecorder = null;
-let mergedStreamRecorder = null;
-let webcamRecorder = null
-let webCamStream = null;
-let screenStream = null;
-let audioStream = null;
-let videoConstraints = {};
-let webcamMediaConstraints = null;
-let screenAudioConstraints = {
+ let testDescriptionValue = null;
+ let screenRecorderChunks = [];
+ let webcamChunks = [];
+ let mergedStreamChunks = [];
+ let testRecordingData = null;
+ let screenRecorder = null;
+ let mergedStreamRecorder = null;
+ let webcamRecorder = null
+ let webCamStream = null;
+ let screenStream = null;
+ let audioStream = null;
+ let videoConstraints = {};
+ let webcamMediaConstraints = null;
+ let screenAudioConstraints = {
   audio: {
     echoCancellation: true,
     noiseSuppression: true,
@@ -44,43 +33,108 @@ let screenAudioConstraints = {
   },
   video: false
 };
-let recordingSynched = false;
+ let recordingSynched = false;
+ let fileRandomString = "qwerty";
+ let appWebsocket = null;
+ let webcamWebSocket = null;
+ let screenWebSocket = null;
+ let streamWebcamToYT = false;
+ let streamScreenToYT = false;
+ let streamMergedToYT = false;
+ let newBroadcastID = null;
+ let websocketReconnect = false;
+ let newRtmpUrl = null;
+ let recordinginProgress = false;
+ let videoPrivacyStatus = "private";
+ let lastMsgRcvTime = 0;
+ let msgRcvdFlag = false;
+ let networkTimer = false;
+ let filesTimestamp = null;
+ let screenFileName = null;
+ let webcamFileName = null;
+ let taskIdWebSocket = null;
+ let receivedTaskID = [];
+ let taskIDwasRreceived = false;
+ let faultyTaskID = null; // Bad clickup task or task id
+ let currentRadioButtonID = null;
+ let userPlaylists = null;
+ let userPlaylistSelection = null;
+ let channelTitle = null;
+ let todaysPlaylistId = null;
+ let webcamStreamHeight = null;
+ let webcamStreamWidth = null;
+ let currentChannelTitle = null;
+ let showNotificationPermission = 'default';
 
-let fileRandomString = "qwerty";
+// Some app controls
 
-let appWebsocket = null;
-let webcamWebSocket = null;
-let screenWebSocket = null;
-let streamWebcamToYT = false;
-let streamScreenToYT = false;
-let streamMergedToYT = false;
-let newBroadcastID = null;
-let newRtmpUrl = null;
-let websocketReconnect = false;
-let recordinginProgress = false;
-let videoPrivacyStatus = "private";
-let lastMsgRcvTime = 0;
-let msgRcvdFlag = false;
-let networkTimer = false;
-let filesTimestamp = null;
-let screenFileName = null;
-let webcamFileName = null;
-let taskIdWebSocket = null;
-let receivedTaskID = [];
-let taskIDwasRreceived = false;
-let faultyTaskID = null; // Bad clickup task or task id
-let currentRadioButtonID = null;
-let userPlaylists = null;
-let userPlaylistSelection = null;
-let channelTitle = null;
-let todaysPlaylistId = null;
-let tablePlaylists = [];
-// channels global Variables
-let userChannelSelection = null;
-let tableChannels = [];
-let defaultChannel = 'UX Live from uxlivinglab';
-let currentChannelTitle = null;
-let showNotificationPermission = 'default';
+const video = document.getElementById('video');
+let currentStream;// UnImplemented Yet
+
+let btnShareRecords = document.querySelector('.share-record-btn');
+
+
+
+// // App global variables
+// let usernameValue = null;
+// let testNameValue = null;
+// let testDescriptionValue = null;
+// let screenRecorderChunks = [];
+// let webcamChunks = [];
+// let mergedStreamChunks = [];
+// let testRecordingData = null;
+// let screenRecorder = null;
+// let mergedStreamRecorder = null;
+// let webcamRecorder = null
+// let webCamStream = null;
+// let screenStream = null;
+// let audioStream = null;
+// let videoConstraints = {};
+// let webcamMediaConstraints = null;
+// let screenAudioConstraints = {
+//   audio: {
+//     echoCancellation: true,
+//     noiseSuppression: true,
+//     sampleRate: 44100
+//   },
+//   video: false
+// };
+// let recordingSynched = false;
+
+// let fileRandomString = "qwerty";
+
+// let appWebsocket = null;
+// let webcamWebSocket = null;
+// let screenWebSocket = null;
+// let streamWebcamToYT = false;
+// let streamScreenToYT = false;
+// let streamMergedToYT = false;
+// let newBroadcastID = null;
+// let websocketReconnect = false;
+// let newRtmpUrl = null;
+// let recordinginProgress = false;
+// let videoPrivacyStatus = "private";
+// let lastMsgRcvTime = 0;
+// let msgRcvdFlag = false;
+// let networkTimer = false;
+// let filesTimestamp = null;
+// let screenFileName = null;
+// let webcamFileName = null;
+// let taskIdWebSocket = null;
+// let receivedTaskID = [];
+// let taskIDwasRreceived = false;
+// let faultyTaskID = null; // Bad clickup task or task id
+// let currentRadioButtonID = null;
+// let userPlaylists = null;
+// let userPlaylistSelection = null;
+// let channelTitle = null;
+// let todaysPlaylistId = null;
+// let webcamStreamHeight = null;
+// let webcamStreamWidth = null;
+// let currentChannelTitle = null;
+// let showNotificationPermission = 'default';
+
+const shareLink = new ShareLink(newBroadcastID);
 
 // video timer
 let videoTimer = document.querySelector(".video-timer")
@@ -89,6 +143,9 @@ let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
+
+
+
 function displayTimer() {
   videoTimer.classList.add("show-timer")
   timeInterval = setInterval(setTime, 1000);
@@ -113,28 +170,6 @@ function calcTime(val) {
     return valString;
   }
 }
-// diasble unlist if public is checked
-function disableUnlist() {
-  let publicChecked = publicVideosCheckbox.checked;
-  let unlistChecked = unlistVideosCheckbox.checked;
-  if (publicChecked == true) {
-    unlistChecked == false
-    if (unlistChecked == true) {
-      unlistVideosCheckbox.click()
-    }
-  }
-}
-// diasble public if unlist is checked
-function disablePublic() {
-  let publicChecked = publicVideosCheckbox.checked;
-  let unlistChecked = unlistVideosCheckbox.checked;
-  if (unlistChecked == true) {
-    publicChecked == false
-    if (publicChecked == true) {
-      publicVideosCheckbox.click()
-    }
-  }
-}
 
 // display user
 let userIcon = document.querySelector(".user-icon")
@@ -155,6 +190,7 @@ document.getElementById("userClickupEmail").value = localStorage.getItem("userCl
 
 // show select camera modal
 async function showCameraModal() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
   let webCam = cameraCheckbox.checked;
   if (webCam == true) {
     // close modal if open
@@ -174,6 +210,7 @@ async function showCameraModal() {
 
 
 async function gotDevices(mediaDevices) {
+  const selectVideo = document.getElementById('video-source');
   selectVideo.innerHTML = '';
   selectVideo.appendChild(document.createElement('option'));
   let count = 1;
@@ -262,6 +299,8 @@ async function microphoneStatus() {
 // Records webcam and audio
 async function recordStream() {
   // webCamStream = await getAllCamera();
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
   webCamStream = await captureMediaDevices(webcamMediaConstraints);
   console.log(webcamMediaConstraints);
 
@@ -302,13 +341,14 @@ async function recordStream() {
   //webcamRecorder.start(200)
 }
 
-/**
+/** ======= Not Used ==========
  * Internal Polyfill to simulate
  * window.requestAnimationFrame
  * since the browser will kill canvas
  * drawing when tab is inactive
  */
 const requestVideoFrame = function (callback) {
+  // ================================== Function Not Implemented Yet ==============================
   return window.setTimeout(function () {
     callback(Date.now());
   }, 1000 / 60); // 60 fps - just like requestAnimationFrame
@@ -319,12 +359,14 @@ const requestVideoFrame = function (callback) {
  * window.cancelAnimationFrame
  */
 const cancelVideoFrame = function (id) {
+  //===============================  Function is Not Implemented Yet =========================================
   clearTimeout(id);
 };
 
 
 // Records merged screen and webcam stream
 async function recordMergedStream() {
+  // ===================== Currently Funtion is Not being Used =======================================
   try {
     var merger = new VideoStreamMerger();
 
@@ -351,9 +393,10 @@ async function recordMergedStream() {
     })
 
     // Calculate dynamic webcam stream height and width
-    let webcamStreamWidth = Math.floor(0.15 * screenWidth);
+    webcamStreamWidth = Math.floor(0.15 * screenWidth);
     // console.log("webcamStreamWidth: " + webcamStreamWidth);
-    let webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
+
+    webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
     // console.log("webcamStreamHeight: " + webcamStreamHeight);
 
     // Add the webcam stream. Position it on the bottom left and resize it to 0.15 of screen width.
@@ -394,7 +437,7 @@ async function recordMergedStream() {
 
     webcamRecorder.onstop = () => {
       // Show that webcam recording has stopped
-      msg = "STATUS: Merged Stream Recording stopped."
+      let msg = "STATUS: Merged Stream Recording stopped."
       document.getElementById("app-status").innerHTML = msg;
     }
 
@@ -413,7 +456,8 @@ async function recordMergedStream() {
 
 // Stops webcam and screen recording
 async function stopRecording() {
-
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
   // Stop network timer
   try {
     clearInterval(networkTimer);
@@ -488,6 +532,8 @@ async function stopRecording() {
 // Records screen and audio
 async function recordScreenAndAudio() {
   screenStream = await captureScreen();
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
 
   // Check if we need to add audio stream
   let recordAudio = await microphoneStatus();
@@ -579,7 +625,7 @@ async function recordScreenAndAudio() {
 
   screenRecorder.onstop = () => {
     // Show that screen recording has stopped
-    msg = "STATUS: Screen Recording Stopped."
+    let msg = "STATUS: Screen Recording Stopped."
     document.getElementById("app-status").innerHTML = msg;
   }
 }
@@ -587,15 +633,16 @@ async function recordScreenAndAudio() {
 // Muhammad Ahmed
 // specific function for simultaneously share Cameras and  device screen  
 async function camAndScreenShare() {
-
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
   try {
     // set up the screen capture stream
     const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
     // set up the camera stream
     // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    let webcamStreamWidth = 0;
-    let webcamStreamHeight = 0;
+    webcamStreamWidth = 0;
+    webcamStreamHeight = 0;
     const screenWidth = screen.width;
     const screenHeight = screen.height;
 
@@ -709,8 +756,14 @@ async function camAndScreenShare() {
   }
 }
 
-// Checks recording settings and starts the recording
+/**
+ * Function to start recording audio and video streams
+ * @async
+ * @function startR ecording
+ */
 async function startRecording() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
 
   // Remove focus from start recording button
   document.getElementById('start').blur();
@@ -718,14 +771,11 @@ async function startRecording() {
   // Enable stop recording button
 
   // Generate random string for appending to file name
-  generateString(6).then((randomString) => {
-    fileRandomString = randomString;
-    //// // console.log("fileRandomString: ", fileRandomString)
-  })
+  fileRandomString = await generateString(6);
 
   // Enable or disable audio recording
   try {
-    let recordAudio = await microphoneStatus();
+    const recordAudio = await microphoneStatus();
 
     if (recordAudio == true) {
       // Enable audio recording for webcam
@@ -756,7 +806,7 @@ async function startRecording() {
     }
   }
   catch (err) {
-    let msg = "STATUS: Screen recording Error."
+    const msg = "STATUS: Screen recording Error.";
     document.getElementById("app-status").innerHTML = msg;
     console.error("Screen recording Error: " + err.message);
   }
@@ -765,20 +815,10 @@ async function startRecording() {
   showCreatingBroadcastModal(true);
 
   // Record merged screen and webcam stream
-  let recordWebcam = cameraCheckbox.checked;
-  let recordScreen = screenCheckbox.checked;
+  const recordWebcam = cameraCheckbox.checked;
+  const recordScreen = screenCheckbox.checked;
   if ((recordScreen == true) && (recordWebcam == true)) {
     try {
-
-      //old code commited Ahmed
-      // await recordStream();
-      // console.log("Done with webcam and audio.")
-      // await recordScreenAndAudio();
-      // console.log("Done with screen and audio.")
-      // await recordMergedStream();
-      // console.log("Done with merged.")
-
-      // Muhammad Ahmed
       await camAndScreenShare();
       console.log("cam and screen share at a time ")
 
@@ -787,18 +827,15 @@ async function startRecording() {
       streamWebcamToYT = false;
       streamScreenToYT = false;
       streamMergedToYT = true;
-      /*screenRecorder.start(200);
-      webcamRecorder.start(200);
-      mergedStreamRecorder.start(200);*/
 
       // Create websockets now
       createAllsockets();
 
-      msg = "STATUS: Recording Started."
+      const msg = "STATUS: Recording Started.";
       document.getElementById("app-status").innerHTML = msg;
     }
     catch (err) {
-      let msg = "STATUS: Merged stream recording Error."
+      const msg = "STATUS: Merged stream recording Error.";
       document.getElementById("app-status").innerHTML = msg;
       console.error("Merged stream recording Error: " + err.message);
     }
@@ -806,23 +843,21 @@ async function startRecording() {
     // Record webcam if enabled
     try {
       // Show webcam recording has started
-      msg = "STATUS: Recording Started."
+      const msg = "STATUS: Recording Started.";
       document.getElementById("app-status").innerHTML = msg;
 
-      recordStream().then(() => {
-        recordingSynched = true;
-        streamWebcamToYT = true;
-        streamScreenToYT = false;
-        streamMergedToYT = false;
-        //webcamRecorder.start(200);
-        streamWebcamToYT = true;
+      await recordStream();
+      recordingSynched = true;
+      streamWebcamToYT = true;
+      streamScreenToYT = false;
+      streamMergedToYT = false;
+      streamWebcamToYT = true;
 
-        // Create websockets now
-        createAllsockets();
-      });
+      // Create websockets now
+      createAllsockets();
     }
     catch (err) {
-      let msg = "STATUS: Webcam recording Error."
+      const msg = "STATUS: Webcam recording Error.";
       document.getElementById("app-status").innerHTML = msg;
       console.error("Webcam recording Error: " + err.message);
     }
@@ -830,180 +865,41 @@ async function startRecording() {
     // Record screen if enabled
     try {
       // Show screen recording has started
-      msg = "STATUS: Recording Started."
+      const msg = "STATUS: Recording Started.";
       document.getElementById("app-status").innerHTML = msg;
 
-      recordScreenAndAudio().then(() => {
-        recordingSynched = true;
-        streamWebcamToYT = false;
-        streamScreenToYT = true;
-        streamMergedToYT = false;
-        //screenRecorder.start(200);
+      await recordScreenAndAudio();
+      recordingSynched = true;
+      streamWebcamToYT = false;
+      streamScreenToYT = true;
+      streamMergedToYT = false;
 
-        // Create websockets now
-        createAllsockets();
-      });
+      // Create websockets now
+      createAllsockets();
+
     }
     catch (err) {
-      let msg = "STATUS: Screen recording Error."
+      const msg = "STATUS: Screen recording Error."
       document.getElementById("app-status").innerHTML = msg;
       console.error("Screen recording Error: " + err.message);
     }
   }
 }
 
-async function validateAll() {
-  let webCam = cameraCheckbox.checked;
-  if (webCam == true) {
-    webcamMediaConstraints = null
-    let currentCameraIsValid = true
-    let cameraErrorMsg = "";
-    if (selectVideo.value === '') {
-      cameraErrorMsg = "Please select one Camera";
-      // videoConstraints.facingMode = 'environment';
-      currentCameraIsValid = false
-    } else {
-      videoConstraints.deviceId = { exact: selectVideo.value };
-      currentCameraIsValid = true
-    }
-    webcamMediaConstraints = {
-      video: videoConstraints, audio: true
-    };
-    document.getElementById("camera-error").innerHTML = cameraErrorMsg;
-    validateModal()
-  } else {
-    validateModal()
-  }
-}
-// Validates test details
-async function validateModal() {
-
-  // Get permission to show notifications in system tray
-  showNotificationPermission = await Notification.requestPermission();
-  console.log("showNotificationPermission: ", showNotificationPermission);
-
-  // Clear previous test data
-  userPlaylistSelection = null;
-  currentChannelTitle = null;
-  usernameValue = null;
-  testNameValue = null;
-  testDescriptionValue = null;
-  testRecordingData = null;
-
- 
-  // validate channel name
-  let currentChannelTitleIsValid = true
-  currentChannelTitle = document.getElementById("selectChannel").name;
-  // Remove leading and trailling white space
-  currentChannelTitle = currentChannelTitle.trim();
-  let channelTitleErrorMsg = "";
-
-  // // console.log("currentChannelTitle:", currentChannelTitle);
-
-  if (currentChannelTitle === "") {
-    channelTitleErrorMsg = "Please select one channel";
-    currentChannelTitleIsValid = false;
-  }
-  document.getElementById("channelname-error").innerHTML = channelTitleErrorMsg;
-
-  // validate playlist name
-  let playlistIsValid = true;
-  userPlaylistSelection = document.getElementById("selectPlaylist").value;
-  userPlaylistSelection = userPlaylistSelection.trim();
-  // console.log("userPlaylistSelection:", userPlaylistSelection);
-  let playlistError = "";
-  if (userPlaylistSelection === "") {
-    playlistError = "Please select a playlist";
-    playlistIsValid = false;
-  }
-  document.getElementById("playlist-error").innerHTML = playlistError;
-
-  // Validate username
-  let docIsValid = true;
-  usernameValue = document.getElementById("username").name;
-  // Remove leading and trailling white space
-  usernameValue = usernameValue.trim();
-  let msg = "";
-
-
-  // Check for empty string
-  if (usernameValue === "") {
-    msg = "Please fill the user name";
-    docIsValid = false;
-  }
-
-  document.getElementById("username-error").innerHTML = msg;
-
-  // Validate Test Name
-  let testNameIsValid = true;
-  testNameValue = document.getElementById("test-name").value;
-  // Remove leading and trailling white space
-  testNameValue = testNameValue.trim();
-  let testNameErrorMsg = "";
-
-  // Check for empty string
-  if (testNameValue === "") {
-    testNameErrorMsg = "Please fill the test name";
-    testNameIsValid = false;
-  }
-
-  // Check if username starts with a number
-  if (testNameValue.match(/^\d/)) {
-    testNameErrorMsg = "Test name cannot start with a number";
-    testNameIsValid = false;
-  }
-
-  // Check for space inside string
-  if (/\s/.test(testNameValue)) {
-    testNameErrorMsg = "Please replace the space with an underscore for example hi_you";
-    testNameIsValid = false;
-  }
-
-  document.getElementById("test-name-error").innerHTML = testNameErrorMsg;
-
-  // All test details are available now
-  if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true) && (playlistIsValid == true)) {
-    // Click on close modal button
-    // Disable start recording button
-    document.getElementById("start").disabled = true;
-
-    setVideoPrivacyStatus()
-      .then(() => {
-        startRecording();
-      })
-      .catch((err) => {
-        console.error("Start recording error: ", err)
-        resetStateOnError();
-        showErrorModal();
-      });
-    /*.catch((error) => {
-      console.error("Failed to set video privacy status")
-    });*/
-  }
-}
-
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
-
-
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
-
-
   // show stop button
   document.querySelector('.stop-btn').style.display = 'none';
-
   // reset video title
   document.querySelector(".video-title").innerHTML = ""
   // Get csrftoken
   let csrftoken = await getCookie('csrftoken');
 
-
   // Send data
   if ((usernameValue != null) && (testRecordingData != null)) {
     setProgressBarValue(50);
-    //let fileUploadUrl = 'http://localhost:8000/file/upload/';
-    //let fileUploadUrl = "https://liveuxstoryboard.com/file/upload/"
     let fileUploadUrl = '/file/upload/';
     let responseStatus = null;
     await fetch(fileUploadUrl, {
@@ -1012,9 +908,9 @@ async function sendAvailableData(prevProgress) {
       body: testRecordingData
     })
       .then(response => {
-        // // console.log(response)
+        // console.log(response)
         responseStatus = response.status;
-        // // console.log("Response Status", responseStatus);
+        // console.log("Response Status", responseStatus);
         // Return json data
         return response.json();
       })
@@ -1120,74 +1016,12 @@ async function retryTestFilesUpload() {
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
     fileRandomString = randomString;
-    //// // console.log("fileRandomString: ", fileRandomString);
-
     // Try to Send test data again
     stopRecording();
   })
 }
 
-// Gets the key log file
-async function uploadSeleniumIdeFile() {
-  // Close modal if showing
-  const btnCloseKeyLofFileUploadModal2 = document.getElementById('closeFileModal2');
-  btnCloseKeyLofFileUploadModal2.click();
-  // Show the get key log file modal
-  let keyLogFileUploadModal = new bootstrap.Modal(document.getElementById('keyLogFileUploadModal'));
-  keyLogFileUploadModal.show();
 
-  // Selenium ide file input
-  const input = document.getElementById('inpt-test-file');
-  const currentKeyLogFile = input.files[0];
-
-  // Beanote/Clickup file upload
-  const input2 = document.getElementById('inpt-beanote-file');
-  const currentBeanoteFile = input2.files[0];
-
-  // Append beanote/Clickup file first
-  // Close modal
-  if (currentBeanoteFile != null) {
-    input2.value = "";
-
-    // Initialize the data object if null
-    if (testRecordingData == null) {
-      testRecordingData = new FormData();
-    }
-
-    // Append file
-    //let newBeanoteFileName = fileRandomString + "_" + currentBeanoteFile.name;
-    //testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
-    //let newBeanoteFileName = filesTimestamp + "_" + currentBeanoteFile.name;
-    let newBeanoteFileName = testNameValue + "_" + filesTimestamp + "_" + currentBeanoteFile.name;
-    testRecordingData.set('beanote_file', currentBeanoteFile, newBeanoteFileName);
-    // // console.log("newBeanoteFileName: ", newBeanoteFileName);
-  }
-
-
-  // Close modal
-  if (currentKeyLogFile != null) {
-    input.value = "";
-
-    // Initialize the data object if null
-    if (testRecordingData == null) {
-      testRecordingData = new FormData();
-    }
-
-    // Append key log file
-    //let newFileName = fileRandomString + "_" + currentKeyLogFile.name;
-    //testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
-    let newFileName = testNameValue + "_" + filesTimestamp + "_" + currentKeyLogFile.name;
-    testRecordingData.set('key_log_file', currentKeyLogFile, newFileName);
-    // // console.log("newFileName: ", newFileName);
-
-  }
-
-  if ((currentKeyLogFile != null) || (currentBeanoteFile != null)) {
-    // Hide the get key log file modal and proceed to stop test
-    const btnCloseKeyLofFileUploadModal = document.getElementById('btnCloseKeyLogFileUploadModal');
-    btnCloseKeyLofFileUploadModal.click();
-  }
-}
 
 // A function to check if we need to get the key log file
 async function keyLogFileCheck() {
@@ -1212,41 +1046,11 @@ async function keyLogFileCheck() {
   }
 }
 
-// Opens the selenium IDE window
-async function openSeleniumIDEExtensionPage() {
-  url = "https://chrome.google.com/webstore/detail/selenium-ide/mooikfkahbdckldjjndioackbalphokd?authuser=1&gclid=CjwKCAiA_omPBhBBEiwAcg7smRFkTf9gIMuqU8EpOoGhMahx1N6boXa65-NkPtbqXIW9R8L7EKgIJxoCdx4QAvD_BwE";
-  window.open(url, '_blank').focus();
-
-  // A way to remember not to show the modal again
-  storeSeleniumIDEInstallModalSettings();
-}
-
-// stores the install selenium ide modal settings
-async function storeSeleniumIDEInstallModalSettings() {
-  // A way to remember not to show the modal again
-  let dontShowAgainCheckbox = document.getElementById("dontShowModalAgain");
-  let dontShowAgain = dontShowAgainCheckbox.checked;
-  localStorage.setItem("dontShowSelIDEInstallAgain", dontShowAgain.toString());
-}
-
-// A function to start the selenium ide extension
-async function startSeleniumIDEExtension() {
-  try {
-    // // console.log("Starting Selenium IDE Extension");
-    url = "chrome-extension://mooikfkahbdckldjjndioackbalphokd/index.html";
-    let seleniumIDEWindow = window.open(url, '_blank').focus();
-    //seleniumIDEWindow.location.reload();
-    //setTimeout(()=>{seleniumIDEWindow.location.reload();}, 5000);
-  }
-  catch (err) {
-    let msg = "STATUS: Error while starting selenium IDE Extension."
-    document.getElementById("app-status").innerHTML = msg;
-    console.error("Error while starting selenium IDE Extension: " + err.message);
-  }
-}
-
 // A function to clear global variables on error
 async function resetStateOnError() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
+
   console.error("Reseting state due to error");
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
@@ -1353,21 +1157,7 @@ async function setProgressBarValue(newProgress) {
   uploadProgressBar.innerHTML = progressString;
 }
 
-async function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
-}
+
 
 // Generates a random string for attaching to file names
 async function generateString(length) {
@@ -1381,20 +1171,20 @@ async function generateString(length) {
   return result;
 }
 
-// Shows upload failed modal
-async function showUploadFailedModal() {
-  modalstate = document.getElementById('uploadFailed').classList.contains('show');
-  //// // console.log("modalstate", modalstate);
+// // Shows upload failed modal
+// async function showUploadFailedModal() {
+//   modalstate = document.getElementById('uploadFailed').classList.contains('show');
+//   //// // console.log("modalstate", modalstate);
 
-  if (modalstate != true) {
-    let uploadFailedModal = document.getElementById('uploadFailed');
-    uploadFailedModal.classList.add('show');
-    //// // console.log("modal shown");
-  }
-}
+//   if (modalstate != true) {
+//     let uploadFailedModal = document.getElementById('uploadFailed');
+//     uploadFailedModal.classList.add('show');
+//     // console.log("modal shown");
+//   }
+// }
 
 async function set_video_links(linksData) {
-  //// // console.log("linksData", linksData)
+  // console.log("linksData", linksData)
   let webcamLink = document.getElementById('webcam_link');
   let screenLink = document.getElementById('screen_link');
   let mergedLink = document.getElementById('merged_link');
@@ -1420,31 +1210,24 @@ async function set_video_links(linksData) {
 }
 
 async function createWebsocket() {
-  let wsStart = 'ws://'
+  let wsStart = (window.location.protocol == 'https:')
+    ? 'wss://'
+    : 'ws://';
 
-  if (window.location.protocol == 'https:') {
-    wsStart = 'wss://'
-  } else {
-    wsStart = 'ws://'
-  }
-  //let wsStart = 'ws://'
-  let endpoint = wsStart + window.location.host + "/ws/app/"
+  let endpoint = wsStart + window.location.host + "/ws/app/";
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
 
-  //let endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  //let endpoint = "ws://206.72.196.211:8000/ws/app/"
-  //let endpoint = "ws://206.72.196.211:80/ws/app/"
-  //let endpoint = "wss://liveuxstoryboard.com/ws/app/"
-
-  appWebsocket = new WebSocket(endpoint)
-  // // console.log(endpoint)
+  appWebsocket = new WebSocket(endpoint);
+  // console.log(endpoint)
 
   appWebsocket.onopen = function (evt) {
-    // // console.log(evt)
+    // console.log(evt)
 
     // Alert user websocket is open
     let msg = "STATUS: Websocket created."
     document.getElementById("app-status").innerHTML = msg;
-    // // console.log(msg);
+    // console.log(msg);
 
     // No need to reconnect
     websocketReconnect = false;
@@ -1583,11 +1366,6 @@ async function createBroadcast() {
         //newRtmpUrl=data.newRtmpUrl;
         newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
         newBroadcastID = data.new_broadcast_id;
-        // console.log("newStreamId:", newStreamId);
-        // console.log("newStreamName:", newStreamName);
-        // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-        // console.log("newRtmpUrl:", newRtmpUrl);
-        // console.log("new_broadcast_id:", newBroadcastID);
       }
       catch {
         // resetStateOnError();
@@ -1738,7 +1516,7 @@ async function goToPage(event) {
 // Shows upload failed modal
 
 
-async function showErrorModal(liveStreamError = null) {
+ async function showErrorModal(liveStreamError = null) {
   if (liveStreamError != null) {
     let errorModal = new bootstrap.Modal(document.getElementById('livestreamErrorModal'));
     // let msg_p = errorModal.querySelector('#livestreamErrorOccurred');
@@ -1787,26 +1565,30 @@ async function checkNetworkStatus() {
 }
 
 // sets youtube video privacy status
-async function setVideoPrivacyStatus() {
-  // Check if we need to make videos public
-  let makePublic = publicVideosCheckbox.checked;
-  let unlistVideo = unlistVideosCheckbox.checked;
-  if (makePublic == true) {
-    videoPrivacyStatus = "public";
-  }
-  else if (unlistVideo == true) {
-    videoPrivacyStatus = "unlisted";
-  }
-  else {
-    videoPrivacyStatus = "private";
-  }
-}
+// async function setVideoPrivacyStatus() {
+//   const publicVideosCheckbox = document.getElementById('public-videos');
+//   const unlistVideosCheckbox = document.getElementById('unlist-videos');
+//   // Check if we need to make videos public
+//   let makePublic = publicVideosCheckbox.checked;
+//   let unlistVideo = unlistVideosCheckbox.checked;
+//   if (makePublic == true) {
+//     videoPrivacyStatus = "public";
+//   }
+//   else if (unlistVideo == true) {
+//     videoPrivacyStatus = "unlisted";
+//   }
+//   else {
+//     videoPrivacyStatus = "private";
+//   }
+// }
 
 // Shows the beanote file upload modal
 async function showBeanoteFileUploadModal() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
+
   // Synchronized recording stop
   recordingSynched = false;
-  //let logKeyboard = keyLogCheckbox.checked;
   let logKeyboard = false;
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
@@ -1848,9 +1630,10 @@ async function showBeanoteFileUploadModal() {
 
 // Stop streams
 async function stopStreams() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
   // Synchronized recording stop
   recordingSynched = false;
-  //let logKeyboard = keyLogCheckbox.checked;
   let logKeyboard = false;
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
@@ -1886,6 +1669,7 @@ async function stopStreams() {
 
 // Gets the key log file
 async function getBeanoteFile() {
+  // ===================== Function is Currently Not Impletmented ======================
 
   const input = document.getElementById('inpt-beanote-file');
   const currentBeanoteFile = input.files[0];
@@ -1914,25 +1698,23 @@ async function getBeanoteFile() {
 }
 
 async function createWebcamScreenSocket(socketType) {
-  let wsStart = 'ws://'
+  let wsStart = (window.location.protocol == 'https:')
+    ? 'wss://'
+    : 'ws://';
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
 
-  if (window.location.protocol == 'https:') {
-    wsStart = 'wss://'
-  } else {
-    wsStart = 'ws://'
-  }
-  var endpoint = wsStart + window.location.host + "/ws/webcamscreen/"
+  let endpoint = wsStart + window.location.host + "/ws/webcamscreen/";
+  let socket = new WebSocket(endpoint);
 
-  var socket = new WebSocket(endpoint)
   if (socketType === "webcam") {
     webcamWebSocket = socket;
   } else {
     screenWebSocket = socket;
   }
-  // // console.log(endpoint)
 
   socket.onopen = function (e) {
-    // // console.log('open', e)
+    // console.log('open', e)
     let msg = "";
 
     if (socketType === "webcam") {
@@ -1954,7 +1736,6 @@ async function createWebcamScreenSocket(socketType) {
     msgRcvdFlag = true;
 
     if (receivedMsg.includes("Received Recording File Name")) {
-      // console.log('Socket received file name');
       // ToDo: Enable streaming of video using websocket
 
       // webcam socket was created, create screen socket
@@ -1994,6 +1775,9 @@ async function createWebcamScreenSocket(socketType) {
 
 // Creates all the required websockets
 async function createAllsockets() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
+
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
 
@@ -2033,13 +1817,10 @@ async function createRecordingTimestamp() {
 // Creates task id websocket
 async function createTaskidWebsocket() {
   number_one = document.getElementById('main')
-  let wsStart = 'ws://'
+  let wsStart = (window.location.protocol == 'https:')
+    ? 'wss://'
+    : 'ws://';
 
-  if (window.location.protocol == 'https:') {
-    wsStart = 'wss://'
-  } else {
-    wsStart = 'ws://'
-  }
   var endpoint = wsStart + window.location.host + "/ws/taskid/"
 
   var socket = new WebSocket(endpoint)
@@ -2131,7 +1912,8 @@ async function showUserSettingsModal() {
 
 // Shows get task id from user modal
 async function showGetTaskIdFromUserModal() {
-
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
   // Stop video display tracks
   await stopVideoElemTracks(video);
 
@@ -2473,6 +2255,10 @@ async function closeYoutubePlaylistSelectionModal() {
 
 // reset state on closing youtube playlist modal
 async function resetStateOnClosingPlaylistModal() {
+  const cameraCheckbox = document.getElementById('webcam-recording');
+  const screenCheckbox = document.getElementById('screen-recording');
+
+
   // console.error("Reseting state due to error");
   let recordWebcam = cameraCheckbox.checked;
   let recordScreen = screenCheckbox.checked;
@@ -2577,16 +2363,16 @@ async function resetStateOnClosingPlaylistModal() {
 
 
 // Creating new playlist modal
-async function showCreatingNewPlaylistModal() {
-  // close modal if open
-  const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
-  btnCloseNewPlaylistDetailsModal.click();
+// const showCreatingNewPlaylistModal = async () => {
+//   // close modal if open
+//   const btnCloseNewPlaylistDetailsModal = document.getElementById('close-new-playlist-details-modal');
+//   btnCloseNewPlaylistDetailsModal.click();
 
-  // Show modal
-  const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
-  creatingNewPlaylistModal.show();
+//   // Show modal
+//   const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
+//   creatingNewPlaylistModal.show();
 
-}
+// }
 
 // On press handler for the create playlist button
 async function handleCreatePlaylistRequest() {
@@ -2864,7 +2650,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
     titleError.innerText = titleMsg;
     valid_input = false;
   }
- 
+
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -2941,112 +2727,115 @@ function displayUtilities() {
   document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
 }
 
-/* fetch channels for user */
-async function fetchUserChannel() {
-  let channelsApiUrl = 'youtube/channels/';
+// /* fetch channels for user */
+// async function fetchUserChannel() {
+//   let channelsApiUrl = 'youtube/channels/';
 
-  let status = null
-  await fetch(channelsApiUrl, {
-    method: 'GET',
-  })
-    .then(response => {
-      status = response.status;
-      return response.json();
-    })
-    .then((data) => {
-      if (status == 200) {
-        msg = "STATUS: User Channel Received."
-        document.getElementById("app-status").innerHTML = msg;
-        let userChannels = data;
-        // console.log("channel_list:", userChannels);
-        userChannels.map((obj) => {
-          let opt = document.createElement("option");
-          let opt_1 = document.createElement("option");
-          let channel_id = obj.channel_id;
-          // console.log(channel_id);
-          let channel_title = obj.channel_title;
-          // console.log(channel_title);
-          // opt.value = channel_id;
-          opt.value = channel_title;
-          opt_1.value = channel_title;
-          opt.innerHTML = channel_title;
-          opt_1.innerHTML = channel_title;
-          channelSelect.append(opt);
-          channelSelect_1.append(opt_1);
-          channelSelect.value = channel_title;
-          channelSelect.name = channel_title;
-          // console.log(opt);
-        })
-      } else {
-        // Server error message
-        // console.log("Server Error Message: ", data)
-        msg = "STATUS: Failed to Fetch Channel."
-        document.getElementById("app-status").innerHTML = msg;
-      }
-    }).catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to Fetch Channel."
-      document.getElementById("app-status").innerHTML = msg;
-    });
-}
-fetchUserChannel()
+//   let status = null
+//   await fetch(channelsApiUrl, {
+//     method: 'GET',
+//   })
+//     .then(response => {
+//       status = response.status;
+//       return response.json();
+//     })
+//     .then((data) => {
+//       if (status == 200) {
+//         msg = "STATUS: User Channel Received."
+//         document.getElementById("app-status").innerHTML = msg;
+//         let userChannels = data;
+//         // console.log("channel_list:", userChannels);
+//         userChannels.map((obj) => {
+//           let opt = document.createElement("option");
+//           let opt_1 = document.createElement("option");
+//           let channel_id = obj.channel_id;
+//           // console.log(channel_id);
+//           let channel_title = obj.channel_title;
+//           // console.log(channel_title);
+//           // opt.value = channel_id;
+//           opt.value = channel_title;
+//           opt_1.value = channel_title;
+//           opt.innerHTML = channel_title;
+//           opt_1.innerHTML = channel_title;
+//           channelSelect.append(opt);
+//           channelSelect_1.append(opt_1);
+//           channelSelect.value = channel_title;
+//           channelSelect.name = channel_title;
+//           // console.log(opt);
+//         })
+//       } else {
+//         // Server error message
+//         // console.log("Server Error Message: ", data)
+//         msg = "STATUS: Failed to Fetch Channel."
+//         document.getElementById("app-status").innerHTML = msg;
+//       }
+//     }).catch(error => {
+//       console.error(error);
+//       msg = "STATUS: Failed to Fetch Channel."
+//       document.getElementById("app-status").innerHTML = msg;
+//     });
+// }
+fetchUserChannel();
 
-async function loadUserPlaylist() {
-  let channel = document.getElementById("selectChannel").name;
-  fetchUserPlaylists(channel)
-}
-loadUserPlaylist()
+// async function loadUserPlaylist() {
+//   let channel = document.getElementById("selectChannel").name;
+//   fetchUserPlaylists(channel);
+// }
+loadUserPlaylist(todaysPlaylistId);
 
-let selectUserPlaylist = document.querySelector(".selectPlaylist")
-async function fetchUserPlaylists(channel_title) {
-  let csrftoken = await getCookie('csrftoken');
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-  myHeaders.append('X-CSRFToken', csrftoken);
-  let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-  let responseStatus = null;
-  await fetch(fetchPlaylistsApiUrl, {
-    method: 'POST',
-    headers: myHeaders,
-  })
-    .then(response => {
-      responseStatus = response.status;
-      // console.log(responseStatus);
-      return response.json();
-    })
-    .then((json) => {
-      if (responseStatus == 200) {
-        msg = "STATUS: Playlists Received."
-        document.getElementById("app-status").innerHTML = msg;
-        let userPlaylists = json.id_title_dict;
-        // console.log("userPlaylists:", userPlaylists);
-        for (const key in userPlaylists) {
-          // console.log(`${key}: ${userPlaylists[key]}`);
-          let opt = document.createElement("option");
-          opt.innerHTML = userPlaylists[key];
-          opt.value = key;
-          selectUserPlaylist.append(opt)
-          // selectUserPlaylist.innerHTML = opt
-        }
-        // Get today's playlist id
-        let todaysPlaylistObject = json.todays_playlist_dict
-        // console.log("todaysPlaylistObject: ", todaysPlaylistObject);
-        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
-        // console.log("todaysPlaylistId: ", todaysPlaylistId);
-      } else {
-        // Server error message
-        // console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to Fetch Playlists."
-        document.getElementById("app-status").innerHTML = msg;
-      }
 
-    }).catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to Fetch Playlists."
-      document.getElementById("app-status").innerHTML = msg;
-    });
-}
+// let selectUserPlaylist = document.querySelector(".selectPlaylist")
+// async function fetchUserPlaylists(channel_title) {
+//   let csrftoken = await getCookie('csrftoken');
+//   const myHeaders = new Headers();
+//   myHeaders.append('Accept', 'application/json');
+//   myHeaders.append('Content-type', 'application/json');
+//   myHeaders.append('X-CSRFToken', csrftoken);
+//   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
+//   let responseStatus = null;
+//   let msg = '';
+
+//   await fetch(fetchPlaylistsApiUrl, {
+//     method: 'POST',
+//     headers: myHeaders,
+//   })
+//     .then(response => {
+//       responseStatus = response.status;
+//       // console.log(responseStatus);
+//       return response.json();
+//     })
+//     .then((json) => {
+//       if (responseStatus == 200) {
+//         msg = "STATUS: Playlists Received."
+//         document.getElementById("app-status").innerHTML = msg;
+//         let userPlaylists = json.id_title_dict;
+//         // console.log("userPlaylists:", userPlaylists);
+//         for (const key in userPlaylists) {
+//           // console.log(`${key}: ${userPlaylists[key]}`);
+//           let opt = document.createElement("option");
+//           opt.innerHTML = userPlaylists[key];
+//           opt.value = key;
+//           selectUserPlaylist.append(opt)
+//           // selectUserPlaylist.innerHTML = opt
+//         }
+//         // Get today's playlist id
+//         let todaysPlaylistObject = json.todays_playlist_dict
+//         // console.log("todaysPlaylistObject: ", todaysPlaylistObject);
+//         todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
+//         // console.log("todaysPlaylistId: ", todaysPlaylistId);
+//       } else {
+//         // Server error message
+//         // console.log("Server Error Message: ", json)
+//         msg = "STATUS: Failed to Fetch Playlists."
+//         document.getElementById("app-status").innerHTML = msg;
+//       }
+
+//     }).catch(error => {
+//       console.error(error);
+//       msg = "STATUS: Failed to Fetch Playlists."
+//       document.getElementById("app-status").innerHTML = msg;
+//     });
+// }
 
 function resetonStartRecording() {
 
@@ -3065,3 +2854,7 @@ function resetonStartRecording() {
   document.querySelector('#unlist-videos').disabled = false;
 
 }
+
+
+
+

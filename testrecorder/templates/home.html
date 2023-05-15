@@ -858,7 +858,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    onclick="showCreatingNewPlaylistModal()">
+                    onClick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
             </div>
@@ -886,7 +886,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    onclick="showCreatingNewPlaylistModal()">
+                    onClick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
             </div>
@@ -1007,6 +1007,6 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-<script src="{% static '/js/index.js' %}"></script>
+<script type="module" src="{% static '/js/index.js' %}"></script>
 
 {% endblock body %}
