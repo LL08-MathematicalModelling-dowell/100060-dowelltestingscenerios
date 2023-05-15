@@ -1,31 +1,44 @@
-import ShareLink from '/static/js/share.js';
-import { fetchUserChannel } from '/static/js/fetchChannel.js';
-import { loadUserPlaylist } from '/static/js/fetchPlaylist.js';
-import { getCookie } from '/static/js/getCookie.js';
-
-// import { validateAll } from '/static/js/validation_manager.js';
-
-
-// include('/static/js/selenium_manager.js');
-// include('/static/js/validation_manager.js');
-// include('/static/js/privacy_mode.js');
+// Some app controls
+const video = document.getElementById('video')
+const cameraCheckbox = document.getElementById('webcam-recording')
+const screenCheckbox = document.getElementById('screen-recording')
+let switchCamera = document.querySelector(".switch-btn")
+//const keyLogCheckbox = document.getElementById('key-logging')
+//const audioCheckbox = document.getElementById('audio-settings')
+const publicVideosCheckbox = document.getElementById('public-videos')
+const privateVideosCheckbox = document.getElementById('private-videos')
+const selectCamerabutton = document.getElementById('choose-camera');
+const selectVideo = document.getElementById('video-source');
+let currentStream;
 
 let usernameValue = null;
 let testNameValue = null;
- let testDescriptionValue = null;
- let screenRecorderChunks = [];
- let webcamChunks = [];
- let mergedStreamChunks = [];
- let testRecordingData = null;
- let screenRecorder = null;
- let mergedStreamRecorder = null;
- let webcamRecorder = null
- let webCamStream = null;
- let screenStream = null;
- let audioStream = null;
- let videoConstraints = {};
- let webcamMediaConstraints = null;
- let screenAudioConstraints = {
+let testDescriptionValue = null;
+let screenRecorderChunks = [];
+let webcamChunks = [];
+let mergedStreamChunks = [];
+let testRecordingData = null;
+let screenRecorder = null;
+let mergedStreamRecorder = null;
+let webcamRecorder = null
+let webCamStream = null;
+let screenStream = null;
+let audioStream = null;
+let currentCamera = "user";
+// let videoConstraints = {};
+let videoConstraints = {
+    facingMode: currentCamera
+};
+// if (selectVideo.value === '') {
+//   videoConstraints.facingMode = 'environment';
+// } else {
+//   videoConstraints.deviceId = { exact: selectVideo.value };
+// }
+// let webcamMediaConstraints = {
+//   video: videoConstraints, audio: true
+// };
+let webcamMediaConstraints = null;
+let screenAudioConstraints = {
   audio: {
     echoCancellation: true,
     noiseSuppression: true,
@@ -68,10 +81,40 @@ let testNameValue = null;
 
 // Some app controls
 
-const video = document.getElementById('video');
-let currentStream;// UnImplemented Yet
-
-let btnShareRecords = document.querySelector('.share-record-btn');
+let appWebsocket = null;
+let webcamWebSocket = null;
+let screenWebSocket = null;
+let streamWebcamToYT = false;
+let streamScreenToYT = false;
+let streamMergedToYT = false;
+let newBroadcastID = null;
+let newRtmpUrl = null;
+let websocketReconnect = false;
+let recordinginProgress = false;
+let videoPrivacyStatus = "unlisted";
+let lastMsgRcvTime = 0;
+let msgRcvdFlag = false;
+let networkTimer = false;
+let filesTimestamp = null;
+let screenFileName = null;
+let webcamFileName = null;
+let taskIdWebSocket = null;
+let receivedTaskID = [];
+//let receivedTaskID = ["3703820","33k9h43","33k9h43D"];
+let taskIDwasRreceived = false;
+let faultyTaskID = null; // Bad clickup task or task id
+let currentRadioButtonID = null;
+let userPlaylists = null;
+let userPlaylistSelection = null;
+let channelTitle = null;
+let todaysPlaylistId = null;
+let tablePlaylists = [];
+// channels global Variables
+let userChannelSelection = null;
+let tableChannels = [];
+let defaultChannel = 'UX Live from uxlivinglab';
+let currentChannelTitle = null;
+let showNotificationPermission = 'default';
 
 
 
@@ -138,6 +181,7 @@ const shareLink = new ShareLink(newBroadcastID);
 
 // video timer
 let videoTimer = document.querySelector(".video-timer")
+let switchCamBtn = document.querySelector(".switch-btn")
 let hourTime = document.querySelector(".hour-time")
 let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
@@ -147,11 +191,16 @@ let totalTime = 0;
 
 
 function displayTimer() {
-  videoTimer.classList.add("show-timer")
+  videoTimer.classList.add("show-cam-timer")
+  switchCamBtn.classList.add("show-cam-timer")
   timeInterval = setInterval(setTime, 1000);
+  if (totalTime > 0) {
+    totalTime = 0
+  }
 }
+
 async function clearTimer() {
-  videoTimer.classList.add("show-timer")
+  videoTimer.classList.add("show-cam-timer")
   clearInterval(timeInterval);
 }
 
@@ -170,6 +219,53 @@ function calcTime(val) {
     return valString;
   }
 }
+// diasble unlist if public is checked
+function disablePrivate(){
+  let publicChecked = publicVideosCheckbox.checked;
+  let unlistChecked = privateVideosCheckbox.checked;
+  if (publicChecked == true) {
+    unlistChecked == false
+    if (unlistChecked == true) {
+      privateVideosCheckbox.click()
+    }
+  } 
+}
+// diasble public if unlist is checked
+function disablePublic() {
+  let publicChecked = publicVideosCheckbox.checked;
+  let privateChecked = privateVideosCheckbox.checked;
+  if (privateChecked == true) {
+    publicChecked == false
+    if (publicChecked == true) {
+      publicVideosCheckbox.click()
+    }
+  }
+}
+
+// switch camera button
+switchCamera.addEventListener("click", () => {
+  currentCamera = currentCamera === "user" ? "environment" : "user";
+  video.srcObject.getTracks().forEach(track => track.stop());
+  videoConstraints = {
+    facingMode: currentCamera
+  };
+  webcamMediaConstraints = {
+    video: videoConstraints, audio: true
+  };
+  console.log(videoConstraints.facingMode);
+
+  // console.log(currentCamera);
+  navigator.mediaDevices
+    .getUserMedia(webcamMediaConstraints)
+    .then(stream => {
+      currentStream = stream;
+      video.srcObject = stream;
+      return stream;
+    })
+    .catch(error => {
+      console.log("Error getting the camera: ", error);
+    })
+})
 
 // display user
 let userIcon = document.querySelector(".user-icon")
@@ -207,26 +303,57 @@ async function showCameraModal() {
   }
 
 }
-
-
-async function gotDevices(mediaDevices) {
-  const selectVideo = document.getElementById('video-source');
-  selectVideo.innerHTML = '';
-  selectVideo.appendChild(document.createElement('option'));
-  let count = 1;
-  mediaDevices.forEach(mediaDevice => {
-    if (mediaDevice.kind === 'videoinput') {
-      const option = document.createElement('option');
-      option.value = mediaDevice.deviceId;
-      const label = mediaDevice.label || `Camera ${count++}`;
-      const textNode = document.createTextNode(label);
-      option.appendChild(textNode);
-      selectVideo.appendChild(option);
-    }
+function stopMediaTracks(stream) {
+  stream.getTracks().forEach(track => {
+    track.stop();
   });
 }
-navigator.mediaDevices.enumerateDevices().then(gotDevices);
 
+// async function gotDevices(mediaDevices) {
+//   selectVideo.innerHTML = '';
+//   selectVideo.appendChild(document.createElement('option'));
+//   let count = 1;
+//   mediaDevices.forEach(mediaDevice => {
+//     if (mediaDevice.kind === 'videoinput') {
+//       const option = document.createElement('option');
+//       option.value = mediaDevice.deviceId;
+//       const label = mediaDevice.label || `Camera ${count++}`;
+//       const textNode = document.createTextNode(label);
+//       option.appendChild(textNode);
+//       selectVideo.appendChild(option);
+//     }
+//   });
+// }
+// navigator.mediaDevices.enumerateDevices().then(gotDevices);
+
+selectCamerabutton.addEventListener('click', event => {
+  if (typeof currentStream !== 'undefined') {
+    stopMediaTracks(currentStream);
+  }
+  const videoConstraints = {};
+  if (selectVideo.value === 'environment') {
+    videoConstraints.facingMode = 'environment';
+  } else if (selectVideo.value === 'user'){
+    videoConstraints.facingMode = 'user';
+  }else {
+    videoConstraints.facingMode = 'user';
+    // videoConstraints.deviceId = { exact: selectVideo.value };
+  }
+  webcamMediaConstraints = {
+    video: videoConstraints,
+    audio: true
+  };
+  navigator.mediaDevices
+    .getUserMedia(webcamMediaConstraints)
+    .then(stream => {
+      currentStream = stream;
+      video.srcObject = stream;
+      return stream;
+    })
+    .catch(error => {
+      console.error(error);
+    });
+});
 
 
 
@@ -362,6 +489,34 @@ const cancelVideoFrame = function (id) {
   //===============================  Function is Not Implemented Yet =========================================
   clearTimeout(id);
 };
+
+// make composite
+
+// async function makeComposite() {
+//   if (webCamStream && screenStream) {
+//     canvasCtx.save();
+//     canvasElement.setAttribute("width", `${screenStream.videoWidth}px`);
+//     canvasElement.setAttribute("height", `${screenStream.videoHeight}px`);
+//     canvasCtx.clearRect(0, 0, screenStream.videoWidth, screenStream.videoHeight);
+//     canvasCtx.drawImage(screenStream, 0, 0, screenStream.videoWidth, screenStream.videoHeight);
+//     canvasCtx.drawImage(
+//       cam,
+//       0,
+//       Math.floor(screenStream.videoHeight - screenStream.videoHeight / 4),
+//       Math.floor(screenStream.videoWidth / 4),
+//       Math.floor(screenStream.videoHeight / 4)
+//     ); // this is just a rough calculation to offset the webcam stream to bottom left
+//     let imageData = canvasCtx.getImageData(
+//       0,
+//       0,
+//       screenStream.videoWidth,
+//       screenStream.videoHeight
+//     ); // this makes it work
+//     canvasCtx.putImageData(imageData, 0, 0); // properly on safari/webkit browsers too
+//     canvasCtx.restore();
+//     rafId = requestVideoFrame(makeComposite);
+//   }
+// }
 
 
 // Records merged screen and webcam stream
@@ -636,8 +791,8 @@ async function camAndScreenShare() {
   const cameraCheckbox = document.getElementById('webcam-recording');
   const screenCheckbox = document.getElementById('screen-recording');
   try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
     // set up the screen capture stream
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
 
     // set up the camera stream
     // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
@@ -684,7 +839,28 @@ async function camAndScreenShare() {
 
     // set the video source to the merged stream
     video.srcObject = merger.result;
+    const mergedStream = merger.result
+    let options = await getSupportedMediaType();
 
+    if (options === null) {
+      alert("None of the required codecs was found!\n - Please update your browser and try again.");
+      document.location.reload();
+    }
+    mergedStreamRecorder = new MediaRecorder(mergedStream, options);
+
+    mergedStreamRecorder.ondataavailable = event => {
+      if (recordinginProgress == true) {
+        if ((event.data.size > 0) && (recordingSynched == true) && (streamMergedToYT == true)) {
+          //mergedStreamChunks.push(event.data);
+          appWebsocket.send(event.data);
+        }
+      }
+    }
+    webcamRecorder.onstop = () => {
+      // Show that webcam recording has stopped
+      msg = "STATUS: Merged Stream Recording stopped."
+      document.getElementById("app-status").innerHTML = msg;
+    }
     // handle cameraCheckbox changes
     cameraCheckbox.addEventListener('change', async () => {
       // stop the old camera stream
@@ -886,6 +1062,171 @@ async function startRecording() {
   }
 }
 
+async function validateAll(){
+  let webCam = cameraCheckbox.checked;
+  if (webCam == true) {
+    webcamMediaConstraints = null
+    currentCamera = null
+    // let currentCameraIsValid = true
+    let cameraErrorMsg = "";
+    if (selectVideo.value === 'environment') {
+      currentCamera = 'environment';
+      videoConstraints.facingMode = currentCamera;
+
+      // currentCameraIsValid = false
+    } else if (selectVideo.value === 'user') {
+      currentCamera = 'user';
+      videoConstraints.facingMode = currentCamera;
+    } else {
+      currentCamera = 'user';
+      videoConstraints.facingMode = currentCamera;
+    }
+    // if (selectVideo.value === '') {
+    //   cameraErrorMsg = "Please select one Camera";
+    //   // videoConstraints.facingMode = 'environment';
+    //   currentCameraIsValid = false
+    // } else {
+    //   videoConstraints.deviceId = { exact: selectVideo.value };
+    //   currentCameraIsValid = true
+    // }
+    webcamMediaConstraints = {
+      video: videoConstraints, audio: true
+    };
+    document.getElementById("camera-error").innerHTML = cameraErrorMsg;
+    validateModal()
+  }else{
+    validateModal()
+  }
+}
+// Validates test details
+async function validateModal() {
+
+  // Get permission to show notifications in system tray
+  showNotificationPermission = await Notification.requestPermission();
+  console.log("showNotificationPermission: ", showNotificationPermission);
+
+  // Clear previous test data
+  userPlaylistSelection = null;
+  currentChannelTitle = null;
+  usernameValue = null;
+  testNameValue = null;
+  testDescriptionValue = null;
+  testRecordingData = null;
+
+  // let currentCameraIsValid = true
+  // let cameraErrorMsg = "";
+  // if (selectVideo.value === '') {
+  //   cameraErrorMsg = "Please select one Camera";
+  //   // videoConstraints.facingMode = 'environment';
+  //   currentCameraIsValid = false
+  // } else {
+  //   videoConstraints.deviceId = { exact: selectVideo.value };
+  //   currentCameraIsValid = true
+  // }
+  // webcamMediaConstraints = {
+  //   video: videoConstraints, audio: true
+  // };
+  // document.getElementById("camera-error").innerHTML = cameraErrorMsg;
+  // validate channel name
+  let currentChannelTitleIsValid = true
+  currentChannelTitle = document.getElementById("selectChannel").name;
+  // Remove leading and trailling white space
+  currentChannelTitle = currentChannelTitle.trim();
+  let channelTitleErrorMsg = "";
+
+  // // console.log("currentChannelTitle:", currentChannelTitle);
+
+  if (currentChannelTitle === "") {
+    channelTitleErrorMsg = "Please select one channel";
+    currentChannelTitleIsValid = false;
+  }
+  document.getElementById("channelname-error").innerHTML = channelTitleErrorMsg;
+
+  // validate playlist name
+  let playlistIsValid = true;
+  userPlaylistSelection = document.getElementById("selectPlaylist").value;
+  userPlaylistSelection = userPlaylistSelection.trim();
+  // // console.log("userPlaylistSelection:", userPlaylistSelection);
+  let playlistError = "";
+  if (userPlaylistSelection === "") {
+    playlistError = "Please select a playlist";
+    playlistIsValid = false;
+  }
+  document.getElementById("playlist-error").innerHTML = playlistError;
+
+  // Validate username
+  let docIsValid = true;
+  usernameValue = document.getElementById("username").name;
+  // Remove leading and trailling white space
+  usernameValue = usernameValue.trim();
+  let msg = "";
+
+
+  // Check for empty string
+  if (usernameValue === "") {
+    msg = "Please fill the user name";
+    docIsValid = false;
+  }
+
+  document.getElementById("username-error").innerHTML = msg;
+
+  // Validate Test Name
+  let testNameIsValid = true;
+  testNameValue = document.getElementById("test-name").value;
+  // Remove leading and trailling white space
+  testNameValue = testNameValue.trim();
+  let testNameErrorMsg = "";
+
+  // Check for empty string
+  if (testNameValue === "") {
+    testNameErrorMsg = "Please fill the test name";
+    testNameIsValid = false;
+  }
+
+  // Check if username starts with a number
+  if (testNameValue.match(/^\d/)) {
+    testNameErrorMsg = "Test name cannot start with a number";
+    testNameIsValid = false;
+  }
+
+  // Check for space inside string
+  if (/\s/.test(testNameValue)) {
+    testNameErrorMsg = "Please replace the space with an underscore for example hi_you";
+    testNameIsValid = false;
+  }
+
+  document.getElementById("test-name-error").innerHTML = testNameErrorMsg;
+
+  // Get test description
+  // testDescriptionValue = document.getElementById("test-description").value;
+  // check if camera btn is checked
+  // let webCam = cameraCheckbox.checked;
+  // if (webCam == true) {
+  //   await showCameraModal()
+  // }
+
+  // All test details are available now
+  if ((docIsValid == true) && (testNameIsValid == true) && (currentChannelTitleIsValid == true) && (playlistIsValid == true)) {
+    // Click on close modal button
+    // document.getElementById("close-test-details-modal").click();
+    // Disable start recording button
+    document.getElementById("start").disabled = true;
+
+    setVideoPrivacyStatus()
+      .then(() => {
+        startRecording();
+      })
+      .catch((err) => {
+        console.error("Start recording error: ", err)
+        resetStateOnError();
+        showErrorModal();
+      });
+    /*.catch((error) => {
+      console.error("Failed to set video privacy status")
+    });*/
+  }
+}
+
 // Sends recorded test data using axios
 async function sendAvailableData(prevProgress) {
   // show record button
@@ -1061,6 +1402,7 @@ async function resetStateOnError() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
+  stopMediaTracks(currentStream);
 
   // resetonStart()
   // Stop the webcam stream
@@ -1565,22 +1907,20 @@ async function checkNetworkStatus() {
 }
 
 // sets youtube video privacy status
-// async function setVideoPrivacyStatus() {
-//   const publicVideosCheckbox = document.getElementById('public-videos');
-//   const unlistVideosCheckbox = document.getElementById('unlist-videos');
-//   // Check if we need to make videos public
-//   let makePublic = publicVideosCheckbox.checked;
-//   let unlistVideo = unlistVideosCheckbox.checked;
-//   if (makePublic == true) {
-//     videoPrivacyStatus = "public";
-//   }
-//   else if (unlistVideo == true) {
-//     videoPrivacyStatus = "unlisted";
-//   }
-//   else {
-//     videoPrivacyStatus = "private";
-//   }
-// }
+async function setVideoPrivacyStatus() {
+  // Check if we need to make videos public
+  let makePublic = publicVideosCheckbox.checked;
+  let privateVideo = privateVideosCheckbox.checked;
+  if (makePublic == true) {
+    videoPrivacyStatus = "public";
+  } 
+  else if (privateVideo == true) {
+    videoPrivacyStatus = "private";
+  }
+  else {
+    videoPrivacyStatus = "unlisted";
+  }
+}
 
 // Shows the beanote file upload modal
 async function showBeanoteFileUploadModal() {
@@ -2710,13 +3050,13 @@ function displayUtilities() {
   // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
-  document.querySelector('#unlist-videos').disabled = true;
+  document.querySelector('#private-videos').disabled = true;
 
   // clear navbar forms
   // document.getElementById("selectChannel").value = "";
   // document.getElementById("test-name").value = "";
   // Enable share records button
-  if (publicVideosCheckbox.checked || unlistVideosCheckbox.checked) {
+  if (publicVideosCheckbox.checked || privateVideosCheckbox.checked == false ) {
     btnShareRecords.style.display = "block";
   } else {
     btnShareRecords.style.display = "none";
@@ -2851,7 +3191,7 @@ function resetonStartRecording() {
   document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
-  document.querySelector('#unlist-videos').disabled = false;
+  document.querySelector('#private-videos').disabled = false;
 
 }
 
