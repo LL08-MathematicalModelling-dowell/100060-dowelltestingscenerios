@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+    body {
+        background-color: #dfdfdf;  
+    }
+    .lower-nav h1{
+        color: white;
+    }
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>About Live UX Storyboard</title>
+{% endblock title %}
+
+{% block body %}
+<!-- lower nav -->
+    <div class="lower-nav">
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <div class="authenticated-user">
+
+             <div class="lower-nav-item">
+                 <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                 <div class="lower-nav-label">Channel</div>
+                 <div style="color:red;" id="channelname-error"></div>
+            </div> 
+            <!-- end single select -->
+            <div class="lower-nav-item">
+                <!-- single select -->
+                <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
+                    <option value=""></option>
+                </select>
+                <div class="lower-nav-label"></div>
+                <div style="color:red;" id="playlist-error"></div>
+                <!-- end single select -->
+            </div>
+            <!-- Story Name -->
+            <!-- Story Name -->
+            <div class="user-icon lower-nav-item">
+                <i class="fas fa-user-circle"></i>
+                <div class="lower-nav-label">User</div>
+            </div>
+        </div>
+        {% else %}
+            <div class="story-name lower-nav-item">
+                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>
+            </div>
+        {% endif %}
+        <!-- user Name -->
+    </div>     
+     <div class="switch-camera">
+            <button class="switch-btn"><i class="fas fa-camera-rotate fa-xl"></i></button>
+        </div>                 
+    <!-- end lower nav -->
+<div class="section">
+    <div class="about-content">
+        {#        Muhammad Ahmed#}
+       <div class="setting-icon">
+          <div id="playlist-select">
+            <select id="userLibraryPlaylist"></select>
+          </div>
+          <div id="video-list"></div>
+        </div>
+    </div>
+</div>
+<!-- Application JavaScript -->
+<script src="{% static '/js/library.js' %}"></script>
+{% endblock body %}

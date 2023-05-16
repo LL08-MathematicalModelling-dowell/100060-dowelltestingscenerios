@@ -315,7 +315,7 @@ img {
 #webcam-recording:checked~label,
 #screen-recording:checked~label,
 #audio-settings:checked~label,
-#unlist-videos:checked~label,
+#private-videos:checked~label,
 #public-videos:checked~label {
   color: var(--light-primary_clr);
 }
@@ -423,6 +423,17 @@ img {
 }
 .share-record-btn button {
   background: #1b6dd8;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.library-btn button {
+  background: #a8a837;
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
   margin-right: 0.5rem;

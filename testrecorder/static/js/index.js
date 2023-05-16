@@ -2,13 +2,13 @@
 const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
 const screenCheckbox = document.getElementById('screen-recording')
+const audioCheckbox = document.getElementById('audio-settings')
 let switchCamera = document.querySelector(".switch-btn")
-//const keyLogCheckbox = document.getElementById('key-logging')
-//const audioCheckbox = document.getElementById('audio-settings')
 const publicVideosCheckbox = document.getElementById('public-videos')
 const privateVideosCheckbox = document.getElementById('private-videos')
 const selectCamerabutton = document.getElementById('choose-camera');
 const selectVideo = document.getElementById('video-source');
+const selectAudio = document.getElementById('audio-source');
 let currentStream;
 
 let btnShareRecords = document.querySelector('.share-record-btn');
@@ -29,7 +29,10 @@ let webCamStream = null;
 let screenStream = null;
 let audioStream = null;
 let currentCamera = "user";
-// let videoConstraints = {};
+let audioSource = selectAudio.value;
+let audioConstraints = {
+  deviceId: { exact: "default" }
+};
 let videoConstraints = {
     facingMode: currentCamera
 };
@@ -220,28 +223,46 @@ async function showCameraModal() {
   }
 
 }
+// show select audio modal
+async function showAudioModal() {
+  let audioSetting = audioCheckbox.checked;
+  if (audioSetting == true){
+    // close modal if open
+    const btnCloseAudioModal = document.getElementById('closeAudioModal');
+    btnCloseAudioModal.click();
+  
+    // Show modal
+    const showAudio = new bootstrap.Modal(document.getElementById('audioModal'));
+    showAudio.show();
+  }else{
+    // Show modal
+    const showAudio = new bootstrap.Modal(document.getElementById('audioModal'));
+    showAudio.hide();
+  }
+  await microphoneStatus()
+}
 function stopMediaTracks(stream) {
   stream.getTracks().forEach(track => {
     track.stop();
   });
 }
-
-// async function gotDevices(mediaDevices) {
-//   selectVideo.innerHTML = '';
-//   selectVideo.appendChild(document.createElement('option'));
-//   let count = 1;
-//   mediaDevices.forEach(mediaDevice => {
-//     if (mediaDevice.kind === 'videoinput') {
-//       const option = document.createElement('option');
-//       option.value = mediaDevice.deviceId;
-//       const label = mediaDevice.label || `Camera ${count++}`;
-//       const textNode = document.createTextNode(label);
-//       option.appendChild(textNode);
-//       selectVideo.appendChild(option);
-//     }
-//   });
-// }
-// navigator.mediaDevices.enumerateDevices().then(gotDevices);
+// Get audio devices
+async function gotDevices(mediaDevices) {
+  selectAudio.innerHTML = '';
+  selectAudio.appendChild(document.createElement('option'));
+  let count = 1;
+  mediaDevices.forEach(mediaDevice => {
+    if (mediaDevice.kind === 'audioinput') {
+      const option = document.createElement('option');
+      option.value = mediaDevice.deviceId;
+      const label = mediaDevice.label || `Audio ${count++}`;
+      const textNode = document.createTextNode(label);
+      option.appendChild(textNode);
+      selectAudio.appendChild(option);
+    }
+  });
+}
+navigator.mediaDevices.enumerateDevices().then(gotDevices);
 
 selectCamerabutton.addEventListener('click', event => {
   if (typeof currentStream !== 'undefined') {
@@ -881,9 +902,10 @@ async function startRecording() {
     if (recordAudio == true) {
       // Enable audio recording for webcam
       webcamMediaConstraints = {
-        video: videoConstraints, audio: true
+        video: videoConstraints, audio: audioConstraints
       };
       console.log(videoConstraints);
+      console.log(audioConstraints);
       // Enable audio recording for screen recording
       screenAudioConstraints = {
         audio: {
@@ -1005,6 +1027,16 @@ async function startRecording() {
 
 async function validateAll(){
   let webCam = cameraCheckbox.checked;
+  let audio = audioCheckbox.checked;
+  if (audio == true) {
+    if (selectAudio.value === '') {
+      audioConstraints.deviceId = { exact: "default" };
+      // currentCameraIsValid = false
+    }else{
+      audioConstraints.deviceId = { exact: selectAudio.value }; 
+    }
+    console.log(audioConstraints);
+  }
   if (webCam == true) {
     webcamMediaConstraints = null
     currentCamera = null
@@ -1030,8 +1062,16 @@ async function validateAll(){
     //   videoConstraints.deviceId = { exact: selectVideo.value };
     //   currentCameraIsValid = true
     // }
+    // if (selectAudio.value === '') {
+    //   cameraErrorMsg = "Please select one Camera";
+    //   // videoConstraints.facingMode = 'environment';
+    //   currentCameraIsValid = false
+    // } else {
+    //   audioConstraints.deviceId = { exact: selectAudio.value };
+    //   currentCameraIsValid = true
+    // }
     webcamMediaConstraints = {
-      video: videoConstraints, audio: true
+      video: videoConstraints, audio: audioConstraints
     };
     document.getElementById("camera-error").innerHTML = cameraErrorMsg;
     validateModal()
@@ -1513,7 +1553,7 @@ async function resetStateOnError() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: videoConstraints, audio: true
+    video: videoConstraints, audio: audioConstraints
   };
   screenAudioConstraints = {
     audio: {
@@ -3081,7 +3121,7 @@ async function resetStateOnClosingPlaylistModal() {
   recordinginProgress = false;
   //websocketReconnect = false;
   webcamMediaConstraints = {
-    video: videoConstraints, audio: true
+    video: videoConstraints, audio: audioConstraints
   };
   screenAudioConstraints = {
     audio: {
@@ -3577,6 +3617,7 @@ async function loadUserPlaylist() {
 loadUserPlaylist()
 
 let selectUserPlaylist = document.querySelector(".selectPlaylist")
+// let userLibraryPlaylist = document.querySelector(".userLibraryPlaylist")
 async function fetchUserPlaylists(channel_title) {
   let csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
@@ -3606,6 +3647,7 @@ async function fetchUserPlaylists(channel_title) {
           opt.innerHTML = userPlaylists[key];
           opt.value = key;
           selectUserPlaylist.append(opt)
+          // userLibraryPlaylist.append(opt)
           // selectUserPlaylist.innerHTML = opt
         }
         // Get today's playlist id
@@ -3647,3 +3689,53 @@ function resetonStartRecording() {
   document.querySelector('#private-videos').disabled = false;
 
 }
+
+
+  // Muhammad Ahmed
+// async function load_gallery() {
+
+//   console.log('load_gallery ')
+//   // Selectors for the HTML elements
+//   const channelSelect = document.getElementById("channelSelect");
+//   const selectUserPlaylist = document.getElementById("selectUserPlaylist");
+//   const videoContainer = document.getElementById("videoContainer");
+
+//   // Fetch user's All channels
+//   await fetchUserChannel();
+//   console.log('fetchUserChannel result :' ,fetchUserChannel)
+
+//   // Fetch user's playlists for the selected channel
+//   const selectedChannel = channelSelect.value;
+//   await fetchUserPlaylists(selectedChannel);
+
+//     console.log('fetchUserPlaylists result :' ,fetchUserPlaylists)
+
+//   // Display videos from selected playlist in selected channel
+//   const selectedPlaylistId = selectUserPlaylist.value;
+//   const fetchVideosApiUrl = `/youtube/playlists/${selectedPlaylistId}/videos/`;
+//   const response = await fetch(fetchVideosApiUrl, {
+//     method: 'GET',
+//   });
+//   if (response.status === 200) {
+//     const videos = await response.json();
+//     videoContainer.innerHTML = ""; // Clear previous video results
+//     videos.forEach(video => {
+//       const videoLink = `https://www.youtube.com/watch?v=${video.video_id}`;
+//       const videoTitle = video.video_title;
+//       const thumbnailUrl = video.thumbnail_url;
+//       const videoElement = `
+//         <div class="video-thumbnail">
+//           <a href="${videoLink}">
+//             <img src="${thumbnailUrl}" alt="${videoTitle}">
+//             <p>${videoTitle}</p>
+//           </a>
+//         </div>
+//       `;
+//       videoContainer.insertAdjacentHTML('beforeend', videoElement);
+//     });
+//   } else {
+//     // Handle error
+//     const errorMsg = await response.json();
+//     videoContainer.innerHTML = `<p>${errorMsg.detail}</p>`;
+//   }
+// }
