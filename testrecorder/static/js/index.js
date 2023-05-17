@@ -1486,7 +1486,6 @@ async function resetStateOnError() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
-  stopMediaTracks(currentStream);
 
   // resetonStart()
   // Stop the webcam stream
