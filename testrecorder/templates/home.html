@@ -90,7 +90,7 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="microphoneStatus()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="showAudioModal()"  checked>
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
@@ -144,6 +144,12 @@
                     <i class="fas fa-share-alt"></i>
                 </button>
                 <span class="tooltip-text">Share Video</span>
+            </div>
+            <div class="library-btn tooltip-container">
+                <button id="library">
+                    <i class="fas fa-folder"></i>
+                </button>
+                <span class="tooltip-text">Library</span>
             </div>
             {% comment %} <div class="add-channel-btn tooltip-container">
                 <button id="view_records" onClick="showAddChannelModal()">
@@ -940,6 +946,29 @@
 
 
     <!-- Select camera Modal -->
+    <div class="modal" id="audioModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select an Audio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="closeAudioModal"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="" class="form-control" id="audio-source">
+                        <option value="">Select an Audio</option>
+                    </select>
+                    <div style="color:red;" id="audio-error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closeAudioModal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="choose-audio" data-bs-dismiss="modal">Select</button>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    <!-- Select camera Modal -->
     <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -950,7 +979,8 @@
                 </div>
                 <div class="modal-body">
                     <select name="" class="form-control" id="video-source">
-                        <option value="">Select a Camera</option>
+                        <option value="user">Front Camera</option>
+                        <option value="environment">Back Camera</option>
                     </select>
                     <div style="color:red;" id="camera-error"></div>
                 </div>
