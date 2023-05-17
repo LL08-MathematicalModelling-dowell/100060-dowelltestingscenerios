@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import HomePageView,CalendlyPageView,AboutPageView,records_view,WebsocketPermissionView
+from .views import HomePageView,CalendlyPageView,AboutPageView,records_view,WebsocketPermissionView, PrivacyView
 
 
 urlpatterns = [
@@ -7,5 +7,6 @@ urlpatterns = [
     path('recordings/', records_view, name='view_records'),
     path('calendly/', CalendlyPageView.as_view(), name='calendly'),
     path('about/', AboutPageView.as_view(), name='about'),
+    path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('websocketpermission/', WebsocketPermissionView.as_view(), name='websocketpermission'),
 ]

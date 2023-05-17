@@ -541,7 +541,7 @@ class CreateBroadcastView(APIView):
                 videoPrivacyStatus, testNameValue, request)
             # stream_dict = {"Hello":"Testing for now!"}
             print("stream_dict: ", stream_dict)
-        except  HttpError as e: # Exception as e:
+        except HttpError as e:  # Exception as e:
             # HttpError as e:
             error_data = {
                 'message': e.reason,
@@ -595,7 +595,6 @@ class CreateBroadcastView(APIView):
         return stream_dict
 
 
-
 class TransitionBroadcastView(APIView):
     renderer_classes = [JSONRenderer]
 
@@ -604,22 +603,27 @@ class TransitionBroadcastView(APIView):
             Transitions broadcast using API
         """
 
-        print("Request: ", request)
-        print("Request Data: ", request.data)
-        print("Request Data Type: ", type(request.data))
-        # videoPrivacyStatus = "private"
-        # testNameValue = "Test1"
-        the_broadcast_id = request.data.get("the_broadcast_id")
-        print("the_broadcast_id: ", the_broadcast_id)
+        try:
+            print("Request: ", request)
+            print("Request Data: ", request.data)
+            print("Request Data Type: ", type(request.data))
+            # videoPrivacyStatus = "private"
+            # testNameValue = "Test1"
+            the_broadcast_id = request.data.get("the_broadcast_id")
+            print("the_broadcast_id: ", the_broadcast_id)
 
-        transition_response = self.transition_broadcast(the_broadcast_id, request)
-        # transition_response = {"Hello":"Testing for now!"}
-        print("transition_response: ", transition_response)
+            transition_response = transition_broadcast(
+                the_broadcast_id, request)
+            # transition_response = {"Hello":"Testing for now!"}
+            print("transition_response: ", transition_response)
 
-        return Response(transition_response, status=status.HTTP_200_OK)
-    
-    
-# Transitions a broadcast to complete status 
+            return Response(transition_response, status=status.HTTP_200_OK)
+        except Exception as e:
+            error = {'Error': e}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+
+    # Transitions a broadcast to complete status
+
 def transition_broadcast(the_broadcast_id, request):
 
     # Opening JSON file
@@ -646,7 +650,6 @@ def transition_broadcast(the_broadcast_id, request):
     print("broadcast_transition_response: ", broadcast_transition_response)
 
     return broadcast_transition_response
-
 
 
 class PlaylistItemsInsertView(APIView):
@@ -928,7 +931,6 @@ def fetch_user_playlists():
 
         print("id_title_dict: ", id_title_dict)
 
-        
         # add channel title
         print("channel_title: ", channel_title)
 

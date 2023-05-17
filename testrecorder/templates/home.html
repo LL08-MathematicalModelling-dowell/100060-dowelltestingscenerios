@@ -140,7 +140,7 @@
                 <span class="tooltip-text">Stop Recording</span>
             </div>
             <div class="share-record-btn tooltip-container" style="display:none">
-                <button id="share_records" onClick="shareLink.shareLinkModal()">
+                <button id="share_records" onClick="shareLinkModal()">
                     <i class="fas fa-share-alt"></i>
                 </button>
                 <span class="tooltip-text">Share Video</span>
@@ -195,16 +195,16 @@
                 </div>
                 <div class="modal-body modal-link">
                     <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareLink.shareToFacebook()"></i></a>
+                            onClick="shareToFacebook()"></i></a>
                     <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareLink.shareToTwitter()"></i></a>
+                            onClick="shareToTwitter()"></i></a>
                     <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareLink.shareToLinkedin()"></i></a>
+                            onClick="shareToLinkedin()"></i></a>
                     <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareLink.shareToEmail()"></i></a>
+                            onClick="shareToEmail()"></i></a>
                     <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareLink.shareToWhatsapp()"></i></a>
-                    <button class="copylink" onClick="shareLink.copyLink()"><i class="fas fa-link"></i></button>
+                            onClick="shareToWhatsapp()"></i></a>
+                    <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
         </div>
@@ -1031,6 +1031,6 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-<script type="module" src="{% static '/js/index.js' %}"></script>
+<script src="{% static '/js/general.js' %}"></script>
 
-{% endblock body %}
+{% endblock body %} 

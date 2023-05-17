@@ -1,9 +1,11 @@
 import os
 import json
+from typing import Any
+from django import http
 from dotenv import load_dotenv
 from django.views.generic import TemplateView
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from googleapiclient.discovery import build
@@ -41,7 +43,11 @@ def validate_youtube_channel(channel_credentials,channel_id):
         print(f'An error occurred: {e}')
         return False
 
-
+class PrivacyView(TemplateView):
+    """ Privacy Page"""
+    template_name = 'privacy.html'
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        return render(request, self.template_name)
 class HomePageView(TemplateView):
     """Home page view class"""
 
