@@ -248,7 +248,19 @@ img {
   outline: 1px solid #fa3d4a;
   border-radius: 0.5rem;
 }
-
+.switch-btn {
+  padding: 0.2rem 0.5rem;
+  font-size: 1.5rem;
+  border: none;
+  cursor: pointer;
+  color: var(--light-primary_clr);
+  background: transparent;
+  position: absolute;
+  top: 30%;
+  right: 10%;
+  display: none;
+  z-index: 99;
+}
 
 .video-timer {
   position: absolute;
@@ -258,7 +270,7 @@ img {
   z-index: 99;
   color: var(--primary_clr);
 }
-.show-timer{
+.show-cam-timer{
   display: block;
 }
 .video-component video{
@@ -303,7 +315,7 @@ img {
 #webcam-recording:checked~label,
 #screen-recording:checked~label,
 #audio-settings:checked~label,
-#unlist-videos:checked~label,
+#private-videos:checked~label,
 #public-videos:checked~label {
   color: var(--light-primary_clr);
 }
@@ -411,6 +423,17 @@ img {
 }
 .share-record-btn button {
   background: #1b6dd8;
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+.library-btn button {
+  background: #a8a837;
   padding: 0.3rem 0.6rem;
   font-size: 1.4rem;
   margin-right: 0.5rem;

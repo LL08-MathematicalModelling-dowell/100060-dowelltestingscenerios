@@ -75,6 +75,9 @@
         <div class="video-timer">
             <p><span class="hour-time">00</span>:<span class="minute-time">00</span>:<span class="second-time">00</span></p>
         </div>
+        <div class="switch-camera">
+            <button class="switch-btn"><i class="fas fa-camera-rotate fa-xl"></i></button>
+        </div>
         </div>
         <!-- Settings and controls -->
     <div class="main-content-check-boxes">
@@ -87,41 +90,20 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="microphoneStatus()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="showAudioModal()">
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
         <div class="setting-icon">
-            <input type="checkbox" name="public" id="public-videos" onClick="disableUnlist()">
+            <input type="checkbox" name="public" id="public-videos" onClick="disablePrivate()">
             <label for="public-videos"><i class="fas fa-globe"></i><p>Public</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="unlist" id="unlist-videos" onClick="disablePublic()">
-            <label for="unlist-videos"><i class="fas fa-eye-slash"></i><p>Unlist</p></label>
+            <input type="checkbox" name="private" id="private-videos" onClick="disablePublic()">
+            <label for="private-videos"><i class="fas fa-eye-slash"></i><p>Private</p></label>
         </div>
         </div>
         <div class="input-start-record-btn">
-
-
-{#        Muhammad Ahmed#}
-       <div class="setting-icon">
-          <button id="gallery-btn" onclick="load_gallery()">Gallery</button>
-          <div id="channel-select" style="display: none;">
-            <h2 style="color:blue;">Select A Channel</h2>
-            <select id="channelSelect"></select>
-            <button id="channel-submit-btn" onclick="showPlaylists()">Next</button>
-          </div>
-          <div id="playlist-select" style="display: none;">
-            <h2 style="color:blue;">Select A Playlist</h2>
-            <select id="selectUserPlaylist"></select>
-            <button id="playlist-submit-btn" onclick="showVideos()">Next</button>
-          </div>
-          <div id="video-list" style="display: none;"></div>
-        </div>
-
-
-<br>
-
         <!-- main content inputs -->
         {% comment %} <div class="main-content-input">
             <form>
@@ -161,6 +143,12 @@
                     <i class="fas fa-share-alt"></i>
                 </button>
                 <span class="tooltip-text">Share Video</span>
+            </div>
+            <div class="library-btn tooltip-container">
+                <button id="library">
+                    <i class="fas fa-folder"></i>
+                </button>
+                <span class="tooltip-text">Library</span>
             </div>
             {% comment %} <div class="add-channel-btn tooltip-container">
                 <button id="view_records" onClick="showAddChannelModal()">
@@ -296,7 +284,8 @@
             </div>
             <div class="modal-body">
                 <select name="" class="form-control" id="video-source">
-                    <option value="">Select a Camera</option>
+                    <option value="user">Front Camera</option>
+                    <option value="environment">Back Camera</option>
                 </select>
                 <div style="color:red;" id="camera-error"></div>
             </div>
@@ -920,6 +909,29 @@
 
 
     <!-- Select camera Modal -->
+    <div class="modal" id="audioModal" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select an Audio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                        id="closeAudioModal"></button>
+                </div>
+                <div class="modal-body">
+                    <select name="" class="form-control" id="audio-source">
+                        <option value="">Select an Audio</option>
+                    </select>
+                    <div style="color:red;" id="audio-error"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closeAudioModal">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="choose-audio" data-bs-dismiss="modal">Select</button>
+                </div>
+    
+            </div>
+        </div>
+    </div>
+    <!-- Select camera Modal -->
     <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -930,7 +942,8 @@
                 </div>
                 <div class="modal-body">
                     <select name="" class="form-control" id="video-source">
-                        <option value="">Select a Camera</option>
+                        <option value="user">Front Camera</option>
+                        <option value="environment">Back Camera</option>
                     </select>
                     <div style="color:red;" id="camera-error"></div>
                 </div>

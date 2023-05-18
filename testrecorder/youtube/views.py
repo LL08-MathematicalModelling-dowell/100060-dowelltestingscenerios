@@ -479,7 +479,46 @@ def insert_stream(youtube):
     return stream_dict
 
 
+# def create_broadcast(videoPrivacyStatus, testNameValue, request):
+#     """
+#         Creates a broadcast with a livestream bound
+#     """
+
+#     # Opening JSON file
+#     """with open(credentials_file) as json_file:
+#         credentials = json.load(json_file)"""
+
+#     # Get current channel credetials
+#     channel_title = request.data.get("channel_title")
+#     # json.loads(get_user_credentials(request, channel_title))
+#     credentials = get_user_credentials(request, channel_title)
+
+#     credentials = google.oauth2.credentials.Credentials(**credentials)
+
+#     youtube = googleapiclient.discovery.build(
+#         API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+#     # Create broadcast
+#     new_broadcast_id = insert_broadcast(
+#         youtube, videoPrivacyStatus, testNameValue)
+
+#     # Create stream
+#     stream_dict = insert_stream(youtube)
+
+#     # Bind livestream and broadcast
+#     stream_dict['new_broadcast_id'] = new_broadcast_id
+#     stream_id = stream_dict['newStreamId']
+#     bind_broadcast(youtube, new_broadcast_id, stream_id)
+
+#     # Serializing json
+#     json_stream_dict = json.dumps(stream_dict)
+#     print(json_stream_dict)
+
+#     # return json_stream_dict
+#     return stream_dict
+
 class CreateBroadcastView(APIView):
+    # parser_classes = (MultiPartParser, FormParser)
     renderer_classes = [JSONRenderer]
 
     def post(self, request, *args, **kwargs):
@@ -490,7 +529,8 @@ class CreateBroadcastView(APIView):
         print("Request: ", request)
         print("Request Data: ", request.data)
         print("Request Data Type: ", type(request.data))
-
+        # videoPrivacyStatus = "private"
+        # testNameValue = "Test1"
         videoPrivacyStatus = request.data.get("videoPrivacyStatus")
         testNameValue = request.data.get("testNameValue")
         print("videoPrivacyStatus: ", videoPrivacyStatus)
@@ -524,6 +564,18 @@ class CreateBroadcastView(APIView):
         # Build the YouTube API client
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+
+        # Check if the user's account has live streaming enabled
+        list_response = youtube.liveBroadcasts().list(
+            part='id,snippet,contentDetails,status',
+            mine=True
+        ).execute()
+        try:
+            channel_id = list_response['items'][0]['snippet']['channelId']
+        except:
+            logger.critical('User does not have a YouTube channel!!!')
+            print('User does not have a YouTube channel!!!')
+            raise Exception("User does not have a YouTube channel")
 
         # Create a new broadcast
         new_broadcast_id = insert_broadcast(
@@ -707,6 +759,9 @@ def fetch_playlists_with_pagination(youtube_object):
             pageToken=page_token
         )
         response = request.execute()
+        # print("FetchPlaylistsView response: ", response)
+        # print("FetchPlaylistsView response: ", count)
+        # count = count + 1
 
         # Get next page token
         if "nextPageToken" in response.keys():
@@ -747,7 +802,20 @@ class FetchPlaylistsView(APIView):
             youtube = googleapiclient.discovery.build(
                 API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-            print('=== ready to fetch playlist with pagination ===')
+            """# Fetch the playlists
+            request = youtube.playlists().list(
+                part="snippet,contentDetails",
+                maxResults=5,
+                mine=True,
+                pageToken=""
+            )
+            response = request.execute()
+            print("FetchPlaylistsView response: ", response)
+
+            # Extract playlist id and names from data
+            playlists = response['items']"""
+            print(
+                '=========================== ready to fetch playlist with pagination =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
@@ -767,6 +835,9 @@ class FetchPlaylistsView(APIView):
                 title = playlist["snippet"]["title"]
                 # print("Playlist Title = ",title)
 
+                # Add playlist to dictionary
+                # id_title_dict[id] = title
+
                 # Filter out daily playlists
                 if "Daily Playlist" not in title:
                     id_title_dict[id] = title
@@ -778,6 +849,22 @@ class FetchPlaylistsView(APIView):
                 channel_title = playlist["snippet"]["channelTitle"]
 
             print("id_title_dict: ", id_title_dict)
+
+            # Dummy dictionary for testing
+            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+
+            """# Get playlists in user db list and in youtube
+            new_user_id = "Walter"
+            user_db_playlists = get_user_playlists_from_db(new_user_id)
+            filtered_playlists = {}
+            for playlist in user_db_playlists:
+                print(playlist["playlist_title"])
+                if playlist["playlist_id"] in id_title_dict.keys():
+                    filtered_playlists[playlist["playlist_id"]] = id_title_dict[playlist["playlist_id"]]
+
+            print("filtered_playlists: ", filtered_playlists)
+            return Response(filtered_playlists, status=status.HTTP_200_OK)"""
 
             # add channel title
             print("channel_title: ", channel_title)
@@ -812,6 +899,18 @@ def fetch_user_playlists():
         youtube = googleapiclient.discovery.build(
             API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
+        """# Fetch the playlists
+        request = youtube.playlists().list(
+            part="snippet,contentDetails",
+            maxResults=25,
+            mine=True
+        )
+        response = request.execute()
+        print(response)
+
+        # Extract playlist id and names from data
+        playlists = response['items']"""
+
         # Fetch all playlists with pagination
         playlists = fetch_playlists_with_pagination(youtube)
 
@@ -843,6 +942,22 @@ def fetch_user_playlists():
             channel_title = playlist["snippet"]["channelTitle"]
 
         print("id_title_dict: ", id_title_dict)
+
+        # Dummy dictionary for testing
+        # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+        # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+
+        """# Get playlists in user db list and in youtube
+        new_user_id = "Walter"
+        user_db_playlists = get_user_playlists_from_db(new_user_id)
+        filtered_playlists = {}
+        for playlist in user_db_playlists:
+            print(playlist["playlist_title"])
+            if playlist["playlist_id"] in id_title_dict.keys():
+                filtered_playlists[playlist["playlist_id"]] = id_title_dict[playlist["playlist_id"]]
+
+        print("filtered_playlists: ", filtered_playlists)
+        return Response(filtered_playlists, status=status.HTTP_200_OK)"""
 
         # add channel title
         print("channel_title: ", channel_title)
@@ -1054,6 +1169,10 @@ class FetchPlaylistsViewV2(APIView):
 
             print("id_title_dict: ", id_title_dict)
 
+            # Dummy dictionary for testing
+            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
+            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
+
             # add channel title
             print("channel_title: ", channel_title)
 
@@ -1080,6 +1199,10 @@ class FetchChannels(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
+            # get_channel_details(request, "UX Live from uxlivinglab")
+            """current_credentials = get_user_credentials(request, "UX Live from uxlivinglab")
+            print("current_credentials: ",current_credentials)"""
+
             all_channels = ChannelsRecord.objects.all()
             channels_list = []
 
