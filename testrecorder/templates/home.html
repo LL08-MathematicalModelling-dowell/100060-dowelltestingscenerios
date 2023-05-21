@@ -66,9 +66,9 @@
 <!-- Main container -->
 <div class="contain">
 
-    <main class="main-contents">
-        <!--display video title-->
-        <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
+<main class="main-contents">
+    <!--display video title-->
+    <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
         <!-- Video component -->
         <div class="video-component" id="screen">
         <video id="video" autoplay muted></video>
@@ -90,7 +90,7 @@
             <label for="screen-recording"><i class="fas fa-desktop"></i><p>Screen</p></label>
         </div>
         <div class="setting-icon">
-            <input type="checkbox" name="audio" id="audio-settings" onclick="showAudioModal()"  checked>
+            <input type="checkbox" name="audio" id="audio-settings" onclick="showAudioModal()">
             <label for="audio-settings"><i class="fas fa-microphone-lines"></i><p>Audio</p></label>
         </div>
 
@@ -104,26 +104,25 @@
         </div>
         </div>
         <div class="input-start-record-btn">
-            <!-- main content inputs -->
-            {% comment %} <div class="main-content-input">
-                <form>
-                    <input type="text" name="" id="new-playlist-tit" placeholder="Play List Title">
-                    <div style="color:red;" id="new-playlist-title-error"></div>
-                </form>
-            </div> {% endcomment %}
-            {% if user.is_authenticated %}
-            <div class="main-content-btns">
-                <div class="create-playlist-btn tooltip-container">
-                    {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
-                        <i class="fas fa-save"></i>
-                    </button> {% endcomment %}
-                    <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
-                        <i class="fas fa-save"></i>
-                    </button>
-                    <span class="tooltip-text">Create new genre</span>
+        <!-- main content inputs -->
+        {% comment %} <div class="main-content-input">
+            <form>
+            <input type="text" name="" id="new-playlist-tit" placeholder="Play List Title">
+            <div style="color:red;" id="new-playlist-title-error"></div>
+            </form>
+        </div> {% endcomment %}
+        {% if user.is_authenticated %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
+                    <i class="fas fa-save"></i>
+                </button> {% endcomment %}
+                <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
+                    <i class="fas fa-save"></i>
+                </button>
+                <span class="tooltip-text">Create new genre</span>
 
-                </div>
-                
+            </div>
             <div class="record-btn tooltip-container">
                 {% comment %} <button id="start" onClick="validateModal()">
                     <i class="fas fa-record-vinyl"></i>
@@ -164,15 +163,6 @@
                 <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
                 <span class="tooltip-text">Login First</span>
 
-                </div>
-                <div class="record-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
-                    <span class="tooltip-text">Login First</span>
-                </div>
-                <div class="add-channel-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fab fa-youtube"></i></a>
-                    <span class="tooltip-text">Login First</span>
-                </div>
             </div>
             <div class="record-btn tooltip-container">
                 <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
@@ -184,12 +174,12 @@
     </main>
 
     <!-- Status bar -->
-    <div class="status-bar">
-        <div id="app-status">STATUS: Waiting to Record.</div>
-    </div>
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
     <!-- Test Details Modal Deleted -->
-
+    
     <!-- Share youtube link Modal -->
     <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -200,16 +190,11 @@
                         id="close-share-link-modal"></button>
                 </div>
                 <div class="modal-body modal-link">
-                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareToFacebook()"></i></a>
-                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareToTwitter()"></i></a>
-                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareToLinkedin()"></i></a>
-                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareToEmail()"></i></a>
-                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareToWhatsapp()"></i></a>
+                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook" onClick="shareToFacebook()"></i></a>
+                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin" onClick="shareToLinkedin()"></i></a>
+                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp" onClick="shareToWhatsapp()"></i></a>
                     <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
                 </div>
             </div>
@@ -309,30 +294,9 @@
                 <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
             </div>
 
-    <!-- Select camera Modal -->
-    <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Select a Camera</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
-                </div>
-                <div class="modal-body">
-                    <select name="" class="form-control" id="video-source">
-                        <option value="">Select a Camera</option>
-                    </select>
-                    <div style="color:red;" id="camera-error"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                        id="closecameraModal">Cancel</button>
-                    <button type="submit" class="btn btn-success" id="choose-camera"
-                        data-bs-dismiss="modal">Select</button>
-                </div>
-
-            </div>
         </div>
     </div>
+</div>
     <!-- Creating broadcast in progress-->
     <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
@@ -806,8 +770,7 @@
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label plst required"><strong>Genre Name</strong></label>
-                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
-                                id="p_title-error"></p>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;" id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
                         </div>
                         <div class="mb-3">
@@ -815,9 +778,9 @@
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
                                 id="p_channel-error"></p>
                             <!-- {{ add_playlist.channel }} -->
-                            <select class='form-control' name="channel" id="selectChannel_1">
+                            <select class='form-control' name="channel" id="selectChannel_1" >
                                 {% comment %} <option value="">Select Channel</option> {% endcomment %}
-                            </select>
+                              </select>
                             <div style="color:red;" id="channelname-error"></div>
                         </div>
                         <div class="mb-3">
@@ -888,7 +851,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    onClick="showCreatingNewPlaylistModal()">
+                    onclick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
             </div>
@@ -916,7 +879,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    onClick="showCreatingNewPlaylistModal()">
+                    onclick="showCreatingNewPlaylistModal()">
                     Close
                 </button>
             </div>
@@ -1000,7 +963,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Save Channel Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-add-channel-modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="close-add-channel-modal"></button>
             </div>
             <div class="modal-body">
                 <form id="add-channel">
@@ -1021,7 +985,7 @@
                     </div>
                     <div class="modal-footer">
                         <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
-                        <button type="submit" class="btn btn-success" id="add-channel-btn">Save</button>
+                        <button type="submit" class="btn btn-success" id="add-channel-btn" >Save</button>
                         <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
                     </div>
                 </form>
@@ -1031,24 +995,9 @@
     </div>
 </div>
 <!-- ====================================================================== -->
-
-
-<!-- Generic Error Modal -->
-<div class="modal" id="errorModal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="title">Playlist Creation Error</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    id="close" hidden></button>
-            </div>
-            <div class="modal-body">
-                <p class='errorMessage' style="font-size: 1.25rem; color: rgb(255, 0, 0);"> Error message </p>
-            </div>
-            <div class="modal-footer"></div>
-        </div>
-    </div>
-</div>
+<!-- Select Channel Modal -->
+<!-- YouTube channels Selection Modal  -->
+<!-- deleted deleted -->
 
 
 
@@ -1061,6 +1010,6 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-<script src="{% static '/js/general.js' %}"></script>
+<script src="{% static '/js/index.js' %}"></script>
 
-{% endblock body %} 
+{% endblock body %}

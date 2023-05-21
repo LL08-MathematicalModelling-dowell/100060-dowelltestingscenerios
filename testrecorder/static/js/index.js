@@ -1,19 +1,3 @@
-async function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          // Does this cookie string begin with the name we want?
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
-          }
-      }
-  }
-  return cookieValue;
-}
-
 // Some app controls
 const video = document.getElementById('video')
 const cameraCheckbox = document.getElementById('webcam-recording')
@@ -52,7 +36,14 @@ let audioConstraints = {
 let videoConstraints = {
     facingMode: currentCamera
 };
-
+// if (selectVideo.value === '') {
+//   videoConstraints.facingMode = 'environment';
+// } else {
+//   videoConstraints.deviceId = { exact: selectVideo.value };
+// }
+// let webcamMediaConstraints = {
+//   video: videoConstraints, audio: true
+// };
 let webcamMediaConstraints = null;
 let screenAudioConstraints = {
   audio: {
@@ -826,6 +817,20 @@ async function camAndScreenShare() {
     });
     
 
+    // screenCheckbox.addEventListener('change', async () => {
+    //   if (screenCheckbox.checked) {
+    //     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    //   } else {
+    //     screenStream.getTracks().forEach(track => {
+    //       track.stop();
+    //     });
+    //     screenStream = null;
+    //   }
+
+    //   merger.reRender();
+    // });
+
+
     screenCheckbox.addEventListener('change', async () => {
       try {
         if (screenCheckbox.checked) {
@@ -1481,7 +1486,6 @@ async function resetStateOnError() {
 
   // Stop video display tracks
   stopVideoElemTracks(video);
-  stopMediaTracks(currentStream);
 
   // resetonStart()
   // Stop the webcam stream
@@ -1578,21 +1582,21 @@ async function setProgressBarValue(newProgress) {
   uploadProgressBar.innerHTML = progressString;
 }
 
-// async function getCookie(name) {
-//   let cookieValue = null;
-//   if (document.cookie && document.cookie !== '') {
-//     const cookies = document.cookie.split(';');
-//     for (let i = 0; i < cookies.length; i++) {
-//       const cookie = cookies[i].trim();
-//       // Does this cookie string begin with the name we want?
-//       if (cookie.substring(0, name.length + 1) === (name + '=')) {
-//         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-//         break;
-//       }
-//     }
-//   }
-//   return cookieValue;
-// }
+async function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      // Does this cookie string begin with the name we want?
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
 
 // Generates a random string for attaching to file names
 async function generateString(length) {
@@ -1808,11 +1812,11 @@ async function createBroadcast() {
         //newRtmpUrl=data.newRtmpUrl;
         newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
         newBroadcastID = data.new_broadcast_id;
-        console.log("newStreamId:", newStreamId);
-        console.log("newStreamName:", newStreamName);
-        console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-        console.log("newRtmpUrl:", newRtmpUrl);
-        console.log("new_broadcast_id:", newBroadcastID);
+        // // // console.log("newStreamId:", newStreamId);
+        // // // console.log("newStreamName:", newStreamName);
+        // // // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
+        // // // console.log("newRtmpUrl:", newRtmpUrl);
+        // // // console.log("new_broadcast_id:", newBroadcastID);
       }
       catch {
         // resetStateOnError();

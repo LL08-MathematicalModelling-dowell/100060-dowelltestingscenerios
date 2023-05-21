@@ -19,7 +19,8 @@ class UserChannels(APIView):
     This class is a DRF APIView that retrieves the authenticated user's YouTube channels.
 
     Methods:
-      get(self, request, *args, **kwargs): Handles GET requests to this view and retrieves the channels associated with the currently
+      get(self, request, *args, **kwargs): Handles GET requests to this view and retrieves the
+        channels associated with the currently
         authenticated user's YouTube account.
         Parameters:
         request: DRF Request object
@@ -27,13 +28,14 @@ class UserChannels(APIView):
         **kwargs: dictionary of keyword arguments
 
         Functionality:
-            The get method retrieves the authenticated user's YouTube channels by first retrieving the 
-            YoutubeUserCredential object associated with the authenticated user. It then retrieves the user's 
+            The get method retrieves the authenticated user's YouTube channels by first retrieving
+            the YoutubeUserCredential object associated with the authenticated user. It then retrieves the user's 
             credentials associated with the YoutubeUserCredential object and uses them to create a YouTube object using 
             the v3 version of the API. It then retrieves the channels associated with the user's account and processes 
             them into a list of dictionaries containing the channel id and title. It saves the first channel's details 
             to a ChannelsRecord object and returns the channels in the response body with a 200 OK status code.
-            If an exception is raised during any of the above steps, it returns an error response with a 404 Not Found status code.
+            If an exception is raised during any of the above steps, it returns an error response with a 404
+            Not Found status code.
 
         Returns:
             If successful, returns a DRF Response object with a JSON array of dictionaries containing the channel id and 
@@ -61,6 +63,7 @@ class UserChannels(APIView):
         try:
             # Retrieve the YoutubeUserCredential object associated with the authenticated user
             youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+            credential = youtube_user.credential
         except YoutubeUserCredential.DoesNotExist:
             # If the user doesn't have a YoutubeUserCredential object,
             # return an error response with 401 Unauthorized status code
@@ -69,15 +72,15 @@ class UserChannels(APIView):
         try:
             # Retrieve the user's credentials associated with the YoutubeUserCredential object
             credentials = Credentials.from_authorized_user_info(
-                info=youtube_user.credential)
+                info=credential)
 
+            # Construct a Resource for interacting with an API.
             # Create a YouTube object using the v3 version of the API and the retrieved credentials
             youtube = build('youtube', 'v3',
                             credentials=credentials, cache_discovery=False)
 
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
-
             # Process the channels into a list of dictionaries containing the channel id and title
             channels = [
                 {
@@ -93,29 +96,45 @@ class UserChannels(APIView):
                 channel_record, created = ChannelsRecord.objects.get_or_create(
                     channel_id=channels[0].get('channel_id'),
                     channel_title=channels[0].get('channel_title'),
-                    channel_credentials=youtube_user.credential
+                    channel_credentials=credential
                 )
                 if created:
                     channel_record.save()
-                response = self.dowell_connection_db_insert(
-                    channels[0], youtube_user.credential)
-                print(
-                    'xxxxxxDowell db youtube credential insert  response ====> ', response)
+
+                db_status = self.is_available_in_db(channels[0])
+
+                if db_status is False:
+                    print('inserting user credential into dowell database...')
+                    insert_response = self.insert_user_credential_into_dowell_connection_db(
+                        channels[0], credential)
+
+                    print(f"{channels[0].get('title')}'s credentials saved successfully!!"
+                          if insert_response.get('isSuccess') == True else 'Failed to save user credential')
+                else:
+                    print('Credential not saved beacause record already exist!!')
+
             except Exception as e:
-                logger.warning(
+                logger.error(
                     f'Error while saving user channel credential locally!: {e}  occured')
 
             # Return the channels in the response body with 200 OK status code
             return Response(channels, status=status.HTTP_200_OK)
+
         except HTTPError as e:
             status_code = e.resp.status
             error_message = e._get_reason()
             # If unable to fetch the YouTube channels, return an error response with 404 Not Found status code
-            return Response({'Error': 'Unable to fetch YouTube channel for this account', 'message': error_message}, status=status_code)
+            return Response(
+                {'Error': 'Unable to fetch YouTube channel for this account', 'message': error_message},
+                status=status_code
+                )
 
-    def dowell_connection_db_insert(self, channel, credential):
+    def insert_user_credential_into_dowell_connection_db(self, channel, credential):
         """
-            Inserts a record in to the company's database
+        Inserts a new user youtube info record into the company's database
+
+        Return:
+            Json response from the database.
         """
 
         url = "http://100002.pythonanywhere.com/"
@@ -142,9 +161,49 @@ class UserChannels(APIView):
             'Content-Type': 'application/json'
         }
 
-        response = requests.request("POST", url, headers=headers, data=payload)
-        print(response.text)
-        return response.text
+        response = requests.request(
+            "POST", url, headers=headers, data=payload).json()
+        print(response)
+        return response
+
+    def is_available_in_db(self, channel) -> bool:
+        """
+        Checks if record already exist in the database'
+
+        Return:
+            True: If record exist in the database.
+            False: If record is not in the database.
+        """
+        url = "http://100002.pythonanywhere.com/"
+
+        payload = json.dumps({
+            "cluster": "ux_live",
+            "database": "ux_live",
+            "collection": "credentials",
+            "document": "credentials",
+            "team_member_ID": "1200001",
+            "function_ID": "ABCDE",
+            "command": "find",
+            "field": {
+                'channel_id': channel.get('channel_id')
+            },
+            "update_field": {
+                "order_nos": 21
+            },
+            "platform": "bangalore"
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload).json()
+
+        if response.get('data') is None:
+            return False
+
+        # print("xxx DB Response xx=> ", response)
+        return True
 
 
 class DeleteVideo(APIView):
@@ -180,7 +239,7 @@ class DeleteVideo(APIView):
 
         Example:
         ```
-        POST /api/delete-video/
+        POST /api/delete-video/ --- (Link yet to implemented)
         {
             "video_id": "your_video_id"
         }
@@ -209,7 +268,7 @@ class DeleteVideo(APIView):
             # Delete the video using the video ID
             # If successful, this method returns an HTTP 204 response code (No Content).
             response = youtube.videos().delete(id=video_id).execute()
-            return Response({'message':"Video deleted successfully", 'response': response}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': "Video deleted successfully", 'response': response}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             # Handle specific HTTP errors returned by the API
             status_code = e.resp.status
