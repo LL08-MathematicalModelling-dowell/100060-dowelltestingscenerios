@@ -441,7 +441,7 @@ class LoadVideoView(APIView):
                 # Handle case when no channels are found
                 videos = []
 
-            return Response({'MyVideos': videos})
+            return Response(videos)
         except Exception as e:
             # Return an error message
             return Response({'Error': str(e)})
