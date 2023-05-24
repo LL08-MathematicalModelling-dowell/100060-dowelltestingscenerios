@@ -1,5 +1,7 @@
 import os
 import json
+import time
+
 from dotenv import load_dotenv
 from django.views.generic import TemplateView
 from django.shortcuts import render
@@ -8,18 +10,15 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-#from .models import GeeksModel
+# from .models import GeeksModel
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from youtube.forms import AddChannelRecord, CreatePlaylist
-
-
-
 load_dotenv()
 
 
-def validate_youtube_channel(channel_credentials,channel_id):
+def validate_youtube_channel(channel_credentials, channel_id):
     """Checks if a youtube channel ID and Credential is valid"""
 
     try:
@@ -46,13 +45,14 @@ class HomePageView(TemplateView):
     """Home page view class"""
 
     template_name = 'home.html'
+
     def get(self, request, *args, **kwargs):
         """Handles get requests to '/'"""
         # create he form object to render
         form = AddChannelRecord()
         add_playlist = CreatePlaylist()
         return render(request, self.template_name, {'form': form, 'add_playlist': add_playlist})
-    
+
     def post(self, request, *args, **kwargs):
         """Handles POST requests to '/'"""
         # Get data from request object sent by user
@@ -67,10 +67,10 @@ class HomePageView(TemplateView):
             if validate_youtube_channel(credentials, channel_id):
                 form.save()
                 # print('============Vallid form===========')
-                return JsonResponse({'message':f'Channel added sucesfully!!'}, status=200)
+                return JsonResponse({'message': f'Channel added sucesfully!!'}, status=200)
             else:
                 # print('============InVallid form===========')
-                return JsonResponse({'message':'Invalid channel!'}, status=400)
+                return JsonResponse({'message': 'Invalid channel!'}, status=400)
         else:
             print(form.errors.as_json())
             return JsonResponse(form.errors, status=400)
@@ -84,16 +84,35 @@ class AboutPageView(TemplateView):
     template_name = 'about.html'
 
 
+def privacy_page(self, request, *args, **kwargs):
+    return render(request, "privacy.html")
+
+
+def library_page(request):
+    print('library function started')
+    # all_playlists = get_user_playlists_from_db()
+    # print(f'playlist, {all_playlists}')
+    # playlist_html = ""
+    #
+    # for playlist in all_playlists:
+    #     playlist_html += f'<p>{playlist}</p>'
+    #     print(f'playlist, {playlist}')
+    # # , {'playlist_html': playlist_html}
+
+    return render(request, "library.html")
+
+
+
 @csrf_exempt
 def records_view(request):
     print("Request Data: ", request.POST)
     # dictionary for initial data with
     # field names as keys
-    #context ={request.POST}
-    #context = request.POST
+    # context ={request.POST}
+    # context = request.POST
     context = {}
-    #files_links = request.POST
-    #screen_file = files_links['screen_file']
+    # files_links = request.POST
+    # screen_file = files_links['screen_file']
     webcam_file = request.POST.get('webcam_link')
     screen_file = request.POST.get('screen_link')
     merged_file = request.POST.get('merged_link')
@@ -123,12 +142,8 @@ class WebsocketPermissionView(APIView):
             failed_feed_back = {"permission_is_granted": False}
 
             # ToDo: do some checks before retruning feedback
-            return Response(success_feed_back, status=status.HTTP_200_OK) # for success
-            #return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST) # for fail
+            return Response(success_feed_back, status=status.HTTP_200_OK)  # for success
+            # return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST) # for fail
         except Exception as error:
-            failed_feed_back = {"permission_is_granted": False,"status": "error", "data": str(error)}
+            failed_feed_back = {"permission_is_granted": False, "status": "error", "data": str(error)}
             return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST)
-
-
-def privacy_page(request):
-    return render(request, "privacy.html")

@@ -144,12 +144,16 @@
                 </button>
                 <span class="tooltip-text">Share Video</span>
             </div>
+
             <div class="library-btn tooltip-container">
-                <button id="library">
-                    <i class="fas fa-folder"></i>
-                </button>
+                <a href="{% url 'library' %}">
+                    <button id="library">
+                        <i class="fas fa-folder"></i>
+                    </button>
+                </a>
                 <span class="tooltip-text">Library</span>
             </div>
+
             {% comment %} <div class="add-channel-btn tooltip-container">
                 <button id="view_records" onClick="showAddChannelModal()">
                     <i class="fab fa-youtube"></i>

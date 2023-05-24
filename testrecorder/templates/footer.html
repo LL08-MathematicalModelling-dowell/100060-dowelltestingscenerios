@@ -17,11 +17,23 @@
           <i class="fas fa-envelope"></i>
           <p>Mail Me</p>
         </div></a>
-      <a href=""><div class="footer-nav-icon footer-video-icon active">
-          <i class="fas fa-video"></i>
-          <p class="plus">+</p>
-          <p>My Story</p>
-        </div></a>
+
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <div class="authenticated-user">
+
+              <a href=""><div class="footer-nav-icon footer-video-icon active">
+                  <i class="fas fa-video"></i>
+                  <p class="plus">+</p>
+                  <p>My Story</p>
+                </div></a>
+
+         </div>
+        {% else %}
+            <div class="story-name lower-nav-item">
+                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>
+            </div>
+        {% endif %}
     </div>
     <!-- end lower footer -->
   </footer>

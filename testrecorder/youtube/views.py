@@ -13,6 +13,8 @@ from datetime import datetime
 from datetime import timedelta
 from django.shortcuts import redirect
 from django.conf import settings
+from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,7 +24,6 @@ from youtube.models import ChannelsRecord, YoutubeUserCredential
 from django.contrib.auth import logout
 import logging
 
-
 logger = logging.getLogger(__name__)
 # When running locally, disable OAuthlib's HTTPs verification.
 # ACTION ITEM for developers:
@@ -30,11 +31,11 @@ logger = logging.getLogger(__name__)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
 
-credentials_file = settings.BASE_DIR+'/youtube/credentials.json'
+credentials_file = settings.BASE_DIR + '/youtube/credentials.json'
 
 # This variable specifies the name of a file that contains the OAuth 2.0
 # information for this application, including its client_id and client_secret.
-CLIENT_SECRETS_FILE = settings.BASE_DIR+'/youtube/client_secret.json'
+CLIENT_SECRETS_FILE = settings.BASE_DIR + '/youtube/client_secret.json'
 
 # This OAuth 2.0 access scope allows for full read/write access to the
 # authenticated user's account and requires requests to use an SSL connection.
@@ -44,6 +45,7 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
           'https://www.googleapis.com/auth/youtube.force-ssl',
           'https://www.googleapis.com/auth/userinfo.email',
           "https://www.googleapis.com/auth/youtube.readonly"
+
           ]
 API_SERVICE_NAME = 'youtube'
 API_VERSION = 'v3'
@@ -375,6 +377,7 @@ def print_index_table():
             '    API request</a> again, you should go back to the auth flow.' +
             '</td></tr></table>')
 
+
 # Create a liveBroadcast resource and set its title, scheduled start time,
 # scheduled end time, and privacy status.
 
@@ -597,7 +600,6 @@ class CreateBroadcastView(APIView):
 
 # Transitions a broadcast to complete status
 def transition_broadcast(the_broadcast_id, request):
-
     # Opening JSON file
     """with open(credentials_file) as json_file:
         credentials = json.load(json_file)"""
@@ -710,7 +712,7 @@ def get_user_playlists_from_db(current_user_id):
       current_user_id is a unique identifier for the
       current user.
     """
-
+    print('playlists from mongo Db')
     # set up mongodb access
     mongo_client = pymongo.MongoClient(os.getenv("DATABASE_HOST"))
     db = mongo_client[os.getenv("DATABASE_NAME")]
@@ -815,7 +817,7 @@ class FetchPlaylistsView(APIView):
             # Extract playlist id and names from data
             playlists = response['items']"""
             print(
-                '=========================== ready to fetch playlist with pagination =====')
+                '=========================== ready to fetch playlist with pagination 818 =====')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
@@ -1104,7 +1106,7 @@ class CreatePlaylistView(APIView):
 
 class FetchPlaylistsViewV2(APIView):
     """
-        Handles requests to get the current youtube channel's
+        Handles requests to get the current YouTube channel's
         playlists,sends the playlists as a list, earlier version
         sends a dictionary
     """
@@ -1228,3 +1230,114 @@ def logout_view(request):
     '''Logs a user out and redirect to the homepage'''
     logout(request)
     return redirect('/')
+
+
+class FetchVideos(APIView):
+    """
+    Fetches videos from a playlist
+    """
+    renderer_classes = [JSONRenderer]
+
+    # def get(self, request, playlist_name, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        print('welcome fetch video 1240')
+        # Get credentials and create an API client
+        # flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+        #     CLIENT_SECRETS_FILE, SCOPES)
+        # print('flow', flow)
+        # credentials = flow.run_console()
+        # print('credentials', credentials)
+
+        with open(credentials_file) as json_file:
+            credentials = json.load(json_file)
+            print('credentials 1253', credentials)
+
+        credentials = google.oauth2.credentials.Credentials(**credentials)
+        print('credentials', credentials)
+    
+        youtube = googleapiclient.discovery.build(
+            API_SERVICE_NAME, API_VERSION, credentials=credentials)
+        print('youtube', youtube)
+        request = youtube.playlistItems().list(
+            part="snippet",
+            playlistId="PLtuQzcUOuJ4c9z360dROYJnp9X5WnnJ39"
+        )
+        response = request.execute()
+        print('response', response)
+
+        # try:
+        #     # Load credentials from file
+        #     with open(credentials_file) as json_file:
+        #         # credentials_data = json.load(json_file)
+        #         # print('credentials_data:', credentials_data)
+        #         credentials_data = json.load(json_file)
+        #         web_credentials = credentials_data['web']
+        #         print('web_credentials', web_credentials)
+        #     # credentials_obj = google.oauth2.credentials.Credentials(**credentials_data)
+        #     credentials_obj = google.oauth2.credentials.Credentials(
+        #         client_id=web_credentials['client_id'],
+        #         client_secret=web_credentials['client_secret'],
+        #         token_uri=web_credentials['token_uri'],
+        #         redirect_uris=web_credentials['redirect_uris']
+        #     )
+        #     print('credentials_obj :', credentials_obj)
+        #     youtube = googleapiclient.discovery.build(
+        #         API_SERVICE_NAME,
+        #         API_VERSION,
+        #         credentials=credentials_obj,
+        #         cache_discovery=False
+        #     )
+        #     print('youtube', youtube)
+        #     # Find the playlist by name
+        #     playlist_id = None
+        #     next_page_token = ''
+        #
+        #     while True:
+        #         request = youtube.playlistItems().list(
+        #             part='snippet',
+        #             mine=True,
+        #             maxResults=50,
+        #             pageToken=next_page_token
+        #         )
+        #         response = request.execute()
+        #         print(response)
+        #
+        #         for playlist in response['items']:
+        #             if playlist['snippet']['title'] == playlist_name:
+        #                 playlist_id = playlist['id']
+        #                 break
+        #
+        #         if 'nextPageToken' in response:
+        #             next_page_token = response['nextPageToken']
+        #         else:
+        #             break
+        #
+        #     if not playlist_id:
+        #         return Response([])  # Playlist not found
+        #
+        #     # Fetch videos in the playlist
+        #     videos = []
+        #     next_page_token = ''
+        #
+        #     while True:
+        #         request = youtube.playlistItems().list(
+        #             part='snippet',
+        #             playlistId=playlist_id,
+        #             maxResults=50,
+        #             pageToken=next_page_token
+        #         )
+        #         response = request.execute()
+        #
+        #         videos.extend(response['items'])
+        #
+        #         if 'nextPageToken' in response:
+        #             next_page_token = response['nextPageToken']
+        #         else:
+        #             break
+        #
+        #     return Response(videos)
+        #
+        # except Exception as e:
+        #     # Handle the exception or log the error
+        #     print(f"An error occurred: {str(e)}")
+        #     return Response([])

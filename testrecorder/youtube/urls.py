@@ -3,7 +3,8 @@ from django.urls import path
 from .views import (logout_view, index, test_api_request, create_broadcast,
                     authorize, oauth2callback, revoke, clear_credentials,
                     CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView,
-                    FetchPlaylistsView, CreatePlaylistView, FetchPlaylistsViewV2, FetchChannels
+                    FetchPlaylistsView, CreatePlaylistView, FetchPlaylistsViewV2, FetchChannels,
+                    FetchVideos
                     )
 from .views_w import UserChannels
 
@@ -30,4 +31,5 @@ urlpatterns = [
     # URL pattern tha logs a user out
     path('logout/', logout_view, name='logout'),
     path('channels/', UserChannels.as_view(), name='user_channel'),
+    path('fetchvideos/', FetchVideos.as_view(), name='fetch_videos'),
 ]

@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import HomePageView,CalendlyPageView,AboutPageView,records_view,WebsocketPermissionView, privacy_page
-
+from .views import HomePageView, CalendlyPageView, AboutPageView, records_view, WebsocketPermissionView, privacy_page, \
+    library_page
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
@@ -9,4 +9,6 @@ urlpatterns = [
     path('calendly/', CalendlyPageView.as_view(), name='calendly'),
     path('about/', AboutPageView.as_view(), name='about'),
     path('websocketpermission/', WebsocketPermissionView.as_view(), name='websocketpermission'),
+    path('library/', library_page, name='library'),
+
 ]
