@@ -828,7 +828,7 @@ class FetchPlaylistsView(APIView):
                 # Iterating through the json list
                 for playlist in playlists:
                     id = playlist["id"]
-                    # print("Playlist ID = ",id)
+                    print("Playlist ID = ", id)
                     title = playlist["snippet"]["title"]
                     # print("Playlist Title = ",title)
 

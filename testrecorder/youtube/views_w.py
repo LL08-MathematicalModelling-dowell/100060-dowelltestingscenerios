@@ -18,7 +18,7 @@ from .models import YoutubeUserCredential, ChannelsRecord
 logger = logging.getLogger(__name__)
 
 
-class UserChannels(APIView):
+class UserChannelsView(APIView):
     """
     This class is a DRF APIView that retrieves the authenticated user's YouTube channels.
 
@@ -132,7 +132,7 @@ class UserChannels(APIView):
             return Response(
                 {'Error': error_message},
                 status=status_code
-                )
+            )
     '''
     def insert_user_credential_into_dowell_connection_db(self, channel, credential):
         """
@@ -287,7 +287,7 @@ class UserChannels(APIView):
         return response
 
 
-class DeleteVideo(APIView):
+class DeleteVideoView(APIView):
     """
     API view class for deleting a video on YouTube.
 
@@ -351,30 +351,33 @@ class DeleteVideo(APIView):
             response = youtube.videos().delete(id=video_id).execute()
             return Response({'message': "Video deleted successfully", 'response': response}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            # Handle specific HTTP errors returned by the API
-            status_code = e.resp.status
-            error_message = e._get_reason()
             # Return an error Response message
-            return Response({'Error': error_message}, status=status_code)
+            return Response({'Error': str(e)})
 
 
-class LoadVideosAndLibraries(APIView):
+class LoadVideoView(APIView):
     """
-    API view class for loading all videos and libraries from YouTube.
+    API view class for loading all videos from YouTube.
 
     Methods:
-        get(request): Load all videos and libraries.
+        get(request): Load all videos
+    
+     Attributes:
+        permission_classes: a list containing the IsAuthenticated permission class to ensure only authenticated users
+        can access this view.
     """
+
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         """
-        Load all videos and libraries from YouTube.
+        Load all videos from YouTube.
 
         Parameters:
             request (HttpRequest): The HTTP request object.
 
         Returns:
-            Response: A response containing the loaded videos and libraries.
+            Response: A response containing the loaded videos.
 
         Raises:
             YoutubeUserCredential.DoesNotExist: If the authenticated user does not have a YoutubeUserCredential object.
@@ -397,21 +400,6 @@ class LoadVideosAndLibraries(APIView):
             youtube = build('youtube', 'v3',
                             credentials=credentials, cache_discovery=False)
 
-            # Load all videos from the user's channel
-            videos_response = youtube.videos().list(
-                part='snippet', myRating='like').execute()
-            videos = videos_response.get('items', [])
-
-            # Load all libraries from the user's account
-            # libraries_response = youtube.libraries().list(part='snippet', mine=True).execute()
-            # libraries = libraries_response.get('items', [])
-
-            # Prepare the response data
-            response_data = {
-                'videos': videos,
-                # 'libraries': libraries
-            }
-
             # Perform the YouTube Channels API call
             channels_response = youtube.channels().list(
                 part='contentDetails',
@@ -420,24 +408,40 @@ class LoadVideosAndLibraries(APIView):
 
             channels = channels_response.get('items', [])
             if channels:
-                uploads_playlist_id = channels[0]['contentDetails']['relatedPlaylists']['uploads']
+                channel_id = channels[0]['id']
 
-                # Retrieve videos from the uploads playlist
-                playlist_items_response = youtube.playlistItems().list(
-                    part='snippet',
-                    playlistId=uploads_playlist_id,
+                # Retrieve videos from each playlist
+                playlists_response = youtube.playlists().list(
+                    part='snippet,contentDetails',
+                    channelId=channel_id,
                     maxResults=50
                 ).execute()
 
-                videos = playlist_items_response.get('items', [])
+                playlists = playlists_response.get('items', [])
+                videos = []
+
+                for playlist in playlists:
+                    temp_playlist = {}
+                    temp_playlist['playlistTitle'] = playlist['snippet']['title']
+                    temp_playlist['playlistId'] = playlist['id']
+
+                    playlist_id = playlist['id']
+                    playlist_items_response = youtube.playlistItems().list(
+                        part='snippet',
+                        playlistId=playlist_id,
+                        maxResults=50
+                    ).execute()
+
+                    playlist_videos = playlist_items_response.get('items', [])
+
+                    temp_playlist['videos'] = playlist_videos
+
+                    videos.append(temp_playlist)
             else:
                 # Handle case when no channels are found
                 videos = []
 
-            return Response({'ResponseData': response_data, 'Personal details': videos})
+            return Response({'MyVideos': videos})
         except Exception as e:
-            # Handle specific HTTP errors returned by the API
-            # status_code = e.resp_status
-            # error_message = e._get_reason()
             # Return an error message
             return Response({'Error': str(e)})
