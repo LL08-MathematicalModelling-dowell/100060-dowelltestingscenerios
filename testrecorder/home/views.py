@@ -1,21 +1,28 @@
 import os
 import json
-import time
-
 from dotenv import load_dotenv
-from django.views.generic import TemplateView
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from django.views.generic import TemplateView
+from django.http import HttpRequest, HttpResponse, JsonResponse
+
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-# from .models import GeeksModel
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+
 from youtube.forms import AddChannelRecord, CreatePlaylist
+
+
 load_dotenv()
+
+class CamTest(TemplateView):
+    template_name = 'camera_test.html'
+
 
 
 def validate_youtube_channel(channel_credentials, channel_id):
@@ -41,6 +48,14 @@ def validate_youtube_channel(channel_credentials, channel_id):
         return False
 
 
+class PrivacyView(TemplateView):
+    """ Privacy Page"""
+    template_name = 'privacy.html'
+
+    def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+        return render(request, self.template_name)
+
+
 class HomePageView(TemplateView):
     """Home page view class"""
 
@@ -59,9 +74,10 @@ class HomePageView(TemplateView):
         data = request.POST
         form = AddChannelRecord(data=data)
         if form.is_valid():
-            # extract channel_credenials from data object 
+            # extract channel_credenials from data object
             # credentials = json.loads(dict(data)['channel_credentials'][0])
-            credentials = json.loads(os.environ.get('DOWELL_GOOGLE_CREDENDEIAL'))
+            credentials = json.loads(
+                os.environ.get('DOWELL_GOOGLE_CREDENDEIAL'))
             # extract channel_id from data object
             channel_id = data['channel_id']
             if validate_youtube_channel(credentials, channel_id):
@@ -82,25 +98,6 @@ class CalendlyPageView(TemplateView):
 
 class AboutPageView(TemplateView):
     template_name = 'about.html'
-
-
-def privacy_page(self, request, *args, **kwargs):
-    return render(request, "privacy.html")
-
-
-def library_page(request):
-    print('library function started')
-    # all_playlists = get_user_playlists_from_db()
-    # print(f'playlist, {all_playlists}')
-    # playlist_html = ""
-    #
-    # for playlist in all_playlists:
-    #     playlist_html += f'<p>{playlist}</p>'
-    #     print(f'playlist, {playlist}')
-    # # , {'playlist_html': playlist_html}
-
-    return render(request, "library.html")
-
 
 
 @csrf_exempt
@@ -142,8 +139,10 @@ class WebsocketPermissionView(APIView):
             failed_feed_back = {"permission_is_granted": False}
 
             # ToDo: do some checks before retruning feedback
-            return Response(success_feed_back, status=status.HTTP_200_OK)  # for success
+            # for success
+            return Response(success_feed_back, status=status.HTTP_200_OK)
             # return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST) # for fail
         except Exception as error:
-            failed_feed_back = {"permission_is_granted": False, "status": "error", "data": str(error)}
+            failed_feed_back = {"permission_is_granted": False,
+                                "status": "error", "data": str(error)}
             return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST)
