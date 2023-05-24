@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import HomePageView,CalendlyPageView,AboutPageView,records_view,WebsocketPermissionView
-
+from .views import HomePageView, CalendlyPageView, AboutPageView, records_view, WebsocketPermissionView, PrivacyView, \
+    CamTest, library_page
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
