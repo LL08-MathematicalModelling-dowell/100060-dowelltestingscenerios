@@ -763,9 +763,7 @@ def fetch_playlists_with_pagination(youtube_object):
             pageToken=page_token
         )
         response = request.execute()
-        # print("FetchPlaylistsView response: ", response)
-        # print("FetchPlaylistsView response: ", count)
-        # count = count + 1
+       
 
         # Get next page token
         if "nextPageToken" in response.keys():
@@ -806,69 +804,58 @@ class FetchPlaylistsView(APIView):
             youtube = googleapiclient.discovery.build(
                 API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
 
-            """# Fetch the playlists
-            request = youtube.playlists().list(
-                part="snippet,contentDetails",
-                maxResults=5,
-                mine=True,
-                pageToken=""
-            )
-            response = request.execute()
-            print("FetchPlaylistsView response: ", response)
 
-            # Extract playlist id and names from data
-            playlists = response['items']"""
-            print(
-                '=========================== ready to fetch playlist with pagination =====')
+            print('fetching playlist with pagination...')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
-            # playlist id and title dictionary
-            id_title_dict = {}
-            todays_playlist_dict = {}
+            print('===== playlist(s) ===> ', len(playlists))
 
-            # today's playlist title
-            todays_playlist_title = get_todays_playlist_title()
+            # Check if the playlist is empty
+            if len(playlists) == 0:
+                print("The playlist is empty.")
+                return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                # playlist id and title dictionary
+                id_title_dict = {}
+                todays_playlist_dict = {}
 
-            # Current channel title
-            channel_title = ""
-            # Iterating through the json list
-            for playlist in playlists:
-                id = playlist["id"]
-                # print("Playlist ID = ",id)
-                title = playlist["snippet"]["title"]
-                # print("Playlist Title = ",title)
-
-                # Add playlist to dictionary
-                # id_title_dict[id] = title
-
-                # Filter out daily playlists
-                if "Daily Playlist" not in title:
-                    id_title_dict[id] = title
-                elif todays_playlist_title == title:
-                    todays_playlist_dict["todays_playlist_id"] = id
-                    todays_playlist_dict["todays_playlist_title"] = title
+                # today's playlist title
+                todays_playlist_title = get_todays_playlist_title()
 
                 # Current channel title
-                channel_title = playlist["snippet"]["channelTitle"]
+                channel_title = ""
+                # Iterating through the json list
+                for playlist in playlists:
+                    id = playlist["id"]
+                    # print("Playlist ID = ",id)
+                    title = playlist["snippet"]["title"]
+                    # print("Playlist Title = ",title)
 
-            print("id_title_dict: ", id_title_dict)
+                    # Add playlist to dictionary
+                    # id_title_dict[id] = title
 
-            # add channel title
-            print("channel_title: ", channel_title)
+                    # Filter out daily playlists
+                    if "Daily Playlist" not in title:
+                        id_title_dict[id] = title
+                    elif todays_playlist_title == title:
+                        todays_playlist_dict["todays_playlist_id"] = id
+                        todays_playlist_dict["todays_playlist_title"] = title
 
-            # get daily playlist information from db
+                    # Current channel title
+                    channel_title = playlist["snippet"]["channelTitle"]
 
-            # Dictionary with all necessary data
-            youtube_details = {'channel_title': channel_title,
-                               'id_title_dict': id_title_dict,
-                               'todays_playlist_dict': todays_playlist_dict}
-            return Response(youtube_details, status=status.HTTP_200_OK)
+                # Dictionary with all necessary data
+                youtube_details = {'channel_title': channel_title,
+                                'id_title_dict': id_title_dict,
+                                'todays_playlist_dict': todays_playlist_dict}
+                
+                return Response(youtube_details, status=status.HTTP_200_OK)
 
-            # return Response(id_title_dict, status=status.HTTP_200_OK)
+                # return Response(id_title_dict, status=status.HTTP_200_OK)
         except Exception as err:
-            print("Error while getting playlists: " + str(err))
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+            print("Error while fetching playlists: " + str(err))
+            return Response({'Error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def fetch_user_playlists():
@@ -1039,7 +1026,7 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
 
 class CreatePlaylistView(APIView):
     """
-        API to handles requests to create a playlists
+        DRF API that handles requests to create youtube playlists
     """
 
     renderer_classes = [JSONRenderer]

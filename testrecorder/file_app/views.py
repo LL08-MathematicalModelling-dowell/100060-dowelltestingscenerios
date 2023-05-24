@@ -564,6 +564,7 @@ class FileView(APIView):
 
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class BytesView(APIView):
     """
     A DRF APIView that receives a file as a byte stream and saves it to a file on the server.
@@ -583,14 +584,18 @@ class BytesView(APIView):
             :return: A DRF Response object with a message indicating the bytes were received and an HTTP status code of 201.
         """
 
-        filedata = request.data['video_bytes']  # Extract the byte stream of the file from the request data.
-        file_name = request.data['fileName']  # Extract the file name from the request data.
-        recording_file_path = settings.MEDIA_ROOT + "/" + file_name  # Create the path where the file will be saved.
+        # Extract the byte stream of the file from the request data.
+        filedata = request.data['video_bytes']
+        # Extract the file name from the request data.
+        file_name = request.data['fileName']
+        # Create the path where the file will be saved.
+        recording_file_path = settings.MEDIA_ROOT + "/" + file_name
 
         # Open the file for writing in binary mode in append mode to ensure that data is added to the end of the file.
         with open(recording_file_path, 'ab+') as destination:
             for chunk in filedata.chunks():
-                destination.write(chunk)  # Write each chunk of data to the file.
+                # Write each chunk of data to the file.
+                destination.write(chunk)
 
         # Return a DRF Response object with a message indicating the bytes were received and an HTTP status code of 201.
         return Response("Bytes Received", status=status.HTTP_201_CREATED)
@@ -640,7 +645,7 @@ def save_recording_metadata(request):
         # Process app type
         megadrive_record.app_type = "UX_002"
 
-        # Process Clickup Task   
+        # Process Clickup Task
         # ===================== Depricated, to be removed ======================
         try:
             if 'clickupTaskIDs' in request.keys():

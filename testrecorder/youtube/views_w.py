@@ -1,13 +1,17 @@
 import json
 import logging
+
 import requests
+from requests import HTTPError
+
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from requests import HTTPError
+
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+
 from .models import YoutubeUserCredential, ChannelsRecord
 
 
@@ -60,10 +64,20 @@ class UserChannels(APIView):
         object, returns a 401 Unauthorized status code. If unable to fetch the 
         YouTube channels, returns a 404 Not Found status code.
         """
+        
+
         try:
             # Retrieve the YoutubeUserCredential object associated with the authenticated user
             youtube_user = YoutubeUserCredential.objects.get(user=request.user)
             credential = youtube_user.credential
+
+            # Get credential from dowell database 
+            user_email = request.user.email
+            user_info = self.fetch_user_credential_from_dowell_connection_db(user_email)
+            if user_info.get('data') is not None:
+                credential_from_dowell_db = user_info.get('data').get('email_credentials')
+               # print('credential_from_dowell_db ===> ',  credential_from_dowell_db)
+
         except YoutubeUserCredential.DoesNotExist:
             # If the user doesn't have a YoutubeUserCredential object,
             # return an error response with 401 Unauthorized status code
@@ -81,6 +95,10 @@ class UserChannels(APIView):
 
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
+            # print('channel Response ===> ', channels_response)
+            if 'items' not in channels_response:
+                return Response({'Error': 'There is no youtube channel associated with this account!'},
+                                status=status.HTTP_404_NOT_FOUND)
             # Process the channels into a list of dictionaries containing the channel id and title
             channels = [
                 {
@@ -91,7 +109,6 @@ class UserChannels(APIView):
             ]
 
             try:
-
                 # Save the first channel's details to a ChannelsRecord object
                 channel_record, created = ChannelsRecord.objects.get_or_create(
                     channel_id=channels[0].get('channel_id'),
@@ -100,19 +117,6 @@ class UserChannels(APIView):
                 )
                 if created:
                     channel_record.save()
-
-                db_status = self.is_available_in_db(channels[0])
-
-                if db_status is False:
-                    print('inserting user credential into dowell database...')
-                    insert_response = self.insert_user_credential_into_dowell_connection_db(
-                        channels[0], credential)
-
-                    print(f"{channels[0].get('title')}'s credentials saved successfully!!"
-                          if insert_response.get('isSuccess') == True else 'Failed to save user credential')
-                else:
-                    print('Credential not saved beacause record already exist!!')
-
             except Exception as e:
                 logger.error(
                     f'Error while saving user channel credential locally!: {e}  occured')
@@ -125,10 +129,10 @@ class UserChannels(APIView):
             error_message = e._get_reason()
             # If unable to fetch the YouTube channels, return an error response with 404 Not Found status code
             return Response(
-                {'Error': 'Unable to fetch YouTube channel for this account', 'message': error_message},
+                {'Error': error_message},
                 status=status_code
                 )
-
+    '''
     def insert_user_credential_into_dowell_connection_db(self, channel, credential):
         """
         Inserts a new user youtube info record into the company's database
@@ -166,7 +170,7 @@ class UserChannels(APIView):
         print(response)
         return response
 
-    def is_available_in_db(self, channel) -> bool:
+    def is_available_in_db(self,user, channel) -> bool:
         """
         Checks if record already exist in the database'
 
@@ -185,7 +189,8 @@ class UserChannels(APIView):
             "function_ID": "ABCDE",
             "command": "find",
             "field": {
-                'channel_id': channel.get('channel_id')
+                'user_id': user
+                # 'channel_id': channel.get('channel_id')
             },
             "update_field": {
                 "order_nos": 21
@@ -202,8 +207,85 @@ class UserChannels(APIView):
         if response.get('data') is None:
             return False
 
-        # print("xxx DB Response xx=> ", response)
+        print("xxx DB Response xx=> ", response)
         return True
+    '''
+    
+    def is_available_in_db(self, email) -> bool:
+        """
+        Checks if record already exist in the database'
+
+        Return:
+            True: If record exist in the database.
+            False: If record is not in the database.
+        """
+        url = "http://100002.pythonanywhere.com/"
+
+        payload = json.dumps({
+            "cluster": "ux_live",
+            "database": "ux_live",
+            "collection": "credentials",
+            "document": "credentials",
+            "team_member_ID": "1200001",
+            "function_ID": "ABCDE",
+            "command": "find",
+            "field": {
+                'user_email': email
+            },
+            "update_field": {
+                "order_nos": 21
+            },
+            "platform": "bangalore"
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload).json()
+
+        if response.get('data') is None:
+            return False
+
+        print("xxx DB Response xx=> ", response)
+        return True
+
+
+    def fetch_user_credential_from_dowell_connection_db(self, email):
+        """
+        Inserts a new user youtube info record into the company's database
+
+        Return:
+            Json response from the database.
+        """
+
+        url = "http://100002.pythonanywhere.com/"
+
+        payload = json.dumps({
+            "cluster": "ux_live",
+            "database": "ux_live",
+            "collection": "credentials",
+            "document": "credentials",
+            "team_member_ID": "1200001",
+            "function_ID": "ABCDE",
+            "command": "find",
+            "field": {
+                'user_email': email,
+            },
+            "update_field": {
+                "order_nos": 21
+            },
+            "platform": "bangalore"
+        })
+        headers = {
+            'Content-Type': 'application/json'
+        }
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload).json()
+        
+        return response
+
 
 
 class DeleteVideo(APIView):
@@ -275,3 +357,62 @@ class DeleteVideo(APIView):
             error_message = e._get_reason()
             # Return an error Response message
             return Response({'Error': error_message}, status=status_code)
+
+class LoadVideosAndLibraries(APIView):
+    """
+    API view class for loading all videos and libraries from YouTube.
+
+    Methods:
+        get(request): Load all videos and libraries.
+    """
+
+    def get(self, request):
+        """
+        Load all videos and libraries from YouTube.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object.
+
+        Returns:
+            Response: A response containing the loaded videos and libraries.
+
+        Raises:
+            YoutubeUserCredential.DoesNotExist: If the authenticated user does not have a YoutubeUserCredential object.
+            Exception: If an error occurs during the loading process.
+        """
+        try:
+            # Retrieve the YoutubeUserCredential object associated with the authenticated user
+            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+        except YoutubeUserCredential.DoesNotExist:
+            # If the user doesn't have a YoutubeUserCredential object,
+            # return an error response with 401 Unauthorized status code
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            # Retrieve the user's credentials associated with the YoutubeUserCredential object
+            credentials = Credentials.from_authorized_user_info(info=youtube_user.credential)
+
+            # Create a YouTube object using the v3 version of the API and the retrieved credentials
+            youtube = build('youtube', 'v3', credentials=credentials, cache_discovery=False)
+
+            # Load all videos from the user's channel
+            videos_response = youtube.videos().list(part='snippet',  myRating='like', ).execute()
+            videos = videos_response.get('items', [])
+
+            # Load all libraries from the user's account
+            # libraries_response = youtube.libraries().list(part='snippet', mine=True).execute()
+            # libraries = libraries_response.get('items', [])
+
+            # Prepare the response data
+            response_data = {
+                'videos': videos,
+                # 'libraries': libraries
+            }
+
+            return Response(response_data)
+        except Exception as e:
+            # Handle specific HTTP errors returned by the API
+            # status_code = e.resp_status
+            # error_message = e._get_reason()
+            # Return an error message
+            return Response({'Error': str(e)})

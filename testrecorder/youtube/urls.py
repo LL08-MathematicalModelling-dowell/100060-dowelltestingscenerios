@@ -5,7 +5,7 @@ from .views import (logout_view, index, test_api_request, create_broadcast,
                     CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView,
                     FetchPlaylistsView, CreatePlaylistView, FetchPlaylistsViewV2, FetchChannels
                     )
-from .views_w import UserChannels, DeleteVideo
+from .views_w import UserChannels, DeleteVideo, LoadVideosAndLibraries
 
 urlpatterns = [
     path('', index, name='index'),
@@ -30,4 +30,5 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('channels/', UserChannels.as_view(), name='user_channel'),
     path('delete-video/', DeleteVideo.as_view(), name='delete-video'),
+    path('videos/',  LoadVideosAndLibraries.as_view(), name='videos'),
 ]
