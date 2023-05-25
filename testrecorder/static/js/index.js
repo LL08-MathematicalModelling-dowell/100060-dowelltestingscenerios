@@ -106,6 +106,9 @@ function displayTimer() {
 async function clearTimer() {
   videoTimer.classList.add("show-cam-timer")
   clearInterval(timeInterval);
+  secondTime.innerHTML = '00';
+  minuteTime.innerHTML = '00';
+  hourTime.innerHTML = '00';
 }
 
 function setTime() {
@@ -1118,7 +1121,6 @@ async function validateModal() {
   testNameValue = document.getElementById("test-name").value;
   // Remove leading and trailling white space
   testNameValue = testNameValue.trim().replace('/\s/', '_');
-  test
   let testNameErrorMsg = "";
 
   // Check for empty string
