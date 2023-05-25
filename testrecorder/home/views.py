@@ -128,3 +128,7 @@ class WebsocketPermissionView(APIView):
         except Exception as error:
             failed_feed_back = {"permission_is_granted": False,"status": "error", "data": str(error)}
             return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST)
+
+
+def privacy_page(request):
+    return render(request, "privacy.html")
