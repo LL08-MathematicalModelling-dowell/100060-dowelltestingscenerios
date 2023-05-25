@@ -619,7 +619,7 @@ class TransitionBroadcastView(APIView):
 
             return Response(transition_response, status=status.HTTP_200_OK)
         except Exception as e:
-            error = {'Error': e}
+            error = {'Error': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
     # Transitions a broadcast to complete status
