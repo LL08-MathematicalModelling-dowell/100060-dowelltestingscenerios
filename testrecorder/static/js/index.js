@@ -36,14 +36,7 @@ let audioConstraints = {
 let videoConstraints = {
   facingMode: currentCamera
 };
-// if (selectVideo.value === '') {
-//   videoConstraints.facingMode = 'environment';
-// } else {
-//   videoConstraints.deviceId = { exact: selectVideo.value };
-// }
-// let webcamMediaConstraints = {
-//   video: videoConstraints, audio: true
-// };
+
 let webcamMediaConstraints = null;
 let screenAudioConstraints = {
   audio: {
@@ -76,7 +69,6 @@ let screenFileName = null;
 let webcamFileName = null;
 let taskIdWebSocket = null;
 let receivedTaskID = [];
-//let receivedTaskID = ["3703820","33k9h43","33k9h43D"];
 let taskIDwasRreceived = false;
 let faultyTaskID = null; // Bad clickup task or task id
 let currentRadioButtonID = null;
@@ -1441,6 +1433,9 @@ async function resetStateOnError() {
   // Stop the webcam stream
   if (recordWebcam == true) {
     try {
+      if (webcamRecorder && webcamRecorder.state === 'recording') {
+        webcamRecorder.stop();
+      }
       webcamRecorder.stream.getTracks().forEach(track => track.stop());
     } catch (err) {
       console.error("Error while stopping webcam recorder: " + err.message);
@@ -1450,6 +1445,9 @@ async function resetStateOnError() {
   // Stop screen stream
   if (recordScreen == true) {
     try {
+      if (screenRecorder && screenRecorder.state === 'recording') {
+        screenRecorder.stop();
+      }
       screenRecorder.stream.getTracks().forEach(track => track.stop());
     } catch (err) {
       console.error("Error while stopping screen recorder: " + err.message);
@@ -1459,6 +1457,9 @@ async function resetStateOnError() {
   // Stop screen and webcam merged stream
   if ((recordScreen == true) && (recordWebcam == true)) {
     try {
+      if (mergedStreamRecorder && mergedStreamRecorder.state === 'recording') {
+        mergedStreamRecorder.stop();
+      }
       mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1904,7 +1905,8 @@ async function shareLinkModal() {
 
 
 // Shows upload failed modal
-async function showErrorModal(liveStreamError = null) {
+async function showErrorModal(liveStreamError = null, message = null) {
+  let messageDisplay = document.getElementById('errorMessage');
   if (liveStreamError != null) {
     let errorModal = new bootstrap.Modal(document.getElementById('livestreamErrorModal'));
     // let msg_p = errorModal.querySelector('#livestreamErrorOccurred');
@@ -1912,6 +1914,9 @@ async function showErrorModal(liveStreamError = null) {
     errorModal.show();
   } else {
     let errorModal = new bootstrap.Modal(document.getElementById('errorOccurred'));
+    if (message != null) {
+      messageDisplay.innerHTL = message
+    }
     errorModal.show();
   }
 }
@@ -2084,19 +2089,11 @@ async function getBeanoteFile() {
 }
 
 async function createWebcamScreenSocket(socketType) {
-  let wsStart = 'ws://'
+  let wsStart = (window.location.protocol == 'https:')
+    ? 'wss://'
+    : 'ws://'
 
-  if (window.location.protocol == 'https:') {
-    wsStart = 'wss://'
-  } else {
-    wsStart = 'ws://'
-  }
   var endpoint = wsStart + window.location.host + "/ws/webcamscreen/"
-  //var endpoint = wsStart + window.location.host + window.location.pathname
-  //var endpoint = wsStart + window.location.host + "/ws/app/"
-  //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  //var endpoint = "ws://206.72.196.211:80/ws/app/" 
-  //let endpoint = "wss://liveuxstoryboard.com/ws/webcamscreen/"
 
   var socket = new WebSocket(endpoint)
   if (socketType === "webcam") {
@@ -3355,7 +3352,6 @@ async function showCreatingPlaylistModal(status) {
 
 // ====================================== CHANNEL CODE SECTION ============================================
 
-
 // =====================================  Adding A Channel ================================================
 async function showAddChannelModal() {
   // close modal if open
@@ -3411,7 +3407,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
     titleError.innerText = titleMsg;
     valid_input = false;
   }
- 
+
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -3697,3 +3693,4 @@ function resetonStartRecording() {
 //     videoContainer.innerHTML = `<p>${errorMsg.detail}</p>`;
 //   }
 // }
+
