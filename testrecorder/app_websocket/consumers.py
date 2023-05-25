@@ -13,7 +13,8 @@ import django
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
-from youtube.views import create_broadcast, transition_broadcast, fetch_user_playlists, insert_video_into_playlist
+from youtube.views import create_broadcast, fetch_user_playlists, insert_video_into_playlist, transition_broadcast
+
 from file_app.views import save_recording_metadata
 
 

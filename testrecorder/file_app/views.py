@@ -11,7 +11,7 @@ from .serializers import FileSerializer, MegaFileSerializer, VpsFileSerializer, 
 import random
 from django.conf import settings
 
-#from mega import Mega
+# from mega import Mega
 from .models import MegaTestRecord
 from .models import VpsTestRecord
 import os
@@ -80,20 +80,21 @@ class FileView(APIView):
 
     def note_organiser(self, task_id):
         """
+            ==== Depricated method, to be removed ===
             Gets sections of a clickup task notes created using the extension.
             task_id is the task to fetch.
         """
 
         # Fetch task json data from clickup API
-        #url = "https://api.clickup.com/api/v2/task/32pk9rp/"
+        # url = "https://api.clickup.com/api/v2/task/32pk9rp/"
         url = 'https://api.clickup.com/api/v2/task/{}/'.format(task_id)
         print("url: ", url)
         headers = {
             "Authorization": os.getenv("CLICKUP_TOKEN")}
         response = requests.get(url, headers=headers)
         print("Status Code", response.status_code)
-        #print("JSON Response ", response.json())
-        #print("Response ", response.content.decode())
+        # print("JSON Response ", response.json())
+        # print("Response ", response.content.decode())
         status_code = response.status_code
         data = response.json()
 
@@ -141,6 +142,7 @@ class FileView(APIView):
 
     def webpage_note_organiser(self, task_id):
         """
+            === Depricaed, to be replace soon ====
             Gets sections of a clickup task notes created using the clickup webpage,
             not the extension.
             task_id is the task to fetch.
@@ -153,7 +155,7 @@ class FileView(APIView):
             "Authorization": "pk_49467380_UI2LTGSATFMRPLZMGNH31AET9KQ95TFJ"}
         response = requests.get(url, headers=headers)
         print("Status Code", response.status_code)
-        #print("JSON Response ", response.json())
+        # print("JSON Response ", response.json())
         status_code = response.status_code
 
         # Failed to get task notes
@@ -162,18 +164,18 @@ class FileView(APIView):
 
         # Got notes
         data = response.json()
-        #print("data: ",data)
+        # print("data: ",data)
         text_content = data["text_content"]
         json_text_content = json.loads(text_content)
         ops = json_text_content["ops"]
-        #print("ops: ",ops)
+        # print("ops: ",ops)
 
         raw_notes = ""
         for line in ops:
             if "insert" in line:
                 line_text = line["insert"]
                 raw_notes = raw_notes + str(line_text)
-        #print("Raw Notes: ",raw_notes)
+        # print("Raw Notes: ",raw_notes)
 
         ''' seperating attendence and topics sections'''
         list_1 = raw_notes.split('Topics Discussed\n', 1)
@@ -195,14 +197,14 @@ class FileView(APIView):
             for line in i.split('\n'):
                 # restore line feed
                 line = line+"\n"
-                #print("line: ",line)
+                # print("line: ",line)
                 # Search for a topic
                 m = re.search('-(.+?)\n', line)
                 # if this is a topic
                 if m:
                     n = m.group(1)
                     current_topic = n
-                    #print("Topic: ",n)
+                    # print("Topic: ",n)
                 else:
                     # it is a note
                     if current_topic in topics_and_notes_dictionary.keys():
@@ -218,11 +220,11 @@ class FileView(APIView):
 
         topics_list = list(topics_and_notes_dictionary.keys())
         notes_list = list(topics_and_notes_dictionary.values())
-        #print("Topics List: ",topics_list)
-        #print("Notes List: ",notes_list)
-        #print("No of Topics: ",len(topics_list))
-        #print("No of Notes: ",len(notes_list))
-        #print("topics_and_notes_dictionary: ",topics_and_notes_dictionary)
+        # print("Topics List: ",topics_list)
+        # print("Notes List: ",notes_list)
+        # print("No of Topics: ",len(topics_list))
+        # print("No of Notes: ",len(notes_list))
+        # print("topics_and_notes_dictionary: ",topics_and_notes_dictionary)
 
         '''Arranging data in proper required order'''
         arranged_list = []
@@ -338,7 +340,7 @@ class FileView(APIView):
             # Process app type
             megadrive_record.app_type = "UX_001"
 
-            # Process Clickup Task
+            # Process Clickup Task === Depricate, To be removedsoon  ===
             try:
                 if 'clickupTaskIDs' in request.data.keys():
                     clickupTaskID = request.data['clickupTaskIDs']
@@ -358,7 +360,7 @@ class FileView(APIView):
                                 "Trying to use webpage_note_organiser because: " + str(err))
                             topics_notes, random_notes = self.webpage_note_organiser(
                                 task_id)
-                        #topics_notes,random_notes = "",""
+                        # topics_notes,random_notes = "",""
 
                         # Don't proceed if there was a problem getting topics notes or random notes
                         if topics_notes:
@@ -378,11 +380,11 @@ class FileView(APIView):
                             raise Exception(msg)
 
                         # Add current task id notes to global notes list
-                        #topicsNotes = {"Topics": topics_notes}
-                        #randomNotes = {"Random_Notes": random_notes}
+                        # topicsNotes = {"Topics": topics_notes}
+                        # randomNotes = {"Random_Notes": random_notes}
                         Clickup_Notes = [topicsNotes, randomNotes]
                         clickup_task_notes_list.append(Clickup_Notes)
-                    #print("Clickup_Notes: ",json.dumps(Clickup_Notes))
+                    # print("Clickup_Notes: ",json.dumps(Clickup_Notes))
                     megadrive_record.clickup_task_notes = clickup_task_notes_list
                     print("clickup_task_notes_list: ",
                           json.dumps(clickup_task_notes_list))
@@ -392,7 +394,7 @@ class FileView(APIView):
                 msg1 = "Error while handling Clickup Task: " + str(err)
                 msg = "Failed to get topics_notes for; "+task_id
                 print(msg1)
-                #msg = str(err)
+                # msg = str(err)
                 msg_dict = {"error_msg": msg}
                 # return Response(json_msg, status=status.HTTP_400_BAD_REQUEST)
                 return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data=msg_dict)
@@ -541,17 +543,18 @@ class FileView(APIView):
 
             # Get an event id
             event_id = self.get_event_id()
-            #event_id = "Testing"
+            # event_id = "Testing"
             print("Dowell Event ID: ", event_id)
             megadrive_record.event_id = event_id
 
             # Save record in database
             # megadrive_record.save()
             # Dowell connection insertion of data
-            insert_response = self.dowell_connection_db_insert(megadrive_record)
+            insert_response = self.dowell_connection_db_insert(
+                megadrive_record)
 
             mega_file_serializer = VpsFileSerializer(megadrive_record)
-            #print("settings.BASE_DIR: ",settings.BASE_DIR)
+            # print("settings.BASE_DIR: ",settings.BASE_DIR)
 
             file_links = mega_file_serializer.data
             print("file_links: ", file_links)
@@ -563,24 +566,43 @@ class FileView(APIView):
 
 
 class BytesView(APIView):
+    """
+    A DRF APIView that receives a file as a byte stream and saves it to a file on the server.
+    The file is expected to be sent in a multipart/form-data POST request with the 
+    file data as the 'video_bytes' key and the file name as the 'fileName' key.
+    """
+
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
-        # print(request.data)
-        filedata = request.data['video_bytes']
-        file_name = request.data['fileName']
-        #print("file_name: ",file_name)
-        recording_file_path = settings.MEDIA_ROOT+"/"+file_name
-        #print("recording_file_path: ",recording_file_path)
+        """
+        Handles the POST request to save a file sent as a byte stream in a multipart/form-data POST request.
+        The file is saved on the server with the file name extracted from the request.
+            :param request: The HTTP request object.
+            :param args: Additional positional arguments.
+            :param kwargs: Additional keyword arguments.
+            :return: A DRF Response object with a message indicating the bytes were received and an HTTP status code of 201.
+        """
 
+        # Extract the byte stream of the file from the request data.
+        filedata = request.data['video_bytes']
+        # Extract the file name from the request data.
+        file_name = request.data['fileName']
+        # Create the path where the file will be saved.
+        recording_file_path = settings.MEDIA_ROOT + "/" + file_name
+
+        # Open the file for writing in binary mode in append mode to ensure that data is added to the end of the file.
         with open(recording_file_path, 'ab+') as destination:
             for chunk in filedata.chunks():
+                # Write each chunk of data to the file.
                 destination.write(chunk)
+
+        # Return a DRF Response object with a message indicating the bytes were received and an HTTP status code of 201.
         return Response("Bytes Received", status=status.HTTP_201_CREATED)
 
 
 class CreateBroadcastView(APIView):
-    #parser_classes = (MultiPartParser, FormParser)
+    # parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
         videoPrivacyStatus = "private"
@@ -624,6 +646,7 @@ def save_recording_metadata(request):
         megadrive_record.app_type = "UX_002"
 
         # Process Clickup Task
+        # ===================== Depricated, to be removed ======================
         try:
             if 'clickupTaskIDs' in request.keys():
                 clickupTaskID = request['clickupTaskIDs']
@@ -643,7 +666,7 @@ def save_recording_metadata(request):
                             "Trying to use webpage_note_organiser because: " + str(err))
                         topics_notes, random_notes = file_view.webpage_note_organiser(
                             task_id)
-                    #topics_notes,random_notes = "",""
+                    # topics_notes,random_notes = "",""
 
                     # Don't proceed if there was a problem getting topics notes or random notes
                     if topics_notes:
@@ -663,11 +686,11 @@ def save_recording_metadata(request):
                         raise Exception(msg)
 
                     # Add current task id notes to global notes list
-                    #topicsNotes = {"Topics": topics_notes}
-                    #randomNotes = {"Random_Notes": random_notes}
+                    # topicsNotes = {"Topics": topics_notes}
+                    # randomNotes = {"Random_Notes": random_notes}
                     Clickup_Notes = [topicsNotes, randomNotes]
                     clickup_task_notes_list.append(Clickup_Notes)
-                #print("Clickup_Notes: ",json.dumps(Clickup_Notes))
+                # print("Clickup_Notes: ",json.dumps(Clickup_Notes))
                 megadrive_record.clickup_task_notes = clickup_task_notes_list
                 print("clickup_task_notes_list: ",
                       json.dumps(clickup_task_notes_list))
@@ -678,6 +701,7 @@ def save_recording_metadata(request):
             msg = "Failed to get topics_notes for; "+task_id
             print(msg1)
             raise Exception(msg)
+        # ===================================================================================================
 
         # Process keylog file
         try:
@@ -690,7 +714,8 @@ def save_recording_metadata(request):
 
             if folder_created:
                 # save keylog file
-                """keylog_file_name = request['key_log_file']
+                """
+                keylog_file_name = request['key_log_file']
                 keylog_recording_file_path = new_path+"/"+keylog_file_name
                 print("keylog_recording_file_path: ",
                       keylog_recording_file_path)
@@ -699,7 +724,8 @@ def save_recording_metadata(request):
                         destination.write(chunk)
 
                 megadrive_record.key_log_file = file_view.convert_file_path_to_link(
-                    keylog_recording_file_path)"""
+                    keylog_recording_file_path)
+                """
 
                 # Copy key log file from temporary folder to permanent folder
                 keylog_recording_file_path = new_path+"/"+keylog_file_name
@@ -779,7 +805,7 @@ def save_recording_metadata(request):
                 else:
                     msg = "Failed to save webcam file"
                     print(msg)
-                    #raise Exception(msg)
+                    # raise Exception(msg)
                     # return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
         except Exception as err:
             print("Error while handling webcam file: " + str(err))
@@ -816,7 +842,7 @@ def save_recording_metadata(request):
                 else:
                     msg = "Failed to save screen file"
                     print(msg)
-                    #raise Exception(msg)
+                    # raise Exception(msg)
 
         except Exception as err:
             print("Error while handling screen file: " + str(err))
@@ -840,7 +866,7 @@ def save_recording_metadata(request):
 
         # Get an event id
         event_id = file_view.get_event_id()
-        #event_id = "Testing"
+        # event_id = "Testing"
         print("Dowell Event ID: ", event_id)
         megadrive_record.event_id = event_id
 
@@ -851,10 +877,11 @@ def save_recording_metadata(request):
             target=megadrive_record.save, args=())
         db_save_thread.start()"""
         # Dowell connection insertion of data
-        insert_response = file_view.dowell_connection_db_insert(megadrive_record)
+        insert_response = file_view.dowell_connection_db_insert(
+            megadrive_record)
 
         mega_file_serializer = VpsFileSerializer(megadrive_record)
-        #print("settings.BASE_DIR: ",settings.BASE_DIR)
+        # print("settings.BASE_DIR: ",settings.BASE_DIR)
 
         file_links = mega_file_serializer.data
         print("file_links: ", file_links)

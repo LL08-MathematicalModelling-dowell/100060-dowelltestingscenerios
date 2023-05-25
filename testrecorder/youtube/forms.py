@@ -1,10 +1,5 @@
-import re
 from django import forms
-import requests
-
-from youtube.views_w import UserChannels
-# from django_select2.forms import ModelSelect2Widget
-from .models import ChannelsRecord, PlaylistsRecord
+from .models import ChannelsRecord
 
 
 class AddChannelRecord(forms.ModelForm):
