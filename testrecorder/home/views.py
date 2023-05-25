@@ -14,27 +14,13 @@ from google.oauth2.credentials import Credentials
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-<<<<<<< HEAD
 
 from youtube.forms import AddChannelRecord, CreatePlaylist
 
-=======
-
-from youtube.forms import AddChannelRecord, CreatePlaylist
-
-
->>>>>>> b9582b6eb018753d62d07a4b4e7b023f2ce43a22
 load_dotenv()
 
 class CamTest(TemplateView):
     template_name = 'camera_test.html'
-
-<<<<<<< HEAD
-class CamTest(TemplateView):
-    template_name = 'camera_test.html'
-=======
->>>>>>> b9582b6eb018753d62d07a4b4e7b023f2ce43a22
-
 
 def validate_youtube_channel(channel_credentials, channel_id):
     """Checks if a youtube channel ID and Credential is valid"""
