@@ -2563,190 +2563,6 @@ async function uploadWithoutClickupNotes() {
   });
 }
 
-// Shows youtube playlist selection modal removal
-// async function showSelectYoutubePlaylistModal(channel_title = null) {
-
-//   // hide the creating broadcast modal
-//   showCreatingBroadcastModal(false);
-
-//   // close modal if open
-//   // const btnCloseChannelSelectionModal = document.getElementById('close-channels-selection-modal');
-//   // btnCloseChannelSelectionModal.click();
-
-//   // Show loading playlists message
-//   const receivedPlaylistsDiv = document.getElementById('received-playlists');
-//   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-//   receivedPlaylistsDiv.hidden = true;
-//   loadingPlaylistsDiv.hidden = false;
-//   failedToReceivePlaylistsDiv.hidden = true;
-
-//   // close modal if open
-//   const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-//   btnClosePlaylistSelectionModal.click();
-
-//   // Show modal
-//   const playlistSelectionlModal = new bootstrap.Modal(document.getElementById('playlist-selection-modal'));
-//   playlistSelectionlModal.show();
-
-//   // Make attempt to fetch playlist
-//   currentRadioButtonID = null;
-//   // if (!channel_title){
-//   //   fetchPlaylists(defaultChannel)
-//   // }
-//   // else{
-//   //   fetchPlaylists(channel_title);
-//   // }
-//   fetchPlaylists();
-// }
-
-// creates a list of radio buttons
-// async function createRadioButtons(id_title_dict) {
-
-//   // clear the table's playlist array
-//   tablePlaylists = [];
-//   // Create and add radio buttons to their HTML container
-//   for (const key in id_title_dict) {
-
-//     // console.log(`${key}: ${id_title_dict[key]}`);
-//     var radiobox = document.createElement('input');
-//     radiobox.type = 'radio';
-//     radiobox.id = key; // playlist id
-//     radiobox.value = id_title_dict[key]; // playlist title
-//     radiobox.name = "user_playlist"
-//     radiobox.classList.add("form-check-input");
-//     radiobox.classList.add("ms-2");
-//     radiobox.onchange = function () {
-//       getSelectedRadioButton();
-//     }
-
-
-//     var label = document.createElement('label')
-//     label.classList.add("ms-2");
-//     label.htmlFor = key;
-
-//     var description = document.createTextNode(id_title_dict[key]);
-//     label.appendChild(description);
-
-//     var newline = document.createElement('br');
-
-//     let radiboxString = radiobox.outerHTML.replace(">", ' onchange = "getSelectedRadioButton(event);" />');
-//     let oneRow = radiboxString + label.outerHTML + newline.outerHTML
-//     let tempArray = [];
-//     tempArray.push(oneRow);
-
-//     // // console.log('TempAray  ',tempArray)
-//     tablePlaylists.push(tempArray)
-//   }
-//   // console.log(tablePlaylists);
-// }
-
-// Checks which radio button was pressed removal
-// function getSelectedRadioButton(event) {
-//   //// console.log(event);
-//   currentRadioButtonID = null;
-
-//   let currentRadioButton = event.currentTarget;
-//   //// console.log("Current Radio Button: ", currentRadioButton.value, currentRadioButton.id);
-//   currentRadioButtonID = currentRadioButton.id;
-//   userPlaylistSelection = { [currentRadioButtonID]: currentRadioButton.value };
-//   // console.log("userPlaylistSelection: ", userPlaylistSelection);
-// }
-
-// fetches the playlists removal
-// async function fetchPlaylists() {
-//   // Show loading playlists message
-//   const receivedPlaylistsDiv = document.getElementById('received-playlists');
-//   const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-//   const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-//   receivedPlaylistsDiv.hidden = true;
-//   loadingPlaylistsDiv.hidden = false;
-//   failedToReceivePlaylistsDiv.hidden = true;
-
-//   let broadcast_data = new Object();
-//   broadcast_data.channel_title = currentChannelTitle;
-//   // broadcast_data.channel_title = Channel_title;
-//   json_broadcast_data = JSON.stringify(broadcast_data);
-//   let csrftoken = await getCookie('csrftoken');
-//   const myHeaders = new Headers();
-//   myHeaders.append('Accept', 'application/json');
-//   myHeaders.append('Content-type', 'application/json');
-//   myHeaders.append('X-CSRFToken', csrftoken);
-
-//   let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-//   let responseStatus = null;
-//   await fetch(fetchPlaylistsApiUrl, {
-//     method: 'POST',
-//     body: json_broadcast_data,
-//     headers: myHeaders
-//   })
-//     .then(response => {
-//       // console.log(response)
-//       responseStatus = response.status;
-//       // console.log("Fetch playlists Response Status", responseStatus);
-//       // Return json data
-//       return response.json();
-//     })
-//     .then((json) => {
-//       if (responseStatus == 200) {
-//         msg = "STATUS: Playlists Received."
-//         document.getElementById("app-status").innerHTML = msg;
-
-//         // set global plalist value
-//         userPlaylists = json.id_title_dict;
-
-//         // Get today's playlist id
-//         let todaysPlaylistObject = json.todays_playlist_dict
-//         //// console.log("todaysPlaylistObject: ", todaysPlaylistObject);
-//         todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
-//         // console.log("todaysPlaylistId: ", todaysPlaylistId);
-
-//         // Use data to display radio buttons
-//         channelTitle = json.channel_title;
-//         // console.log("Received playlists Information: ", json)
-//         createRadioButtons(json.id_title_dict)
-
-//         // show the radio buttons
-//         const receivedPlaylistsDiv = document.getElementById('received-playlists');
-//         const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-//         const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-//         receivedPlaylistsDiv.hidden = false;
-//         loadingPlaylistsDiv.hidden = true;
-//         failedToReceivePlaylistsDiv.hidden = true;
-
-//         // Refresh the playlist selection table
-//         $('#playlist-table').DataTable().clear().rows.add(tablePlaylists).draw();
-//         //// console.log("tablePlaylists: ", tablePlaylists);
-
-//       } else {
-//         // Server error message
-//         // console.log("Server Error Message: ", json)
-//         msg = "STATUS: Failed to Fetch Playlists."
-//         document.getElementById("app-status").innerHTML = msg;
-
-//         // Show loading playlists failed message
-//         const receivedPlaylistsDiv = document.getElementById('received-playlists');
-//         const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-//         const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-//         receivedPlaylistsDiv.hidden = true;
-//         loadingPlaylistsDiv.hidden = true;
-//         failedToReceivePlaylistsDiv.hidden = false;
-//       }
-//     })
-//     .catch(error => {
-//       console.error(error);
-//       msg = "STATUS: Failed to Fetch Playlists."
-//       document.getElementById("app-status").innerHTML = msg;
-
-//       // Show loading playlists failed message
-//       const receivedPlaylistsDiv = document.getElementById('received-playlists');
-//       const loadingPlaylistsDiv = document.getElementById('loading-playlists');
-//       const failedToReceivePlaylistsDiv = document.getElementById('failed-to-receive-playlists');
-//       receivedPlaylistsDiv.hidden = true;
-//       loadingPlaylistsDiv.hidden = true;
-//       failedToReceivePlaylistsDiv.hidden = false;
-//     });
-// }
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
   // hide the creating broadcast modal
@@ -3625,7 +3441,7 @@ async function fetchUserPlaylists(channel_title) {
  // Muhammad Ahmed
 async function load_gallery() {
     console.log('welcome Load Gallery Function')
-    const channelsApiUrl = 'http://127.0.0.1:8000/youtube/channels/';
+    const channelsApiUrl = '/youtube/channels/';
     const response = await fetch(channelsApiUrl, { method: 'GET' });
 
     if (response.ok) {
@@ -3639,7 +3455,7 @@ async function load_gallery() {
       myHeaders.append('Content-type', 'application/json');
       myHeaders.append('X-CSRFToken', csrftoken);
 
-      const fetchPlaylistsApiUrl = 'http://127.0.0.1:8000/youtube/fetchplaylists/api/';
+      const fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
       const playlistsResponse = await fetch(fetchPlaylistsApiUrl, {
         method: 'POST',
         headers: myHeaders,
