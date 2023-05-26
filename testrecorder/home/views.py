@@ -17,13 +17,10 @@ from rest_framework import status
 
 from youtube.forms import AddChannelRecord, CreatePlaylist
 
-
 load_dotenv()
 
 class CamTest(TemplateView):
     template_name = 'camera_test.html'
-
-
 
 def validate_youtube_channel(channel_credentials, channel_id):
     """Checks if a youtube channel ID and Credential is valid"""
@@ -146,3 +143,14 @@ class WebsocketPermissionView(APIView):
             failed_feed_back = {"permission_is_granted": False,
                                 "status": "error", "data": str(error)}
             return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class library_page(TemplateView):
+#     print('welcome library page')
+#
+#     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
+#         return render(request, self.library.html)
+#     # template_name = 'library.html'
+
+def library_page(request):
+    return render(request, 'library.html')

@@ -809,7 +809,7 @@ class FetchPlaylistsView(APIView):
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
-            print('===== playlist(s) ===> ', len(playlists))
+            print('===== playlist count ===> ', len(playlists))
 
             # Check if the playlist is empty
             if len(playlists) == 0:
@@ -828,7 +828,7 @@ class FetchPlaylistsView(APIView):
                 # Iterating through the json list
                 for playlist in playlists:
                     id = playlist["id"]
-                    print("Playlist ID = ", id)
+                    # print("Playlist ID = ", id)
                     title = playlist["snippet"]["title"]
                     # print("Playlist Title = ",title)
 

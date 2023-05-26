@@ -1048,7 +1048,6 @@ async function validateAll() {
       currentCamera = 'user';
       videoConstraints.facingMode = currentCamera;
     }
-
     webcamMediaConstraints = {
       video: videoConstraints, audio: audioConstraints
     };
@@ -3409,7 +3408,6 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
     titleError.innerText = titleMsg;
     valid_input = false;
   }
-
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -3566,7 +3564,6 @@ async function loadUserPlaylist() {
   }
 }
 
-
 async function fetchUserPlaylists(channel_title) {
   let statusBar = document.getElementById("app-status");
   let selectUserPlaylist = document.querySelector(".selectPlaylist")
@@ -3625,6 +3622,156 @@ async function fetchUserPlaylists(channel_title) {
     });
 }
 
+ // Muhammad Ahmed
+async function load_gallery() {
+    console.log('welcome Load Gallery Function')
+    const channelsApiUrl = 'http://127.0.0.1:8000/youtube/channels/';
+    const response = await fetch(channelsApiUrl, { method: 'GET' });
+
+    if (response.ok) {
+      const channelData = await response.json();
+      let channel = channelData[0].channel_title;
+      console.log('channel Name', channel)
+      //  Method for fething all playlist
+      const csrftoken = await getCookie('csrftoken');
+      const myHeaders = new Headers();
+      myHeaders.append('Accept', 'application/json');
+      myHeaders.append('Content-type', 'application/json');
+      myHeaders.append('X-CSRFToken', csrftoken);
+
+      const fetchPlaylistsApiUrl = 'http://127.0.0.1:8000/youtube/fetchplaylists/api/';
+      const playlistsResponse = await fetch(fetchPlaylistsApiUrl, {
+        method: 'POST',
+        headers: myHeaders,
+        body: JSON.stringify({ channel_title: channel })
+      });
+
+      if (playlistsResponse.ok) {
+        const playlistsData = await playlistsResponse.json();
+        const playlistsDict = playlistsData.id_title_dict;
+        console.log('playlistsDict :', playlistsDict)
+        const playlistIds = Object.keys(playlistsDict); // Get the playlist ID
+
+        // Display playlist names in the HTML select tag
+        const selectUserPlaylist = document.getElementById("userLibraryPlaylist");
+        selectUserPlaylist.innerHTML = ''; // Clear existing options
+
+         for (const playlistId of playlistIds) {
+        const playlistName = playlistsDict[playlistId];
+        if (playlistName !== '') {
+          const opt = document.createElement('option');
+          opt.text = playlistName; // Set the displayed text to the playlist name
+          opt.value = playlistId; // Set the option value to the playlist ID
+          selectUserPlaylist.add(opt); // Add the option to the select tag
+          }
+        }
+
+        // Add event listener for playlist selection
+        selectUserPlaylist.addEventListener('change', async () => {
+          const playlist_id = selectUserPlaylist.value;
+          console.log('selectedPlaylist by addevenlistener : ', playlist_id);
+          await load_videos(playlist_id); // Pass selectedPlaylist to load_videos function
+        });
+
+      } else {
+          throw new Error('Failed to fetch playlists.');
+      }
+
+    } else {
+      throw new Error('Failed to fetch channel.');
+    }
+  }
+
+async function load_videos(playlist_id) {
+  console.log('welcome Load Videos')
+  const playlist_videos = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlist_id}&key=AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw`;
+  const response = await fetch(playlist_videos, { method: 'GET' });
+
+  if (response.ok) {
+    const playlistItemsData = await response.json();
+    const playlist_videos = playlistItemsData.items;
+     console.log('playlist_videos 3698 :', playlist_videos)
+    if (playlist_videos.length === 0) {
+      console.log('No videos found in the playlist.')
+      return;
+    }
+
+    const videos = []; // Array to store the videos
+
+    // Iterate over the playlist videos and extract necessary information
+    playlist_videos.forEach(video => {
+      const videoId = video.snippet.resourceId.videoId;
+      const videoTitle = video.snippet.title;
+      const videoThumbnail = video.snippet.thumbnails.default.url;
+      const videoDescription = video.snippet.description;
+
+      // Create an object to represent the video
+      const videoObject = {
+        id: videoId,
+        title: videoTitle,
+        thumbnail: videoThumbnail,
+        description: videoDescription
+      };
+      // Add the video object to the videos array
+      videos.push(videoObject);
+    });
+
+    console.log('Videos 3724:', videos)
+    // Populate the select element with video titles
+    const selectElement = document.getElementById('all_video');
+    selectElement.innerHTML = ''; // Clear existing options
+    videos.forEach(video => {
+      const option = document.createElement('option');
+      option.value = video.id;
+      option.text = video.title;
+      selectElement.appendChild(option);
+    });
+    // Add event listener to the select element
+    selectElement.addEventListener('change', function() {
+      const selectedVideoId = this.value;
+      const selectedVideo = videos.find(video => video.id === selectedVideoId);
+      if (selectedVideo) {
+        play(selectedVideo.id, selectedVideo.title);
+      }
+    });
+
+  } else {
+    console.log('Failed to fetch playlist videos:', response.status)
+    // Handle the error scenario as per your requirement
+  }
+}
+
+async function play(videoId, title) {
+  console.log('Playing video:', title, 'with videoId:', videoId)
+  const playerElement = document.getElementById('player');
+  if (!window.YT) {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    window.onYouTubeIframeAPIReady = createPlayer;
+  } else {
+    if (player) {
+      player.loadVideoById(videoId);
+      console.log('Playing video:', title);
+    } else {
+      createPlayer();
+    }
+  }
+
+  function createPlayer() {
+    player = new YT.Player(playerElement, {
+      videoId: videoId,
+      events: {
+        onReady: function(event) {
+          event.target.playVideo();
+          console.log('Playing video:', title);
+        }
+      }
+    });
+  }
+}
+
 function resetonStartRecording() {
 
   // show record button
@@ -3645,54 +3792,4 @@ function resetonStartRecording() {
   document.querySelector('#private-videos').disabled = false;
 
 }
-
-
-  // Muhammad Ahmed
-// async function load_gallery() {
-
-//   console.log('load_gallery ')
-//   // Selectors for the HTML elements
-//   const channelSelect = document.getElementById("channelSelect");
-//   const selectUserPlaylist = document.getElementById("selectUserPlaylist");
-//   const videoContainer = document.getElementById("videoContainer");
-
-//   // Fetch user's All channels
-//   await fetchUserChannel();
-//   console.log('fetchUserChannel result :' ,fetchUserChannel)
-
-//   // Fetch user's playlists for the selected channel
-//   const selectedChannel = channelSelect.value;
-//   await fetchUserPlaylists(selectedChannel);
-
-//     console.log('fetchUserPlaylists result :' ,fetchUserPlaylists)
-
-//   // Display videos from selected playlist in selected channel
-//   const selectedPlaylistId = selectUserPlaylist.value;
-//   const fetchVideosApiUrl = `/youtube/playlists/${selectedPlaylistId}/videos/`;
-//   const response = await fetch(fetchVideosApiUrl, {
-//     method: 'GET',
-//   });
-//   if (response.status === 200) {
-//     const videos = await response.json();
-//     videoContainer.innerHTML = ""; // Clear previous video results
-//     videos.forEach(video => {
-//       const videoLink = `https://www.youtube.com/watch?v=${video.video_id}`;
-//       const videoTitle = video.video_title;
-//       const thumbnailUrl = video.thumbnail_url;
-//       const videoElement = `
-//         <div class="video-thumbnail">
-//           <a href="${videoLink}">
-//             <img src="${thumbnailUrl}" alt="${videoTitle}">
-//             <p>${videoTitle}</p>
-//           </a>
-//         </div>
-//       `;
-//       videoContainer.insertAdjacentHTML('beforeend', videoElement);
-//     });
-//   } else {
-//     // Handle error
-//     const errorMsg = await response.json();
-//     videoContainer.innerHTML = `<p>${errorMsg.detail}</p>`;
-//   }
-// }
 
