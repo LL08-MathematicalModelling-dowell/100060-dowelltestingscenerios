@@ -3290,6 +3290,7 @@ function displayUtilities() {
 /* fetch channels for user */
 async function fetchUserChannel() {
   let userChannels;
+  let channel_title
   let channelsApiUrl = '/youtube/channels/';
   let statusBar = document.getElementById("app-status");
   let status = 'OK';
@@ -3321,7 +3322,7 @@ async function fetchUserChannel() {
         let opt = document.createElement("option");
         let opt_1 = document.createElement("option");
         let channel_id = obj.channel_id;
-        let channel_title = obj.channel_title;
+        channel_title = obj.channel_title;
         opt.value = channel_title;
         opt_1.value = channel_title;
         opt.innerHTML = channel_title;
