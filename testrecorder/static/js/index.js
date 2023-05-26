@@ -3411,7 +3411,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
-    fetch("http://127.0.0.1:8000/", {
+    fetch("/", {
       method: 'POST',
       body: formData
     })
