@@ -35,6 +35,14 @@ ALLOWED_HOSTS = ['*']
 CORS_ORIGIN_ALLOW_ALL = True
 
 
+# CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
+
+# # Allow cors
+# CORS_ALLOWED_ORIGIN = [
+#     'http://localhost:8080',
+#     'https://liveuxstoryboard.com',
+# ]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -112,7 +120,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
     }
 }
-# ACCOUNT_DEFAULT_HTTP_PROTOCOL='https'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
