@@ -3189,19 +3189,7 @@ channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
 }
 );
-// let channel_credential = document.querySelector('textarea[name=channel_credentials]');
-// channel_credential.addEventListener('keyup', () =>{
-//   document.getElementById('credential-error').innerText = '';
-// });
-// Checks if a string is JSON serializable
-// const isJSON = (str) => {
-//   try {
-//     JSON.parse(str);
-//   } catch (e) {
-//     return false;
-//   }
-//   return true;
-// }
+
 document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
   event.preventDefault();
 
@@ -3227,7 +3215,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
-    fetch("http://127.0.0.1:8000/", {
+    fetch("/", {
       method: 'POST',
       body: formData
     })
@@ -3302,7 +3290,7 @@ function displayUtilities() {
 /* fetch channels for user */
 async function fetchUserChannel() {
   let userChannels;
-  let channelsApiUrl = 'youtube/channels/';
+  let channelsApiUrl = '/youtube/channels/';
   let statusBar = document.getElementById("app-status");
   let status = 'OK';
 
