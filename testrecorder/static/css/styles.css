@@ -173,6 +173,9 @@ img {
   overflow: hidden;
 }
 
+#body {
+  min-height: 800px;
+}
 
 @media screen and (min-width:768px) {
   .user-display{
@@ -716,4 +719,19 @@ img {
 }
 .select2 .select2-container .select2-container--default .select2-container--below .select2-container--open .select2-container--focus{
   background-color: var(--light-primary_clr) !important;
+}
+
+.col-lg-4 {
+  flex: 0 0 auto;
+  width: 33.33333333%;
+  padding: 5px;
+  margin: 5px;
+}
+
+iframe {
+  border: 0;
+  margin: 20px 20px 20px 0px;
+}
+#player-controls{
+  width: 100%;
 }

@@ -3,12 +3,13 @@
 
 {% block css %}
 <style>
-    body {
-        background-color: #dfdfdf;  
-    }
-    .lower-nav h1{
-        color: white;
-    }
+  body {
+    background-color: #dfdfdf;
+  }
+
+  .lower-nav h1 {
+    color: white;
+  }
 </style>
 {% endblock css %}
 
@@ -16,133 +17,135 @@
 <title>About Live UX Storyboard</title>
 {% endblock title %}
 
+{% block index_js %}
+{% if not index_js_loaded %}
+<script src="{% static '/js/index.js' %}"></script>
+{% with index_js_loaded=True %}
+{% endwith %}
+{% endif %}
+{% endblock %}
+
 {% block body %}
 <!-- lower nav -->
-{#      <div class="lower-nav">#}
-{#        {% load socialaccount %}#}
-{#        {% if user.is_authenticated %}#}
-{#        <div class="authenticated-user">#}
-{##}
-{#             <div class="lower-nav-item">#}
-{#                 <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>#}
-{#                 <div class="lower-nav-label">Channel</div>#}
-{#                 <div style="color:red;" id="channelname-error"></div>#}
-{#            </div>#}
-{#            <!-- end single select -->#}
-{##}
-{#            <div class="story-name lower-nav-item">#}
-{#                <input type="text" name="" id="test-name" placeholder="Title">#}
-{#                <div class="lower-nav-label"></div>#}
-{#              <div style="color:red;" id="test-name-error"></div>#}
-{#            </div>#}
-{#            <div class="lower-nav-item">#}
-{#                <!-- single select -->#}
-{#                <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">#}
-{#                    <option value=""></option>#}
-{#                </select>#}
-{#                <div class="lower-nav-label"></div>#}
-{#                <div style="color:red;" id="playlist-error"></div>#}
-{#                <!-- end single select -->#}
-{#            </div>#}
-{#            <!-- Story Name -->#}
-{#            <!-- Story Name -->#}
-{#            <div class="user-icon lower-nav-item">#}
-{#                <i class="fas fa-user-circle"></i>#}
-{#                <div class="lower-nav-label">User</div>#}
-{#            </div>#}
-{#        </div>#}
-{#        {% else %}#}
-{#            <div class="story-name lower-nav-item">#}
-{#                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>#}
-{#            </div>#}
-{#        {% endif %}#}
-{#        <!-- user Name -->#}
-{#    </div>#}
-    <!-- end lower nav -->
-{#    <div class="section">#}
-{#        <div class="about-content">#}
-            {# Muhammad Ahmed #}
-{#            <div class="setting-icon">#}
-{#                <div id="playlist-select">#}
-{#                    <select id="userLibraryPlaylist"></select>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-4">
-          <div class="section">
-            <h2>Select Playlist</h2>
+{# <div class="lower-nav">#}
+  {# {% load socialaccount %}#}
+  {# {% if user.is_authenticated %}#}
+  {# <div class="authenticated-user">#}
+    {##}
+    {# <div class="lower-nav-item">#}
+      {# <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>#}
+      {# <div class="lower-nav-label">Channel</div>#}
+      {# <div style="color:red;" id="channelname-error"></div>#}
+      {# </div>#}
+    {# <!-- end single select -->#}
+    {##}
+    {# <div class="story-name lower-nav-item">#}
+      {# <input type="text" name="" id="test-name" placeholder="Title">#}
+      {# <div class="lower-nav-label"></div>#}
+      {# <div style="color:red;" id="test-name-error"></div>#}
+      {# </div>#}
+    {# <div class="lower-nav-item">#}
+      {# <!-- single select -->#}
+      {# <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">#}
+        {# <option value=""></option>#}
+        {# </select>#}
+      {# <div class="lower-nav-label"></div>#}
+      {# <div style="color:red;" id="playlist-error"></div>#}
+      {# <!-- end single select -->#}
+      {# </div>#}
+    {# <!-- Story Name -->#}
+    {# <!-- Story Name -->#}
+    {# <div class="user-icon lower-nav-item">#}
+      {# <i class="fas fa-user-circle"></i>#}
+      {# <div class="lower-nav-label">User</div>#}
+      {# </div>#}
+    {# </div>#}
+  {# {% else %}#}
+  {# <div class="story-name lower-nav-item">#}
+    {# <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select Channel</a>#}
+    {# </div>#}
+  {# {% endif %}#}
+  {# <!-- user Name -->#}
+  {# </div>#}
+<!-- end lower nav -->
+{# <div class="section">#}
+  {# <div class="about-content">#}
+    {# Muhammad Ahmed #}
+    {# <div class="setting-icon">#}
+      {# <div id="playlist-select">#}
+        {# <select id="userLibraryPlaylist"></select>#}
+        {# </div>#}
+      {# </div>#}
+    {# </div>#}
+  {# </div>#}
+<div class="container" style="display: flex; flex-direction: column;  align-content: space-between;">
+  <div class="row" style="display: flex; flex-direction: row; align-content: space-between; padding: 20px;">
+    <div class="col-lg-4">
+      <div class="section">
+        <h2>Select Playlist</h2>
         <div id="playlist-select">
           <select id="userLibraryPlaylist" class="form-control"></select>
         </div>
-          </div>
-        </div>
-        <div class="col-lg-4">
-          <div class="section">
-            <h2>All Videos</h2>
-             <div id="video-select">
-              <select id="all_video" class="form-control"></select>
-            </div>
-          </div>
-        </div>
-{#        <div class="col-lg-4">#}
-{#          <div class="section">#}
-{#            <h2>Player</h2>#}
-{#            <!-- Place your code for the media player here -->#}
-{#          </div>#}
-{#        </div>#}
-          <div class="col-lg-4">
-                <div class="section">
-                <h2>Player</h2>
-                <div id="player-container">
-                  <div id="player"></div>
-                  <div id="player-controls">
-{#                    <button id="play-btn">Play</button>#}
-{#                    <button id="pause-btn">Pause</button>#}
-{#                    <button id="stop-btn">Stop</button>#}
-{#                    <button id="volume-up-btn">Volume Up</button>#}
-{#                    <button id="volume-down-btn">Volume Down</button>#}
-{#                    <button id="mute-btn">Mute</button>#}
-                    <button id="download-btn">Download</button>
-                    <button id="deletebtn">Delete Video</button>
-                  </div>
-                </div>
-              </div>
-            </div>
       </div>
     </div>
+    <div class="col-lg-4">
+      <div class="section">
+        <h2>All Videos</h2>
+        <div id="video-select">
+          <select id="all_video" class="form-control"></select>
+        </div>
+      </div>
+    </div>
+  </div>
+  {# <div class="col-lg-4">#}
+    {# <div class="section">#}
+      {# <h2>Player</h2>#}
+      {# <!-- Place your code for the media player here -->#}
+      {# </div>#}
+    {# </div>#}
+  <div>
+    <div class="col-lg-4">
+      <div class="section">
+        <h2>Player</h2>
+        <div id="player-container">
+          <div id="player"></div>
+          <div id="player-controls">
+            {# <button id="play-btn">Play</button>#}
+            {# <button id="pause-btn">Pause</button>#}
+            {# <button id="stop-btn">Stop</button>#}
+            {# <button id="volume-up-btn">Volume Up</button>#}
+            {# <button id="volume-down-btn">Volume Down</button>#}
+            {# <button id="mute-btn">Mute</button>#}
+            <button id="download-button" disabled>Download</button>
+            <button id="delete-button" disabled>Delete Video</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <!-- Application JavaScript -->
-<script src="{% static '/js/index.js' %}"></script>
+
+{#script for player #}
 <script>
-  // Trigger the async function when the page finishes loading
-  document.addEventListener('DOMContentLoaded', function() {
-      console.log('library page script called')
-      load_gallery();
-    {fetch_videos();}
-  });
-</script>
-{#script for player    #}
-    <script>
   let player = document.getElementById('player');
-  const playButton = document.getElementById('play-button');
-  const pauseButton = document.getElementById('pause-button');
-  const volumeSlider = document.getElementById('volume-slider');
+  // const playButton = document.getElementById('play-btn');
+  // const pauseButton = document.getElementById('pause-btn');
+  // const volumeSlider = document.getElementById('volume-slider');
   const deleteButton = document.getElementById('delete-button');
   const downloadButton = document.getElementById('download-button');
 
-  playButton.addEventListener('click', () => {
-    player.play();
-  });
-  pauseButton.addEventListener('click', () => {
-    player.pause();
-  });
-  volumeSlider.addEventListener('input', () => {
-    player.volume = volumeSlider.value;
-  });
+  // playButton.addEventListener('click', () => {
+  //   player.play();
+  // });
+  // pauseButton.addEventListener('click', () => {
+  //   player.pause();
+  // });
+  // volumeSlider.addEventListener('input', () => {
+  //   player.volume = volumeSlider.value;
+  // });
   deleteButton.addEventListener('click', () => {
     // Handle delete functionality
   });

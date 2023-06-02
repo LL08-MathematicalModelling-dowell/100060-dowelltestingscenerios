@@ -422,6 +422,8 @@ class LoadVideoView(APIView):
 
                 for playlist in playlists:
                     temp_playlist = {}
+                    video = {}
+
                     temp_playlist['playlistTitle'] = playlist['snippet']['title']
                     temp_playlist['playlistId'] = playlist['id']
 
@@ -433,8 +435,17 @@ class LoadVideoView(APIView):
                     ).execute()
 
                     playlist_videos = playlist_items_response.get('items', [])
+                    
+                    video = [
+                        {   
+                            'videoId': videoItem['snippet']['resourceId']['videoId'],                     
+                            'videoTitle': videoItem['snippet']['title'],                     
+                            'videoThumbnail': videoItem['snippet']['thumbnails']['default']['url'],                    
+                            'videoDescription': videoItem['snippet']['description'],
+                        } for videoItem in playlist_videos
+                    ]
 
-                    temp_playlist['videos'] = playlist_videos
+                    temp_playlist['videos'] = video # playlist_videos
 
                     videos.append(temp_playlist)
             else:
@@ -445,3 +456,4 @@ class LoadVideoView(APIView):
         except Exception as e:
             # Return an error message
             return Response({'Error': str(e)})
+

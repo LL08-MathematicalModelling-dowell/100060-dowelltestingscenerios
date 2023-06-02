@@ -9,6 +9,13 @@
 <title>Live UX Storyboard</title>
 {% endblock title %}
 
+<!-- {% block index_js %}
+  {% if not index_js_loaded %} -->
+    <script src="{% static '/js/index.js' %}"></script>
+    <!-- {% with index_js_loaded=True %}
+    {% endwith %}
+  {% endif %}
+{% endblock %} -->
 
 {% block body %}
 <!-- lower nav -->
@@ -904,6 +911,8 @@
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
 
 <!-- Application JavaScript -->
-<script src="{% static '/js/index.js' %}"></script>
+<!-- <script src="{% static '/js/index.js' %}"></script> -->
+
 
 {% endblock body %}
+
