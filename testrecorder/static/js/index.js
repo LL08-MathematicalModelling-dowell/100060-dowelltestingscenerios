@@ -1,14 +1,15 @@
+// $(document).ready(() => {
 // Some app controls
-const video = document.getElementById('video')
-const cameraCheckbox = document.getElementById('webcam-recording')
-const screenCheckbox = document.getElementById('screen-recording')
-const audioCheckbox = document.getElementById('audio-settings')
+let video = document.getElementById('video')
+let cameraCheckbox = document.getElementById('webcam-recording')
+let screenCheckbox = document.getElementById('screen-recording')
+let audioCheckbox = document.getElementById('audio-settings')
 let switchCamera = document.querySelector(".switch-btn")
-const publicVideosCheckbox = document.getElementById('public-videos')
-const privateVideosCheckbox = document.getElementById('private-videos')
-const selectCamerabutton = document.getElementById('choose-camera');
-const selectVideo = document.getElementById('video-source');
-const selectAudio = document.getElementById('audio-source');
+let publicVideosCheckbox = document.getElementById('public-videos')
+let privateVideosCheckbox = document.getElementById('private-videos')
+let selectCamerabutton = document.getElementById('choose-camera');
+let selectVideo = document.getElementById('video-source');
+let selectAudio = document.getElementById('audio-source');
 let currentStream;
 
 let btnShareRecords = document.querySelector('.share-record-btn');
@@ -29,7 +30,7 @@ let webCamStream = null;
 let screenStream = null;
 let audioStream = null;
 let currentCamera = "user";
-let audioSource = selectAudio.value;
+// let audioSource = selectAudio.value;
 let audioConstraints = {
   deviceId: { exact: "default" }
 };
@@ -80,7 +81,6 @@ let tablePlaylists = [];
 // channels global Variables
 let userChannelSelection = null;
 let tableChannels = [];
-let defaultChannel = 'UX Live from uxlivinglab';
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
@@ -94,6 +94,34 @@ let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
+
+// });
+if (window.location.pathname === '/library/') {
+  // let channels = null;
+  // let playlists = null;
+  // let videos = null;
+  // $.get('/youtube/channels/', (data, textSt) => {
+  //   if (textSt === 'success') {
+  //     channels = data;
+  //     console.log('===== Channel ========> ', channels);
+  //   }
+  // });
+
+  // $.get('/youtube/fetchplaylists/api/', (data, textSt) => {
+  //   playlists = data.user_playlists;
+  //   console.log('Playlist response ', playlists);
+  // });
+
+  // $.get('/youtube/videos/', (data, textSt) => {
+  //   if (textSt === 'success') {
+  //     videos = data;
+  //     console.log('====== VIDEOS ========> ', videos);
+  //   }
+  // });
+
+  load_gallery();
+}
+
 function displayTimer() {
   videoTimer.classList.add("show-cam-timer")
   switchCamBtn.classList.add("show-cam-timer")
@@ -149,39 +177,42 @@ function disablePublic() {
   }
 }
 
-// switch camera button
-switchCamera.addEventListener("click", () => {
-  currentCamera = currentCamera === "user" ? "environment" : "user";
-  video.srcObject.getTracks().forEach(track => track.stop());
-  videoConstraints = {
-    facingMode: currentCamera
-  };
-  webcamMediaConstraints = {
-    video: videoConstraints, audio: true
-  };
-  console.log(videoConstraints.facingMode);
+if (window.location.pathname === '/') {
+  // switch camera button
+  switchCamera.addEventListener("click", () => {
+    currentCamera = currentCamera === "user" ? "environment" : "user";
+    video.srcObject.getTracks().forEach(track => track.stop());
+    videoConstraints = {
+      facingMode: currentCamera
+    };
+    webcamMediaConstraints = {
+      video: videoConstraints, audio: true
+    };
+    console.log(videoConstraints.facingMode);
 
-  // console.log(currentCamera);
-  navigator.mediaDevices
-    .getUserMedia(webcamMediaConstraints)
-    .then(stream => {
-      currentStream = stream;
-      video.srcObject = stream;
-      return stream;
-    })
-    .catch(error => {
-      console.log("Error getting the camera: ", error);
-    })
-})
+    // console.log(currentCamera);
+    navigator.mediaDevices
+      .getUserMedia(webcamMediaConstraints)
+      .then(stream => {
+        currentStream = stream;
+        video.srcObject = stream;
+        return stream;
+      })
+      .catch(error => {
+        console.log("Error getting the camera: ", error);
+      })
+  })
+}
+if (window.location.pathname === '/') {
 
-// display user
-let userIcon = document.querySelector(".user-icon")
-let userDisplay = document.querySelector(".user-display")
+  // display user
+  let userIcon = document.querySelector(".user-icon")
+  let userDisplay = document.querySelector(".user-display")
 
-userIcon.addEventListener("click", function () {
-  userDisplay.classList.toggle("show-user-bar")
-})
-
+  userIcon.addEventListener("click", function () {
+    userDisplay.classList.toggle("show-user-bar")
+  })
+}
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
   fileRandomString = randomString;
@@ -2563,6 +2594,7 @@ async function uploadWithoutClickupNotes() {
   });
 }
 
+
 // Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist() {
   // hide the creating broadcast modal
@@ -2676,21 +2708,6 @@ async function insertVideoIntoTodaysPlaylist() {
     });
 }
 
-// Proceeds after playlist is selected
-// async function playlistSelected() {
-//   // Don't proceed if user has not selected a playlist
-//   if (currentRadioButtonID == null) {
-//     alert("Please select a playlist first!")
-//   } else {
-//     // Hide modal
-//     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-//     btnClosePlaylistSelectionModal.click();
-
-//     // confirm playlist selection
-//     confirmPlaylistSelection();
-//   }
-// }
-
 // Sends an RTMP URL to the websocket
 function sendRTMPURL() {
   displayTimer()
@@ -2738,51 +2755,6 @@ async function showCreatingBroadcastModal(showModal) {
   }
 }
 
-// Confirms playlist selection removal
-// function confirmPlaylistSelection1() {
-//   try {
-//     let playlist = userPlaylistSelection[currentRadioButtonID];
-//     let text = "Are you sure you want to use the playlist:\n" + playlist + ".";
-//     if (confirm(text) == true) {
-//       playlistSelected();
-//     } else {
-//       //showSelectYoutubePlaylistModal();
-//     }
-//   } catch (error) {
-//     console.error("Error while showing confirm playlist selection: ", error)
-//   }
-// }
-
-// removal
-// function confirmPlaylistSelection() {
-
-//   try {
-//     // close playlist selection modal
-//     const btnClosePlaylistSelectionModal = document.getElementById('close-playlist-selection-modal');
-//     btnClosePlaylistSelectionModal.click();
-
-//     let playlist = userPlaylistSelection[currentRadioButtonID];
-//     //let playlist = "VOC"
-//     let text = "Are you sure you want to use the <strong>" + playlist + "</strong> playlist?";
-//     // close modal if open
-//     const btnCloseConfirmPlaylistSelectionModal = document.getElementById('btn-close-confirm-playlist-selection-modal');
-//     btnCloseConfirmPlaylistSelectionModal.click();
-
-//     // Add playlist confirmation message
-//     document.getElementById('playlist-confirmation-message').innerHTML = text;
-
-//     // Show modal
-//     const confirmPlaylistSelectionModal = new bootstrap.Modal(document.getElementById('confirm-playlist-selection-modal'));
-//     confirmPlaylistSelectionModal.show();
-//   } catch (error) {
-//     console.error("Error while showing confirm playlist selection modal: ", error)
-//   }
-// }
-// close channel list selection modal
-// async function closeYoutubeChannelSelectionModal(){
-//   showTestDetailsModal()
-//   resetStateOnClosingPlaylistModal()
-// }
 // close youtube list selection modal
 async function closeYoutubePlaylistSelectionModal() {
   resetStateOnClosingPlaylistModal()
@@ -3131,7 +3103,6 @@ async function showNetworkErrorOccurredModal() {
   /*// close modal if open
   const btnCloseNetworkErrorOccurredModal = document.getElementById('close-network-error-occurred-modal');
   btnCloseNetworkErrorOccurredModal.click();
-
   // Show modal
   const networkErrorOccurredModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
   networkErrorOccurredModal.show();*/
@@ -3189,19 +3160,7 @@ channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
 }
 );
-// let channel_credential = document.querySelector('textarea[name=channel_credentials]');
-// channel_credential.addEventListener('keyup', () =>{
-//   document.getElementById('credential-error').innerText = '';
-// });
-// Checks if a string is JSON serializable
-// const isJSON = (str) => {
-//   try {
-//     JSON.parse(str);
-//   } catch (e) {
-//     return false;
-//   }
-//   return true;
-// }
+
 document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
   event.preventDefault();
 
@@ -3302,7 +3261,7 @@ function displayUtilities() {
 /* fetch channels for user */
 async function fetchUserChannel() {
   let userChannels;
-  let channelsApiUrl = '/youtube/channels/';
+  let channelsApiUrl = '/youtube/channels/api';
   let statusBar = document.getElementById("app-status");
   let status = 'OK';
 
@@ -3367,36 +3326,27 @@ async function fetchUserChannel() {
 
   return status;
 }
-fetchUserChannel().then(status => {
-  if (status === 'OK') {
-    loadUserPlaylist();
-  }
-});
+
+if (window.location.pathname === '/') {
+  fetchUserChannel().then(status => {
+    if (status === 'OK') {
+      loadUserPlaylist();
+    }
+  });
+}
 
 async function loadUserPlaylist() {
   let channel = document.getElementById("selectChannel").name;
   if (channel) {
-    fetchUserPlaylists(channel)
+    fetchUserPlaylists()
   }
 }
 
-async function fetchUserPlaylists(channel_title) {
+async function fetchUserPlaylists() {
   let statusBar = document.getElementById("app-status");
   let selectUserPlaylist = document.querySelector(".selectPlaylist")
-  let csrftoken = await getCookie('csrftoken');
 
-  // Define header parameters
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-  myHeaders.append('X-CSRFToken', csrftoken);
-
-  let fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-  let responseStatus = null;
-  await fetch(fetchPlaylistsApiUrl, {
-    method: 'POST',
-    headers: myHeaders,
-  })
+  await fetch('/youtube/fetchplaylists/api/', { method: 'GET', })
     .then(response => {
       responseStatus = response.status;
       if (response.ok) {
@@ -3412,7 +3362,7 @@ async function fetchUserPlaylists(channel_title) {
     .then((json) => {
       msg = "STATUS: Playlists Received."
       statusBar.innerHTML = msg;
-      let userPlaylists = json.id_title_dict;
+      let userPlaylists = json.user_playlists;
       // console.log("userPlaylists:", userPlaylists);
       for (const key in userPlaylists) {
         // console.log(`${key}: ${userPlaylists[key]}`);
@@ -3438,88 +3388,85 @@ async function fetchUserPlaylists(channel_title) {
     });
 }
 
- // Muhammad Ahmed
+// Muhammad Ahmed
 async function load_gallery() {
-    console.log('welcome Load Gallery Function')
-    const channelsApiUrl = '/youtube/channels/';
-    const response = await fetch(channelsApiUrl, { method: 'GET' });
+  // console.log('welcome Load Gallery Function');
+  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
 
-    if (response.ok) {
-      const channelData = await response.json();
-      let channel = channelData[0].channel_title;
-      console.log('channel Name', channel)
-      //  Method for fething all playlist
-      const csrftoken = await getCookie('csrftoken');
-      const myHeaders = new Headers();
-      myHeaders.append('Accept', 'application/json');
-      myHeaders.append('Content-type', 'application/json');
-      myHeaders.append('X-CSRFToken', csrftoken);
+  if (playlistsResponse.ok) {
+    const playlistsData = await playlistsResponse.json();
+    let playlistsDict = playlistsData.user_playlists;
+    // console.log('playlistsDict :', playlistsDict);
+    const playlistIds = Object.keys(playlistsDict); // Get the playlist ID
 
-      const fetchPlaylistsApiUrl = '/youtube/fetchplaylists/api/';
-      const playlistsResponse = await fetch(fetchPlaylistsApiUrl, {
-        method: 'POST',
-        headers: myHeaders,
-        body: JSON.stringify({ channel_title: channel })
-      });
+    // Display playlist names in the HTML select tag
+    const selectUserPlaylist = document.getElementById("userLibraryPlaylist");
+    selectUserPlaylist.innerHTML = ''; // Clear existing options
 
-      if (playlistsResponse.ok) {
-        const playlistsData = await playlistsResponse.json();
-        const playlistsDict = playlistsData.id_title_dict;
-        console.log('playlistsDict :', playlistsDict)
-        const playlistIds = Object.keys(playlistsDict); // Get the playlist ID
-
-        // Display playlist names in the HTML select tag
-        const selectUserPlaylist = document.getElementById("userLibraryPlaylist");
-        selectUserPlaylist.innerHTML = ''; // Clear existing options
-
-         for (const playlistId of playlistIds) {
-        const playlistName = playlistsDict[playlistId];
-        if (playlistName !== '') {
-          const opt = document.createElement('option');
-          opt.text = playlistName; // Set the displayed text to the playlist name
-          opt.value = playlistId; // Set the option value to the playlist ID
-          selectUserPlaylist.add(opt); // Add the option to the select tag
-          }
-        }
-
-        // Add event listener for playlist selection
-        selectUserPlaylist.addEventListener('change', async () => {
-          const playlist_id = selectUserPlaylist.value;
-          console.log('selectedPlaylist by addevenlistener : ', playlist_id);
-          await load_videos(playlist_id); // Pass selectedPlaylist to load_videos function
-        });
-
-      } else {
-          throw new Error('Failed to fetch playlists.');
+    for (let playlistId of playlistIds) {
+      let playlistName = playlistsDict[playlistId];
+      if (playlistName !== '') {
+        const opt = document.createElement('option');
+        opt.text = playlistName; // Set the displayed text to the playlist name
+        opt.value = playlistId; // Set the option value to the playlist ID
+        selectUserPlaylist.add(opt); // Add the option to the select tag
       }
-
-    } else {
-      throw new Error('Failed to fetch channel.');
     }
+
+    // Add event listener for playlist selection
+    selectUserPlaylist.addEventListener('change', async () => {
+      const playlist_id = selectUserPlaylist.value;
+      currentPlaylistId = playlist_id; // Update the current playlist ID
+      await load_videos(playlist_id); // Pass selectedPlaylist to load_videos function
+      await play_first_video(); // Play the first video of the selected playlist
+    });
+
+    // Trigger the change event to select the first playlist by default
+    selectUserPlaylist.dispatchEvent(new Event('change'));
+
+  } else {
+    throw new Error('Failed to fetch playlists.');
   }
+}
+
+async function play_first_video() {
+  const videos = document.getElementById("all_video");
+  if (videos.length > 0) {
+    const video_id = videos.options[0].value;
+    await play(video_id);
+  }
+}
 
 async function load_videos(playlist_id) {
-  console.log('welcome Load Videos')
-  const playlist_videos = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${playlist_id}&key=AIzaSyCYW-oAjwO8cTr6z0ZjNkAE0OMlIVIzfiw`;
-  const response = await fetch(playlist_videos, { method: 'GET' });
+  // console.log('welcome Load Videos');
+  let response = await fetch('/youtube/videos/api/', { method: 'GET' });
 
   if (response.ok) {
     const playlistItemsData = await response.json();
-    const playlist_videos = playlistItemsData.items;
-     console.log('playlist_videos 3698 :', playlist_videos)
+    let playlist_videos = playlistItemsData;
+    // console.log('playlist_videos 3698 :', playlist_videos);
     if (playlist_videos.length === 0) {
-      console.log('No videos found in the playlist.')
+      console.log('No videos found in the playlist.');
+      return;
+    }
+
+    let playlistObject = playlist_videos.find(videoObject => videoObject['playlistId'] === playlist_id);
+    // console.log('playlist objects >>> ', playlistObject)
+    let playlistVideos = playlistObject.videos;
+    // console.log('playlist_videos 3698 :', playlistVideos);
+    if (playlistVideos.length === 0) {
+      console.log('No videos found in the playlist.');
       return;
     }
 
     const videos = []; // Array to store the videos
 
     // Iterate over the playlist videos and extract necessary information
-    playlist_videos.forEach(video => {
-      const videoId = video.snippet.resourceId.videoId;
-      const videoTitle = video.snippet.title;
-      const videoThumbnail = video.snippet.thumbnails.default.url;
-      const videoDescription = video.snippet.description;
+    playlistVideos.forEach(video => {
+      const videoId = video.videoId;
+      const videoTitle = video.videoTitle;
+      const videoThumbnail = video.videoThumbnail;
+      const videoDescription = video.videoDescription;
 
       // Create an object to represent the video
       const videoObject = {
@@ -3531,8 +3478,8 @@ async function load_videos(playlist_id) {
       // Add the video object to the videos array
       videos.push(videoObject);
     });
-
-    console.log('Videos 3724:', videos)
+    videos
+    // console.log('Videos 3724:', videos)
     // Populate the select element with video titles
     const selectElement = document.getElementById('all_video');
     selectElement.innerHTML = ''; // Clear existing options
@@ -3543,22 +3490,20 @@ async function load_videos(playlist_id) {
       selectElement.appendChild(option);
     });
     // Add event listener to the select element
-    selectElement.addEventListener('change', function() {
+    selectElement.addEventListener('change', function () {
       const selectedVideoId = this.value;
+
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
         play(selectedVideo.id, selectedVideo.title);
       }
     });
 
-  } else {
-    console.log('Failed to fetch playlist videos:', response.status)
-    // Handle the error scenario as per your requirement
   }
 }
 
-async function play(videoId, title) {
-  console.log('Playing video:', title, 'with videoId:', videoId)
+async function play(videoId, title = '') {
+  // console.log('Playing video:', title, 'with videoId:', videoId)
   const playerElement = document.getElementById('player');
   if (!window.YT) {
     const tag = document.createElement('script');
@@ -3569,7 +3514,7 @@ async function play(videoId, title) {
   } else {
     if (player) {
       player.loadVideoById(videoId);
-      console.log('Playing video:', title);
+      // console.log('Playing video:', title);
     } else {
       createPlayer();
     }
@@ -3579,9 +3524,9 @@ async function play(videoId, title) {
     player = new YT.Player(playerElement, {
       videoId: videoId,
       events: {
-        onReady: function(event) {
+        onReady: function (event) {
           event.target.playVideo();
-          console.log('Playing video:', title);
+          // console.log('Playing video:', title);
         }
       }
     });
@@ -3597,15 +3542,11 @@ function resetonStartRecording() {
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
-  // document.querySelector('#view_records').disabled = false;
   document.querySelector('#test-name').disabled = false;
   document.querySelector('#create-playlist').disabled = false;
   document.querySelector('.logout-disable').setAttribute("href", "youtube/logout/");
-  // document.querySelector('#webcam-recording').disabled = false;
-  // document.querySelector('#screen-recording').disabled = false;
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#private-videos').disabled = false;
 
 }
-
