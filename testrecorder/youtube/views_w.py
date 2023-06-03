@@ -1,17 +1,13 @@
 import json
 import logging
-
 import requests
 from requests import HTTPError
-
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-
 from .models import YoutubeUserCredential, ChannelsRecord
 
 
@@ -361,7 +357,7 @@ class LoadVideoView(APIView):
 
     Methods:
         get(request): Load all videos
-    
+
      Attributes:
         permission_classes: a list containing the IsAuthenticated permission class to ensure only authenticated users
         can access this view.
@@ -435,17 +431,17 @@ class LoadVideoView(APIView):
                     ).execute()
 
                     playlist_videos = playlist_items_response.get('items', [])
-                    
+
                     video = [
-                        {   
-                            'videoId': videoItem['snippet']['resourceId']['videoId'],                     
-                            'videoTitle': videoItem['snippet']['title'],                     
-                            'videoThumbnail': videoItem['snippet']['thumbnails']['default']['url'],                    
+                        {
+                            'videoId': videoItem['snippet']['resourceId']['videoId'],
+                            'videoTitle': videoItem['snippet']['title'],
+                            'videoThumbnail': videoItem['snippet']['thumbnails']['default']['url'],
                             'videoDescription': videoItem['snippet']['description'],
                         } for videoItem in playlist_videos
                     ]
 
-                    temp_playlist['videos'] = video # playlist_videos
+                    temp_playlist['videos'] = video  # playlist_videos
 
                     videos.append(temp_playlist)
             else:
@@ -457,3 +453,21 @@ class LoadVideoView(APIView):
             # Return an error message
             return Response({'Error': str(e)})
 
+
+def create_user_youtube_object(request):
+    try:
+        # Retrieve the YoutubeUserCredential object associated with the authenticated user
+        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+
+        # Retrieve the user's credentials associated with the YoutubeUserCredential object
+        credentials = Credentials.from_authorized_user_info(
+            info=youtube_user.credential)
+
+        # Create a YouTube object using the v3 version of the API and the retrieved credentials
+        youtube = build('youtube', 'v3',
+                        credentials=credentials, cache_discovery=False)
+        return youtube
+    except YoutubeUserCredential.DoesNotExist:
+        # If the user doesn't have a YoutubeUserCredential object,
+        # return an error response with 401 Unauthorized status code
+        return None

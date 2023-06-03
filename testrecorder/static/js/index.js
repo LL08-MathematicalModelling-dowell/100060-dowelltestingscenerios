@@ -81,7 +81,6 @@ let tablePlaylists = [];
 // channels global Variables
 let userChannelSelection = null;
 let tableChannels = [];
-let defaultChannel = 'UX Live from uxlivinglab';
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
@@ -3262,7 +3261,7 @@ function displayUtilities() {
 /* fetch channels for user */
 async function fetchUserChannel() {
   let userChannels;
-  let channelsApiUrl = '/youtube/channels/';
+  let channelsApiUrl = '/youtube/channels/api';
   let statusBar = document.getElementById("app-status");
   let status = 'OK';
 
@@ -3402,7 +3401,7 @@ async function load_gallery() {
 
     // Display playlist names in the HTML select tag
     const selectUserPlaylist = document.getElementById("userLibraryPlaylist");
-    selectUserPlaylist.innerHTML = 'Loading...'; // Clear existing options
+    selectUserPlaylist.innerHTML = ''; // Clear existing options
 
     for (let playlistId of playlistIds) {
       let playlistName = playlistsDict[playlistId];
@@ -3440,7 +3439,7 @@ async function play_first_video() {
 
 async function load_videos(playlist_id) {
   // console.log('welcome Load Videos');
-  let response = await fetch('/youtube/videos/', { method: 'GET' });
+  let response = await fetch('/youtube/videos/api/', { method: 'GET' });
 
   if (response.ok) {
     const playlistItemsData = await response.json();
@@ -3483,7 +3482,7 @@ async function load_videos(playlist_id) {
     // console.log('Videos 3724:', videos)
     // Populate the select element with video titles
     const selectElement = document.getElementById('all_video');
-    selectElement.innerHTML = 'Loading...'; // Clear existing options
+    selectElement.innerHTML = ''; // Clear existing options
     videos.forEach(video => {
       const option = document.createElement('option');
       option.value = video.id;
