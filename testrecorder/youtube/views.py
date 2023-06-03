@@ -143,8 +143,6 @@ def create_broadcast(request):
     """
         Creates a broadcast, it is view based.
     """
-
-  
     youtube = create_user_youtube_object(request)
     if youtube is None:
         return None
