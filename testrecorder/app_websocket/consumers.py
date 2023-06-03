@@ -1,10 +1,6 @@
-# fetch_user_playlists,
-from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
-from file_app.views import save_recording_metadata
 from ast import Pass
 import asyncio
 import json
-
 from blinker import receiver_connected
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -17,6 +13,8 @@ import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
+from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
+from file_app.views import save_recording_metadata
 
 class VideoConsumer(AsyncConsumer):
 
