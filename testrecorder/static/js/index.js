@@ -292,7 +292,7 @@ async function captureScreen(mediaConstraints = {
   }
 }
 
-//@Muhammad Ahmed 
+//@Muhammad Ahmed
 // VOice mute/Unmute
 async function microphoneStatus() {
  try {
@@ -661,7 +661,7 @@ async function recordScreenAndAudio() {
 }
 
 // Muhammad Ahmed
-// specific function for simultaneously share Cameras and  device screen  
+// specific function for simultaneously share Cameras and  device screen
 // async function camAndScreenShare() {
 //
 //   try {
@@ -893,6 +893,8 @@ async function camAndScreenShare() {
       // Add merged stream tracks to the final merged stream
      merger.result.getTracks().forEach(track => mergedStream.addTrack(track));
       console.log('mergedStream ', mergedStream);
+
+      //On Chnage event remained
     } catch (err) {
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream stream.";
       alert("Error while recording merged stream stream.");
@@ -2127,7 +2129,7 @@ async function createWebcamScreenSocket(socketType) {
   //var endpoint = wsStart + window.location.host + window.location.pathname
   //var endpoint = wsStart + window.location.host + "/ws/app/"
   //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  //var endpoint = "ws://206.72.196.211:80/ws/app/" 
+  //var endpoint = "ws://206.72.196.211:80/ws/app/"
   //let endpoint = "wss://liveuxstoryboard.com/ws/webcamscreen/"
 
   var socket = new WebSocket(endpoint)
@@ -3126,7 +3128,7 @@ async function showCreatingNewPlaylistModal() {
 // On press handler for the create playlist button
 async function handleCreatePlaylistRequest() {
 
-  // disable button first 
+  // disable button first
   const btnCreatePlaylist = document.getElementById("create-playlist")
   btnCreatePlaylist.disabled = true;
 
@@ -3402,7 +3404,7 @@ let channel_id = document.querySelector('input[name=channel_id');
 channel_id.addEventListener('keyup', () => {
   document.getElementById('id-error').innerText = '';
 })
-// Confiqure error display 
+// Confiqure error display
 let channel_title = document.querySelector('input[name=channel_title]');
 channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
@@ -3432,7 +3434,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   // let channelCredentials = document.getElementById("channel_credentials_modal").value;
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
-  // const credentialError = document.getElementById('credential-error');  
+  // const credentialError = document.getElementById('credential-error');
   let valid_input = true;
 
   if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
@@ -3443,7 +3445,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
     titleError.innerText = titleMsg;
     valid_input = false;
   }
- 
+
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -3814,7 +3816,7 @@ function resetonStartRecording() {
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
-  // reset video title 
+  // reset video title
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
@@ -3827,6 +3829,5 @@ function resetonStartRecording() {
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#private-videos').disabled = false;
-
 }
 
