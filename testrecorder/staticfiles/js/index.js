@@ -292,7 +292,7 @@ async function captureScreen(mediaConstraints = {
   }
 }
 
-//@Muhammad Ahmed 
+//@Muhammad Ahmed
 // VOice mute/Unmute
 async function microphoneStatus() {
  try {
@@ -661,175 +661,13 @@ async function recordScreenAndAudio() {
 }
 
 // Muhammad Ahmed
-// specific function for simultaneously share Cameras and  device screen  
-// async function camAndScreenShare() {
-//
-//   try {
-//     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-//     // set up the screen capture stream
-//
-//     // set up the camera stream
-//     // const cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-//     let webcamStreamWidth = 0;
-//     let webcamStreamHeight = 0;
-//     const screenWidth = screen.width;
-//     const screenHeight = screen.height;
-//
-//     // if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-//     //   throw new Error("getUserMedia is not supported in this browser");
-//     // }
-//
-//     if (cameraCheckbox.checked) {
-//       webcamStreamWidth = Math.floor(0.15 * screenWidth);
-//       webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
-//
-//       cameraStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
-//     }
-//     console.log("Camera stream dimensions: " + webcamStreamWidth + " x " + webcamStreamHeight);
-//
-//     // create a canvas element to hold the merged stream
-//     const canvas = document.createElement('canvas');
-//     canvas.width = screenStream.width;
-//     canvas.height = screenStream.height;
-//
-//     // set up the merger and add the streams
-//     const merger = new VideoStreamMerger();
-//     merger.addStream(screenStream, {
-//       x: 0,
-//       y: 0,
-//       width: merger.width,
-//       height: merger.height,
-//       mute: true
-//     });
-//
-//     merger.addStream(cameraStream, {
-//       x: 0, // position of the top-left corner
-//       y: merger.height - webcamStreamHeight, // position of the bottom-left corner
-//       width: webcamStreamWidth,
-//       height: webcamStreamHeight,
-//       mute: true // we don't want sound from the camera
-//
-//     });
-//
-//
-//     // start the merger
-//     merger.start();
-//
-//     // set the video source to the merged stream
-//     video.srcObject = merger.result;
-//     const mergedStream = merger.result
-//     let options = await getSupportedMediaType();
-//
-//     if (options === null) {
-//       alert("None of the required codecs was found!\n - Please update your browser and try again.");
-//       document.location.reload();
-//     }
-//     mergedStreamRecorder = new MediaRecorder(mergedStream, options);
-//
-//     mergedStreamRecorder.ondataavailable = event => {
-//       if (recordinginProgress == true) {
-//         if ((event.data.size > 0) && (recordingSynched == true) && (streamMergedToYT == true)) {
-//           //mergedStreamChunks.push(event.data);
-//           appWebsocket.send(event.data);
-//         }
-//       }
-//     }
-//     webcamRecorder.onstop = () => {
-//       // Show that webcam recording has stopped
-//       msg = "STATUS: Merged Stream Recording stopped."
-//       document.getElementById("app-status").innerHTML = msg;
-//     }
-//     // handle cameraCheckbox changes
-//     cameraCheckbox.addEventListener('change', async () => {
-//       // stop the old camera stream
-//       cameraStream.getTracks().forEach(track => track.stop());
-//
-//       // get a new camera stream with updated dimensions if checkbox is checked
-//       if (cameraCheckbox.checked) {
-//         webcamStreamWidth = Math.floor(0.15 * screenWidth);
-//         webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
-//         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: webcamStreamWidth, height: webcamStreamHeight } });
-//       }
-//
-//       // add the camera stream to the merger
-//       merger.addStream(cameraStream, {
-//         x: 0, // position of the top-left corner
-//         y: merger.height - webcamStreamHeight, // position of the bottom-left corner
-//         width: webcamStreamWidth,
-//         height: webcamStreamHeight,
-//         mute: true // we don't want sound from the camera
-//       });
-//
-//       // re-render the merger
-//       merger.reRender();
-//     });
-//
-//
-//     // screenCheckbox.addEventListener('change', async () => {
-//     //   if (screenCheckbox.checked) {
-//     //     screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-//     //   } else {
-//     //     screenStream.getTracks().forEach(track => {
-//     //       track.stop();
-//     //     });
-//     //     screenStream = null;
-//     //   }
-//
-//     //   merger.reRender();
-//     // });
-//
-//
-//     screenCheckbox.addEventListener('change', async () => {
-//       try {
-//         if (screenCheckbox.checked) {
-//           // get new screen stream and add it to the merger
-//           const newScreenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
-//           merger.addStream(newScreenStream, {
-//             x: 0,
-//             y: 0,
-//             width: merger.width,
-//             height: merger.height,
-//             mute: true
-//           });
-//         } else {
-//           // stop the old screen stream and re-render the merger
-//           screenStream.getTracks().forEach(track => {
-//             track.stop();
-//           });
-//           merger.removeStream(screenStream);
-//         }
-//         merger.reRender();
-//       } catch (error) {
-//         console.error('Error: ', error);
-//       }
-//     });
-//
-//     // handle mute/unmute button click
-//     const audioBtn = document.getElementById("audio-settings");
-//     audioBtn.checked = true; // initialize as checked
-//
-//     audioBtn.addEventListener('click', () => {
-//       const muteState = !audioBtn.checked; // if checked is false, mute the audio
-//       merger.addStream(cameraStream, {
-//         x: 0, // position of the top-left corner
-//         y: merger.height - webcamStreamHeight, // position of the bottom-left corner
-//         width: webcamStreamWidth,
-//         height: webcamStreamHeight,
-//         mute: muteState // set the mute state of the audio
-//       });
-//       audioBtn.innerHTML = muteState ? "Unmute" : "Mute";
-//     });
-//
-//   } catch (error) {
-//     console.error('Error: ', error);
-//   }
-// }
+// specific function for simultaneously share Cameras and  device screen
+
 let merger;
 let cameraStream;
 let webcamStreamWidth = 0;
 let webcamStreamHeight = 0;
 
-let screenSharingPaused = false;
 async function camAndScreenShare() {
   try {
     screenStream = await captureScreen();
@@ -892,7 +730,30 @@ async function camAndScreenShare() {
       let mergedStream = new MediaStream();
       // Add merged stream tracks to the final merged stream
      merger.result.getTracks().forEach(track => mergedStream.addTrack(track));
-      console.log('mergedStream ', mergedStream);
+     console.log('mergedStream ', mergedStream);
+
+      mergedStreamRecorder = new MediaRecorder(mergedStream, options);
+
+      mergedStreamRecorder.ondataavailable = event => {
+       if (recordinginProgress == true) {
+      if ((event.data.size > 0) && (recordingSynched == true) && (streamWebcamToYT == true)) {
+        appWebsocket.send(event.data);
+      } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
+        let recordWebcam = cameraCheckbox.checked;
+        let recordScreen = screenCheckbox.checked;
+        if ((recordScreen == true) && (recordWebcam == true)) {
+          webcamWebSocket.send(event.data);
+        }
+      }
+    }
+  }
+      webcamRecorder.onstop = () => {
+        // Show that webcam recording has stopped
+        msg = "STATUS: Merged Stream Recording stopped."
+        document.getElementById("app-status").innerHTML = msg;
+      }
+
+      //On Chnage event remained
     } catch (err) {
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream stream.";
       alert("Error while recording merged stream stream.");
@@ -900,6 +761,7 @@ async function camAndScreenShare() {
       await resetStateOnError();
     }
   }
+
 
 // Checks recording settings and starts the recording
 async function startRecording() {
@@ -2127,7 +1989,7 @@ async function createWebcamScreenSocket(socketType) {
   //var endpoint = wsStart + window.location.host + window.location.pathname
   //var endpoint = wsStart + window.location.host + "/ws/app/"
   //var endpoint = "wss://immense-sands-53205.herokuapp.com/ws/app/"
-  //var endpoint = "ws://206.72.196.211:80/ws/app/" 
+  //var endpoint = "ws://206.72.196.211:80/ws/app/"
   //let endpoint = "wss://liveuxstoryboard.com/ws/webcamscreen/"
 
   var socket = new WebSocket(endpoint)
@@ -3126,7 +2988,7 @@ async function showCreatingNewPlaylistModal() {
 // On press handler for the create playlist button
 async function handleCreatePlaylistRequest() {
 
-  // disable button first 
+  // disable button first
   const btnCreatePlaylist = document.getElementById("create-playlist")
   btnCreatePlaylist.disabled = true;
 
@@ -3402,7 +3264,7 @@ let channel_id = document.querySelector('input[name=channel_id');
 channel_id.addEventListener('keyup', () => {
   document.getElementById('id-error').innerText = '';
 })
-// Confiqure error display 
+// Confiqure error display
 let channel_title = document.querySelector('input[name=channel_title]');
 channel_title.addEventListener('keyup', () => {
   document.getElementById('title-error').innerText = '';
@@ -3432,7 +3294,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   // let channelCredentials = document.getElementById("channel_credentials_modal").value;
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
-  // const credentialError = document.getElementById('credential-error');  
+  // const credentialError = document.getElementById('credential-error');
   let valid_input = true;
 
   if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
@@ -3443,7 +3305,7 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
     titleError.innerText = titleMsg;
     valid_input = false;
   }
- 
+
   if (valid_input) {
     const form = document.getElementById("add-channel");
     const formData = new FormData(form);
@@ -3814,7 +3676,7 @@ function resetonStartRecording() {
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
 
-  // reset video title 
+  // reset video title
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
@@ -3827,6 +3689,5 @@ function resetonStartRecording() {
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#private-videos').disabled = false;
-
 }
 
