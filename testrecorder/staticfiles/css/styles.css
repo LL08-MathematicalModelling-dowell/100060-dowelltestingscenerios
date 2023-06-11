@@ -33,7 +33,17 @@ body{
 a {
   text-decoration: none;
 }
-
+iframe {
+  margin: 0 auto;
+  width: 90%;
+}
+@media screen and (min-width: 768px) {
+  .playlist-videos{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}
 img {
   display: block;
   width: 100%;
@@ -173,6 +183,9 @@ img {
   overflow: hidden;
 }
 
+#body {
+  min-height: 800px;
+}
 
 @media screen and (min-width:768px) {
   .user-display{
@@ -298,7 +311,7 @@ img {
 }
 .main-content-check-boxes{
   position: absolute;
-  top: 30%;
+  top: 20%;
   left: 5%;
 }
 .setting-icon{
@@ -316,6 +329,7 @@ img {
 #screen-recording:checked~label,
 #audio-settings:checked~label,
 #private-videos:checked~label,
+#unlisted-videos:checked~label,
 #public-videos:checked~label {
   color: var(--light-primary_clr);
 }
@@ -716,4 +730,19 @@ img {
 }
 .select2 .select2-container .select2-container--default .select2-container--below .select2-container--open .select2-container--focus{
   background-color: var(--light-primary_clr) !important;
+}
+
+.col-lg-4 {
+  flex: 0 0 auto;
+  width: 33.33333333%;
+  padding: 5px;
+  margin: 5px;
+}
+
+iframe {
+  border: 0;
+  margin: 20px 20px 20px 0px;
+}
+#player-controls{
+  width: 100%;
 }

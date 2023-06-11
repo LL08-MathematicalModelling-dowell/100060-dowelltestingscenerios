@@ -111,15 +111,21 @@
             </div>
 
             <div class="setting-icon">
-                <input type="checkbox" name="public" id="public-videos" onClick="disablePrivate()">
+                <input type="checkbox" name="public" id="public-videos" onClick="disablePrivandUnlist()">
                 <label for="public-videos"><i class="fas fa-globe"></i>
                     <p>Public</p>
                 </label>
             </div>
             <div class="setting-icon">
-                <input type="checkbox" name="private" id="private-videos" onClick="disablePublic()">
+                <input type="checkbox" name="private" id="private-videos" onClick="disablePublicandUnlist()">
                 <label for="private-videos"><i class="fas fa-eye-slash"></i>
                     <p>Private</p>
+                </label>
+            </div>
+            <div class="setting-icon">
+                <input type="checkbox" name="unlisted" id="unlisted-videos" onClick="disablePubandPriv()" checked>
+                <label for="unlisted-videos"><i class="fas fa-chain-broken"></i>
+                    <p>Unlisted</p>
                 </label>
             </div>
         </div>

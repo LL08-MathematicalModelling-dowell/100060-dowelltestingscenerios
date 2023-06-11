@@ -7,6 +7,7 @@ let audioCheckbox = document.getElementById('audio-settings')
 let switchCamera = document.querySelector(".switch-btn")
 let publicVideosCheckbox = document.getElementById('public-videos')
 let privateVideosCheckbox = document.getElementById('private-videos')
+let unlistedVideosCheckbox = document.getElementById('unlisted-videos')
 let selectCamerabutton = document.getElementById('choose-camera');
 let selectVideo = document.getElementById('video-source');
 let selectAudio = document.getElementById('audio-source');
@@ -154,25 +155,52 @@ function calcTime(val) {
     return valString;
   }
 }
-// diasble unlist if public is checked
-function disablePrivate() {
+// diasble private if public is checked
+function disablePrivandUnlist() {
   let publicChecked = publicVideosCheckbox.checked;
-  let unlistChecked = privateVideosCheckbox.checked;
+  let privateChecked = privateVideosCheckbox.checked;
+  let unlistedChecked = unlistedVideosCheckbox.checked;
   if (publicChecked == true) {
-    unlistChecked == false
-    if (unlistChecked == true) {
+    privateChecked == false
+    unlistedChecked == false
+    if (privateChecked == true) {
       privateVideosCheckbox.click()
+    }
+    if (unlistedChecked == true) {
+      unlistedVideosCheckbox.click()
     }
   }
 }
 // diasble public if unlist is checked
-function disablePublic() {
+function disablePublicandUnlist() {
   let publicChecked = publicVideosCheckbox.checked;
   let privateChecked = privateVideosCheckbox.checked;
+  let unlistedChecked = unlistedVideosCheckbox.checked;
   if (privateChecked == true) {
     publicChecked == false
+    unlistedChecked == false
     if (publicChecked == true) {
       publicVideosCheckbox.click()
+    }
+    if (unlistedChecked == true) {
+      unlistedVideosCheckbox.click()
+    }
+  }
+}
+
+// diasble public and private if unlist is checked
+function disablePubandPriv() {
+  let publicChecked = publicVideosCheckbox.checked;
+  let privateChecked = privateVideosCheckbox.checked;
+  let unlistedChecked = unlistedVideosCheckbox.checked;
+  if (unlistedChecked == true) {
+    publicChecked == false
+    privateChecked == false
+    if (publicChecked == true) {
+      publicVideosCheckbox.click()
+    }
+    if (privateChecked == true) {
+      privateVideosCheckbox.click()
     }
   }
 }
@@ -1998,11 +2026,15 @@ async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
   let makePublic = publicVideosCheckbox.checked;
   let privateVideo = privateVideosCheckbox.checked;
+  let unlistedVideo = unlistedVideosCheckbox.checked;
   if (makePublic == true) {
     videoPrivacyStatus = "public";
   }
   else if (privateVideo == true) {
     videoPrivacyStatus = "private";
+  }
+  else if (unlistedVideo == true) {
+    videoPrivacyStatus = "unlisted";
   }
   else {
     videoPrivacyStatus = "unlisted";
@@ -3244,10 +3276,11 @@ function displayUtilities() {
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
   document.querySelector('#private-videos').disabled = true;
+  document.querySelector('#unlisted-videos').disabled = true;
 
   // clear navbar forms
   // Enable share records button
-  if (publicVideosCheckbox.checked || privateVideosCheckbox.checked == false) {
+  if (publicVideosCheckbox.checked || unlistedVideosCheckbox.checked) {
     btnShareRecords.style.display = "block";
   } else {
     btnShareRecords.style.display = "none";
@@ -3548,5 +3581,6 @@ function resetonStartRecording() {
   document.querySelector('#audio-settings').disabled = false;
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#private-videos').disabled = false;
+  document.querySelector('#unlisted-videos').disabled = false;
 
 }
