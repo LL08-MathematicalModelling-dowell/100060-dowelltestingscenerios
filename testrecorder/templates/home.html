@@ -11,8 +11,8 @@
 
 <!-- {% block index_js %}
   {% if not index_js_loaded %} -->
-    <script src="{% static '/js/index.js' %}"></script>
-    <!-- {% with index_js_loaded=True %}
+<script src="{% static '/js/index.js' %}"></script>
+<!-- {% with index_js_loaded=True %}
     {% endwith %}
   {% endif %}
 {% endblock %} -->
@@ -172,6 +172,8 @@
                     </a>
                     <span class="tooltip-text">Library</span>
                 </div>
+                <button onClick='previewVideo()'>Preview Video</button>
+
                 {% comment %} <div class="add-channel-btn tooltip-container">
                     <button id="view_records" onClick="showAddChannelModal()">
                         <i class="fab fa-youtube"></i>
@@ -475,16 +477,6 @@
                     id="btnCloseGetTaskIdFromUserModal"></button>
             </div>
             <div class="modal-body">
-                <!--<p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>An error has occurred while processing clickup task, please do the
-                        following:
-                    </p>
-                    <p>
-                        1. Try checking if there is something wrong with the clickup task.
-                    </p>
-                    <p>
-                        2. Try re-entering or changing the clickup task id below and click retry.
-                    </p>-->
                 <p>
                     Please enter your clickup task ids separated by a comma if you have more than one.
                 </p>
@@ -633,7 +625,7 @@
 </div>
 
 <!-- Confirm playlist selection modal -->
-<div class="modal" id="confirm-playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+<!-- <div class="modal" id="confirm-playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -654,7 +646,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- New Playlist Details Modal -->
 <div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -896,9 +888,39 @@
     </div>
 </div>
 <!-- ====================================================================== -->
-<!-- Select Channel Modal -->
-<!-- YouTube channels Selection Modal  -->
-<!-- deleted deleted -->
+<div id="videoModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="youtubePreview" style="margin:0"></div>
+        <div id="preview-buttons" style="align-content:right; padding: 10px 0 0 0; margin-buttom: 0;">
+            <button id="deleteButton" style="padding: 5px">Delete</button>
+            <button id="deleteButton" style="padding: 5px">Close</button>
+        </div>
+    </div>
+</div>
+<!-- =================================================================================== -->
+
+<!-- Add Channel Modal-->
+<div class="modal" id="preview-video-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Preview video</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-preview-video-modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-content">
+                    <div id="youtube-preview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" id="preview-btn-ok">OK</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="preview-btn-delete">Delete</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
 
 
 
@@ -914,4 +936,3 @@
 
 
 {% endblock body %}
-

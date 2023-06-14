@@ -129,84 +129,6 @@ class UserChannelsView(APIView):
                 {'Error': error_message},
                 status=status_code
             )
-    '''
-    def insert_user_credential_into_dowell_connection_db(self, channel, credential):
-        """
-        Inserts a new user youtube info record into the company's database
-
-        Return:
-            Json response from the database.
-        """
-
-        url = "http://100002.pythonanywhere.com/"
-
-        payload = json.dumps({
-            "cluster": "ux_live",
-            "database": "ux_live",
-            "collection": "credentials",
-            "document": "credentials",
-            "team_member_ID": "1200001",
-            "function_ID": "ABCDE",
-            "command": "insert",
-            "field": {
-                'channel_id': channel.get('channel_id'),
-                'channel_title': channel.get('channel_title'),
-                'channel_credentials': credential
-            },
-            "update_field": {
-                "order_nos": 21
-            },
-            "platform": "bangalore"
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.request(
-            "POST", url, headers=headers, data=payload).json()
-        print(response)
-        return response
-
-    def is_available_in_db(self,user, channel) -> bool:
-        """
-        Checks if record already exist in the database'
-
-        Return:
-            True: If record exist in the database.
-            False: If record is not in the database.
-        """
-        url = "http://100002.pythonanywhere.com/"
-
-        payload = json.dumps({
-            "cluster": "ux_live",
-            "database": "ux_live",
-            "collection": "credentials",
-            "document": "credentials",
-            "team_member_ID": "1200001",
-            "function_ID": "ABCDE",
-            "command": "find",
-            "field": {
-                'user_id': user
-                # 'channel_id': channel.get('channel_id')
-            },
-            "update_field": {
-                "order_nos": 21
-            },
-            "platform": "bangalore"
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.request(
-            "POST", url, headers=headers, data=payload).json()
-
-        if response.get('data') is None:
-            return False
-
-        print("xxx DB Response xx=> ", response)
-        return True
-    '''
 
     def is_available_in_db(self, email) -> bool:
         """
@@ -297,7 +219,7 @@ class DeleteVideoView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def delete(self, request):
         """
         POST request to delete a YouTube video.
 

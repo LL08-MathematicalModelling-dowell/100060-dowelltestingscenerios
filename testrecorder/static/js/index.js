@@ -1,4 +1,3 @@
-// $(document).ready(() => {
 // Some app controls
 let video = document.getElementById('video')
 let cameraCheckbox = document.getElementById('webcam-recording')
@@ -218,11 +217,6 @@ generateString(6).then((randomString) => {
   fileRandomString = randomString;
 })
 
-// Clickup error modal
-// let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
-
-// // user settings modal
-// let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
 
 // Get task id from user modal
 let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
@@ -1775,18 +1769,18 @@ async function createBroadcast() {
     .then((json) => {
       try {
         data = json;
-        // // // console.log("data: ", data);
+        // console.log("data: ", data);
         newStreamId = data.newStreamId;
         newStreamName = data.newStreamName;
         newStreamIngestionAddress = data.newStreamIngestionAddress;
         //newRtmpUrl=data.newRtmpUrl;
         newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
         newBroadcastID = data.new_broadcast_id;
-        // // // console.log("newStreamId:", newStreamId);
-        // // // console.log("newStreamName:", newStreamName);
-        // // // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-        // // // console.log("newRtmpUrl:", newRtmpUrl);
-        // // // console.log("new_broadcast_id:", newBroadcastID);
+        // console.log("newStreamId:", newStreamId);
+        // console.log("newStreamName:", newStreamName);
+        // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
+        // console.log("newRtmpUrl:", newRtmpUrl);
+        // console.log("new_broadcast_id:", newBroadcastID);
       }
       catch {
         // resetStateOnError();
@@ -1803,7 +1797,7 @@ async function createBroadcast() {
   if (broadcastCreated == true) {
     // Request user to select a Channel
     // showSelectYoutubePlaylistModal();
-    // // console.log("broadcast created");
+    // console.log("broadcast created");
     insertVideoIntoPlaylist()
   }
 }
@@ -2416,6 +2410,7 @@ async function showUserSettingsModal() {
 
 // Shows get task id from user modal
 async function showGetTaskIdFromUserModal() {
+  console.log(' showGetTaskIdFromUserModal() running...');
 
   // Stop video display tracks
   await stopVideoElemTracks(video);
@@ -3495,16 +3490,16 @@ async function load_videos(playlist_id) {
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
-        play(selectedVideo.id, selectedVideo.title);
+        play(selectedVideo.id);
       }
     });
 
   }
 }
 
-async function play(videoId, title = '') {
+async function play(videoId, playerElementID = 'player') {
   // console.log('Playing video:', title, 'with videoId:', videoId)
-  const playerElement = document.getElementById('player');
+  const playerElement = document.getElementById(playerElementID);
   if (!window.YT) {
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
@@ -3550,3 +3545,118 @@ function resetonStartRecording() {
   document.querySelector('#private-videos').disabled = false;
 
 }
+
+
+
+// ===================================================================================================
+
+// YouTube video ID
+const videoId = 'E1ZFIVfPfMY'; // 'ODviQcilJmI' // 'E1ZFIVfPfMY';// newBroadcastID; //'YOUR_YOUTUBE_VIDEO_ID';
+
+// Function to open the modal
+function openModal() {
+  // modal.style.display = 'block';
+
+  // Load YouTube video preview
+  const youtubePreview = document.getElementById('youtube-preview');
+  youtubePreview.innerHTML = `
+    <iframe 
+      width="600" 
+      height="400" 
+      src="https://www.youtube.com/embed/${videoId}" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen
+    ></iframe>
+  `;
+}
+
+function closeModal() {
+
+
+  // Clear YouTube video preview
+
+}
+
+// Creating new playlist modal
+async function previewVideo() {
+  // close modal if open
+  const btnCloseVideoPreviewModal = document.getElementById('close-preview-video-modal');
+  const btnDeleteVideoPreviewModal = document.getElementById('preview-btn-delete');
+  const okBotton = document.getElementById('preview-btn-ok');
+  const youtubePreview = document.getElementById('youtube-preview');
+  btnCloseVideoPreviewModal.click();
+
+  // Show modal
+  const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
+  VideoPreviewModal.show();
+
+  
+  okBotton.addEventListener('click', () => {
+    youtubePreview.innerHTML = '';
+    btnCloseVideoPreviewModal.click()
+  })
+  btnCloseVideoPreviewModal.addEventListener('click', () => {
+    youtubePreview.innerHTML = '';
+    btnCloseVideoPreviewModal.click()
+  })
+  btnDeleteVideoPreviewModal.addEventListener('click', () => {
+    youtubePreview.innerHTML = '';
+    btnCloseVideoPreviewModal.click();
+    deleteVideo(videoId);
+  })
+  openModal();
+
+}
+
+
+async function deleteVideo(video_id){
+  let csrftoken = await getCookie('csrftoken');
+  // let response = await fetch('/youtube/delete-video/api/',
+  //   {
+  //     method:'DELETE',
+  //     headers: {'X-CSRFToken': csrftoken },
+  //     body:{'video_id': video_id},
+  //   }
+  //   );
+   
+
+
+     // Function to handle the fetch response
+  function handleResponse(response) {
+    if (response.ok) {
+      // Successful response
+      return response.json();
+    } else if (response.status === 401) {
+      // Unauthorized error
+      throw new Error('Account is not a Google account');
+    } else {
+      // Other error
+      throw new Error('An error occurred while deleting the video');
+    }
+  }
+
+  // Fetch request to delete the video
+  fetch('/youtube/delete-video/api/', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken, // Include the CSRF token
+    },
+    body: JSON.stringify({
+      video_id: video_id, // Replace with the actual video ID
+    }),
+  })
+    .then(handleResponse)
+    .then(data => {
+      // Success response
+      console.log(data); // Video deleted successfully
+      console.log(data.message); // Video deleted successfully
+      console.log(data.response); // Response from the server
+    })
+    .catch(error => {
+      // Error response
+      console.error(error);
+    });
+}
+
