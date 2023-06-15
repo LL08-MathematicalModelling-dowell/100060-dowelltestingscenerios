@@ -420,7 +420,7 @@
     </div>
 
 
-    <!-- Task Error occurred modal -->
+    <!-- Task Error occurred modal
     <div class="modal" id="taskErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -443,13 +443,13 @@
                             Save Without Notes button.
                         </li>
                     </ol>
-                    <!--<p>
+                    <p>
                         1. Try checking if there is something wrong with the clickup task.
                     </p>
                     <p>
                         2. Try re-entering or changing the clickup task id below and click retry.
                     </p> -->
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label class="form-label required">New Clickup Task ID</label>
                         <input type="text" class="form-control" id="clickup-task-id-retry">
                         <p style="color:red;" id="clickup-task-id-retry-error"></p>
@@ -465,10 +465,10 @@
             </div>
         </div>
     </div>
-</div>
+</div> --> 
 
 <!-- Get clickup task id from user -->
-<div class="modal" id="getTaskIdFromUserModal" data-bs-backdrop="static" data-bs-keyboard="false">
+<!-- <div class="modal" id="getTaskIdFromUserModal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -494,7 +494,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Network Error occurred modal -->
 <div class="modal" id="networkErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -530,7 +530,7 @@
     </div>
 </div>
 
-<!-- Key log file upload modal-->
+<!-- Key log file upload modal
 <div class="modal" id="keyLogFileUploadModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -561,7 +561,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- Beanote file upload modal-->
 <div class="modal" id="beanoteFileUploadModal">
@@ -902,17 +902,17 @@
 
 <!-- Add Channel Modal-->
 <div class="modal" id="preview-video-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog" id="modal-dialog-video-modal">
+        <div class="modal-content" id="modal-content-video-modal">
             <div class="modal-header">
-                <h5 class="modal-title">Preview video</h5>
+                <h5 class="modal-title" id="modal-title-video-modal" style="color: red;">Preview video</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-preview-video-modal"></button>
             </div>
             <div class="modal-body">
                 <div class="modal-content">
                     <div id="youtube-preview"></div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer" id="modal-footer-video-modal">
                     <button class="btn btn-success" id="preview-btn-ok">OK</button>
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="preview-btn-delete">Delete</button>
                 </div>

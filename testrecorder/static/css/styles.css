@@ -789,7 +789,7 @@ iframe {
 
 /* ==================================================================================== */
 
-.modal-dialog {
+#modal-dialog-video-modal {
   position: relative;
   max-width: 35%;
   margin: var(--bs-modal-margin);
@@ -797,19 +797,19 @@ iframe {
   margin: 180px auto;
 }
 
-.modal-content {
+#modal-content-video-modal {
   background-color: #fefefe;
   margin: 5% auto;
   width: 100%;
 }
 
-.modal-header {
+#modal-header-video-modal {
   padding: 5px;
   background-color: #f1f1f1;
   color: red;
 }
 
-.modal-footer {
+#modal-footer-video-modal {
   display: flex;
   flex-shrink: 0;
   flex-wrap: wrap;

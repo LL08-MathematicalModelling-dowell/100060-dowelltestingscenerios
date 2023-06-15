@@ -219,7 +219,7 @@ generateString(6).then((randomString) => {
 
 
 // Get task id from user modal
-let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
+// let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
 
 // Fill user email settings if it exists
 document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
@@ -2469,7 +2469,7 @@ async function showGetTaskIdFromUserModal() {
       btnCloseGetTaskIdFromUserModal.click();
 
       // Show modal
-      getTaskIdFromUserModal.show();
+      // getTaskIdFromUserModal.show();
     } else {
       // Proceed to check for beanote and selenium ide fiels
       keyLogFileCheck();
@@ -2894,19 +2894,7 @@ async function handleCreatePlaylistRequest() {
 
 
   document.getElementById("p_title-error").innerHTML = msg;
-
-  // Get playlist description
-  // let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
-
-  // Get playlist privacy status
-  // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
   let newPlaylistPrivacyStatus = document.querySelector('input[name="privacy_status"]:checked').value;
-  // if (newPlaylistPrivacyStatus === true) {
-  //   newPlaylistPrivacyStatus = "public"
-  // } else {
-  //   newPlaylistPrivacyStatus = "private"
-  // }
-
 
   if (docIsValid) {
     // close create new playlist modal
@@ -3088,19 +3076,10 @@ async function showNetworkErrorSystemTrayNotification() {
 
 // Shows the network error occurred modal
 async function showNetworkErrorOccurredModal() {
-
   // Show network error system tray notification
   showNetworkErrorSystemTrayNotification();
-
   // Show an alert instead of a modal, with small delay
   setTimeout(showNetworkErrorAlert, 50);
-
-  /*// close modal if open
-  const btnCloseNetworkErrorOccurredModal = document.getElementById('close-network-error-occurred-modal');
-  btnCloseNetworkErrorOccurredModal.click();
-  // Show modal
-  const networkErrorOccurredModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-  networkErrorOccurredModal.show();*/
 }
 
 // Shows a network error alert
@@ -3529,10 +3508,8 @@ async function play(videoId, playerElementID = 'player') {
 }
 
 function resetonStartRecording() {
-
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
-
   // reset video title 
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
@@ -3551,10 +3528,10 @@ function resetonStartRecording() {
 // ===================================================================================================
 
 // YouTube video ID
-const videoId = 'E1ZFIVfPfMY'; // 'ODviQcilJmI' // 'E1ZFIVfPfMY';// newBroadcastID; //'YOUR_YOUTUBE_VIDEO_ID';
+// 'ODviQcilJmI' // 'E1ZFIVfPfMY';// newBroadcastID; //'YOUR_YOUTUBE_VIDEO_ID';
 
 // Function to open the modal
-function openModal() {
+function openModal(videoId) {
   // modal.style.display = 'block';
 
   // Load YouTube video preview
@@ -3571,27 +3548,25 @@ function openModal() {
   `;
 }
 
-function closeModal() {
-
-
-  // Clear YouTube video preview
-
-}
 
 // Creating new playlist modal
 async function previewVideo() {
-  // close modal if open
+  const videoId = 'yD68MRQnNH4' ;//newBroadcastID;
+  console.log('==================== Video Id >>> ', videoId);
+
+  const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
   const btnCloseVideoPreviewModal = document.getElementById('close-preview-video-modal');
   const btnDeleteVideoPreviewModal = document.getElementById('preview-btn-delete');
   const okBotton = document.getElementById('preview-btn-ok');
   const youtubePreview = document.getElementById('youtube-preview');
+
+  // Close modal if open
   btnCloseVideoPreviewModal.click();
 
   // Show modal
-  const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
   VideoPreviewModal.show();
 
-  
+
   okBotton.addEventListener('click', () => {
     youtubePreview.innerHTML = '';
     btnCloseVideoPreviewModal.click()
@@ -3610,19 +3585,10 @@ async function previewVideo() {
 }
 
 
-async function deleteVideo(video_id){
+async function deleteVideo(video_id) {
   let csrftoken = await getCookie('csrftoken');
-  // let response = await fetch('/youtube/delete-video/api/',
-  //   {
-  //     method:'DELETE',
-  //     headers: {'X-CSRFToken': csrftoken },
-  //     body:{'video_id': video_id},
-  //   }
-  //   );
-   
 
-
-     // Function to handle the fetch response
+  // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
       // Successful response
