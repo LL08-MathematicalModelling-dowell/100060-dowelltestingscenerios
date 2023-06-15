@@ -80,6 +80,31 @@ def playlists():
     # return f"Playlists: {', '.join(playlist_titles)}"
     return playlists
 
+@app.route('/createPlaylist', methods=['POST'])
+def create_playlist():
+    if 'credentials' not in session:
+        return redirect('/')
+
+    cred = credentials.Credentials.from_authorized_user_info(session['credentials'])
+    youtube = googleapiclient.discovery.build(API_SERVICE_NAME, API_VERSION, credentials=cred)
+
+    # Extract playlist details from the request
+    playlist_title = request.form.get('title')
+    playlist_description = request.form.get('description')
+
+    # Create a new playlist
+    new_playlist = youtube.playlists().insert(
+        part='snippet',
+        body={
+            'snippet': {
+                'title': playlist_title,
+                'description': playlist_description
+            }
+        }
+    ).execute()
+
+    return jsonify(new_playlist)
+
 def credentials_to_dict(credentials):
     return {
         'token': credentials.token,
