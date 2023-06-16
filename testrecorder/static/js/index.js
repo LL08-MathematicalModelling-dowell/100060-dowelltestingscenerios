@@ -335,7 +335,28 @@ async function captureMediaDevices(currentMediaConstraints) {
   }
 }
 
-// Gets screen recording stream
+// // Gets screen recording stream
+// async function captureScreen(mediaConstraints = {
+//   video: {
+//     cursor: 'always',
+//     resizeMode: 'crop-and-scale'
+//   },
+//   // audio: true
+// }) {
+
+//   try {
+//     screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+//     return screenStream
+//   }
+//   catch (err) {
+//     let msg = "STATUS: Error while getting screen stream."
+//     document.getElementById("app-status").innerHTML = msg;
+//     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
+//     // Tell user, stop the recording.
+//     resetStateOnError();
+//   }
+// }
+
 async function captureScreen(mediaConstraints = {
   video: {
     cursor: 'always',
@@ -343,19 +364,39 @@ async function captureScreen(mediaConstraints = {
   },
   // audio: true
 }) {
-
   try {
-    screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
-    return screenStream
-  }
-  catch (err) {
-    let msg = "STATUS: Error while getting screen stream."
+    if (isMobileDevice()) {
+      // Create the <script> element
+      var scriptElement = document.createElement('script');
+      scriptElement.src = 'https://www.WebRTC-Experiment.com/RecordRTC.js';
+
+      // Find the <head> element
+      var headElement = document.head || document.getElementsByTagName('head')[0];
+
+      // Append the <script> element to the <head> element
+      headElement.appendChild(scriptElement);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const videoStream = new RecordRTC(stream, { type: 'video' });
+      return videoStream.stream;
+    } else {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
+      return screenStream;
+    }
+  } catch (err) {
+    let msg = "STATUS: Error while getting screen stream.";
     document.getElementById("app-status").innerHTML = msg;
     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
     // Tell user, stop the recording.
     resetStateOnError();
   }
 }
+
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+
 
 //@Muhammad Ahmed 
 // VOice mute/Unmute
@@ -1825,7 +1866,7 @@ async function endBroadcast() {
     })
     .then((json) => {
       data = json;
-      // // console.log("data: ", data);
+      console.log("transition complete broadcast data: ", data);
     })
     .then(console.log("Broadcast Trasitioned to complete state!"))
     .catch((err) => {
@@ -3538,8 +3579,8 @@ function openModal(videoId) {
   const youtubePreview = document.getElementById('youtube-preview');
   youtubePreview.innerHTML = `
     <iframe 
-      width="600" 
-      height="400" 
+      width="100%" 
+      height="100%" 
       src="https://www.youtube.com/embed/${videoId}" 
       frameborder="0" 
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -3551,7 +3592,7 @@ function openModal(videoId) {
 
 // Creating new playlist modal
 async function previewVideo() {
-  const videoId = 'yD68MRQnNH4' ;//newBroadcastID;
+  const videoId = '6DJj2zZCHaM';//newBroadcastID; 6DJj2zZCHaM
   console.log('==================== Video Id >>> ', videoId);
 
   const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));

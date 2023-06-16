@@ -21,3 +21,4 @@ urlpatterns = [
     path('delete-video/api/', DeleteVideoView.as_view(), name='delete-video'),
     path('videos/api/',  LoadVideoView.as_view(), name='videos'),
 ]
+# Testing_new_deploy 2023-06-15T14:19:21.936291

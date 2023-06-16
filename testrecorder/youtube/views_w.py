@@ -373,7 +373,8 @@ class LoadVideoView(APIView):
             return Response(videos)
         except Exception as e:
             # Return an error message
-            return Response({'Error': str(e)})
+            print('videos error  >> ', e)
+            return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
 def create_user_youtube_object(request):
