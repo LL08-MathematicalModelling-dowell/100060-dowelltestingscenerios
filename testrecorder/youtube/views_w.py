@@ -370,7 +370,7 @@ class LoadVideoView(APIView):
                 # Handle case when no channels are found
                 videos = []
 
-            return Response(videos)
+            return Response(videos, status=status.HTTP_200_OK)
         except Exception as e:
             # Return an error message
             print('videos error  >> ', e)
