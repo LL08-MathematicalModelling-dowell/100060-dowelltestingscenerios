@@ -1,7 +1,6 @@
 from ast import Pass
 import asyncio
 import json
-
 from blinker import receiver_connected
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -13,10 +12,9 @@ import django
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
-from youtube.views import create_broadcast, fetch_user_playlists, insert_video_into_playlist, transition_broadcast
 
+from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
 from file_app.views import save_recording_metadata
-
 
 class VideoConsumer(AsyncConsumer):
 
@@ -33,8 +31,8 @@ class VideoConsumer(AsyncConsumer):
 
     async def websocket_receive(self, event):
         # when messages is received from websocket
-        #print("receive", event)
-        #print("receive", event['text'])
+        # print("receive", event)
+        # print("receive", event['text'])
         # print(event.keys())
 
         # check for text key
@@ -49,13 +47,13 @@ class VideoConsumer(AsyncConsumer):
                 self.rtmpUrl = new_data[1]
                 print("Received RTMP url: ", self.rtmpUrl)
                 # rtmp part
-                #rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
-                #rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
+                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
+                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
                 fps = 15
                 command = ['ffmpeg',
                            # Facebook requires an audio track, so we create a silent one here.
                            # Remove this line, as well as `-shortest`, if you send audio from the browser.
-                           #'-f', 'lavfi', '-i', 'anullsrc',
+                           # '-f', 'lavfi', '-i', 'anullsrc',
 
                            # FFmpeg will read input video from STDIN
                            '-i', '-',
@@ -96,8 +94,8 @@ class VideoConsumer(AsyncConsumer):
                 self.rtmpUrl = data
                 print("Received RTMP url: ", self.rtmpUrl)
                 # rtmp part
-                #rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
-                #rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
+                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
+                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
                 fps = 15
                 command = ['ffmpeg',
                            # Facebook requires an audio track, so we create a silent one here.
@@ -161,16 +159,16 @@ class WebacamScreenVideoConsumer(AsyncConsumer):
 
     async def websocket_connect(self, event):
         # when websocket connects
-        #print("connected", event)
-        #print("self", self)
+        # print("connected", event)
+        # print("self", self)
 
         await self.send({"type": "websocket.accept",
                          })
 
     async def websocket_receive(self, event):
         # when messages is received from websocket
-        #print("receive", event)
-        #print("receive", event['text'])
+        # print("receive", event)
+        # print("receive", event['text'])
         # print(event.keys())
 
         # check for text key
@@ -181,9 +179,9 @@ class WebacamScreenVideoConsumer(AsyncConsumer):
             # Check there is no audio from browser
             if 'FILENAME,' in data:
                 new_data = data.split(",")
-                #print("new_data: ",new_data)
+                # print("new_data: ",new_data)
                 self.recording_file = new_data[1]
-                #print("Received Recording File Name: ",self.recording_file)
+                # print("Received Recording File Name: ",self.recording_file)
 
                 # Send an acknowledgement for rtmp url received
                 msg = "Received Recording File Name: "+self.recording_file
@@ -202,9 +200,9 @@ class WebacamScreenVideoConsumer(AsyncConsumer):
             # self.process.stdin.write(event['bytes'])
             filedata = event['bytes']
             file_name = self.recording_file
-            #recording_file_path = settings.MEDIA_ROOT+"/"+file_name
+            # recording_file_path = settings.MEDIA_ROOT+"/"+file_name
             recording_file_path = settings.TEMP_FILES_ROOT+"/"+file_name
-            #print("recording_file_path: ",recording_file_path)
+            # print("recording_file_path: ",recording_file_path)
 
             with open(recording_file_path, 'ab+') as destination:
                 # for chunk in filedata.chunks():
@@ -212,7 +210,7 @@ class WebacamScreenVideoConsumer(AsyncConsumer):
 
             # Send an acknowledgement for bytes received
             msg = "Bytes received"
-            #print("screen websocket Bytes received")
+            # print("screen websocket Bytes received")
             await self.send({"type": "websocket.send", "text": msg})
 
     async def websocket_disconnect(self, event):
@@ -276,7 +274,7 @@ class MultiPurposeConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
         # when websocket connects
         print("connected", event)
-        #print("self", self)
+        # print("self", self)
 
         await self.send({"type": "websocket.accept",
                          })
@@ -316,16 +314,16 @@ class MultiPurposeConsumer(AsyncConsumer):
                         print("stream_dict: ", stream_dict)
 
                         # for testing
-                        #stream_dict = {"newRtmpUrl":"video.mp4", "new_broadcast_id": "video.mp4"}
-                        #self.rtmpUrl = "video.mp4"
+                        # stream_dict = {"newRtmpUrl":"video.mp4", "new_broadcast_id": "video.mp4"}
+                        # self.rtmpUrl = "video.mp4"
 
                         if "newRtmpUrl" in stream_dict.keys():
                             self.rtmpUrl = stream_dict["newRtmpUrl"].replace(
                                 "rtmps", "rtmp")
                             print("self.rtmpUrl: ", self.rtmpUrl)
                             self.new_broadcast_id = stream_dict["new_broadcast_id"]
-                            #self.rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/zuj6-w4v7-43cy-9b6s-7x2y'
-                            #self.rtmpUrl = "video.mp4"
+                            # self.rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/zuj6-w4v7-43cy-9b6s-7x2y'
+                            # self.rtmpUrl = "video.mp4"
 
                             fps = 15
                             command = ['ffmpeg',
@@ -472,8 +470,8 @@ class MultiPurposeConsumer(AsyncConsumer):
                         # set video file name
                         upload_file_name = json_data["FileName"]
                         print("upload_file_name: ", upload_file_name)
-                        #self.rtmpUrl = settings.TEMP_FILES_ROOT+"/"+video_file_name
-                        #self.rtmpUrl = settings.TEMP_FILES_ROOT+"/"+upload_file_name
+                        # self.rtmpUrl = settings.TEMP_FILES_ROOT+"/"+video_file_name
+                        # self.rtmpUrl = settings.TEMP_FILES_ROOT+"/"+upload_file_name
                         self.upload_file_name = settings.TEMP_FILES_ROOT+"/"+upload_file_name
 
                         # Send an acknowledgement
@@ -482,25 +480,25 @@ class MultiPurposeConsumer(AsyncConsumer):
                         print(json_msg)
                         await self.send({"type": "websocket.send", "text": json_msg})
 
-                    elif command == "FETCH_PLAYLISTS":
-                        playlists_data = fetch_user_playlists()
-                        #print("fetching playlists")
+                    # elif command == "FETCH_PLAYLISTS":
+                    #     playlists_data = fetch_user_playlists()
+                    #     #print("fetching playlists")
 
-                        # Send an acknowledgement
-                        msg = {
-                            "FEED_BACK": "Playlists were fetched",
-                            "playlists_data": playlists_data
-                        }
-                        json_msg = json.dumps(msg)
-                        print(json_msg)
-                        await self.send({"type": "websocket.send", "text": json_msg})
+                    #     # Send an acknowledgement
+                    #     msg = {
+                    #         "FEED_BACK": "Playlists were fetched",
+                    #         "playlists_data": playlists_data
+                    #     }
+                    #     json_msg = json.dumps(msg)
+                    #     print(json_msg)
+                    #     await self.send({"type": "websocket.send", "text": json_msg})
 
                     elif command == "INSERT_VIDEO_IN_PLAYLIST":
-                        #print("Inserting video into playlist")
+                        # print("Inserting video into playlist")
                         the_video_id = json_data["videoId"]
-                        #print("the_video_id: ",the_video_id)
+                        # print("the_video_id: ",the_video_id)
                         the_playlist_id = json_data["playlistId"]
-                        #print("the_playlist_id: ",the_playlist_id)
+                        # print("the_playlist_id: ",the_playlist_id)
                         response = insert_video_into_playlist(
                             the_video_id, the_playlist_id)
 
@@ -518,7 +516,7 @@ class MultiPurposeConsumer(AsyncConsumer):
                 if self.websocket_mode == "youtube":
                     self.process.stdin.write(event['bytes'])
                     # Send an acknowledgement for bytes received
-                    #msg = "Bytes received"
+                    # msg = "Bytes received"
                     msg = {"message": "Bytes received"}
                     json_msg = json.dumps(msg)
                     await self.send({"type": "websocket.send", "text": json_msg})
@@ -528,13 +526,13 @@ class MultiPurposeConsumer(AsyncConsumer):
                     # self.process.stdin.write(event['bytes'])
                     filedata = event['bytes']
                     recording_file_path = self.rtmpUrl
-                    #print("recording_file_path: ",recording_file_path)
+                    # print("recording_file_path: ",recording_file_path)
 
                     with open(recording_file_path, 'ab+') as destination:
                         destination.write(filedata)
 
                     # Send an acknowledgement for bytes received
-                    #msg = "Bytes received"
+                    # msg = "Bytes received"
                     msg = {"message": "Bytes received"}
                     json_msg = json.dumps(msg)
                     await self.send({"type": "websocket.send", "text": json_msg})
@@ -542,7 +540,7 @@ class MultiPurposeConsumer(AsyncConsumer):
                 # save keylog file
                 if self.websocket_mode == "vps file":
                     keylog_filedata = event['bytes']
-                    #keylog_recording_file_path = "beanote.txt"
+                    # keylog_recording_file_path = "beanote.txt"
                     keylog_recording_file_path = self.upload_file_name
                     print("keylog_recording_file_path: ",
                           keylog_recording_file_path)
@@ -550,7 +548,7 @@ class MultiPurposeConsumer(AsyncConsumer):
                         destination.write(keylog_filedata)
 
                     # Send an acknowledgement for bytes received
-                    #msg = "Bytes received"
+                    # msg = "Bytes received"
                     msg = {"FEED_BACK": "Upload file was saved"}
                     json_msg = json.dumps(msg)
                     await self.send({"type": "websocket.send", "text": json_msg})

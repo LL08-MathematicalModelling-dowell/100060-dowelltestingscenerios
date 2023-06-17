@@ -1,13 +1,7 @@
-# youtube/views.py
 from django.http import HttpResponse
-# -*- coding: utf-8 -*-
 import os
 import json
 import pymongo
-import requests
-import google.oauth2.credentials
-import google_auth_oauthlib.flow
-import googleapiclient.discovery
 from googleapiclient.errors import HttpError
 from datetime import datetime
 from datetime import timedelta
@@ -18,84 +12,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
-from youtube.models import ChannelsRecord, YoutubeUserCredential
 from django.contrib.auth import logout
 import logging
 
+from .views_w import create_user_youtube_object
 
 logger = logging.getLogger(__name__)
-# When running locally, disable OAuthlib's HTTPs verification.
-# ACTION ITEM for developers:
-#     When running in production *do not* leave this option enabled.
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-os.environ['OAUTHLIB_RELAX_TOKEN_SCOPE'] = '1'
-
-credentials_file = settings.BASE_DIR+'/youtube/credentials.json'
-
-# This variable specifies the name of a file that contains the OAuth 2.0
-# information for this application, including its client_id and client_secret.
-CLIENT_SECRETS_FILE = settings.BASE_DIR+'/youtube/client_secret.json'
-
-# This OAuth 2.0 access scope allows for full read/write access to the
-# authenticated user's account and requires requests to use an SSL connection.
-SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl',
-          'openid',
-          'https://www.googleapis.com/auth/userinfo.profile',
-          'https://www.googleapis.com/auth/youtube.force-ssl',
-          'https://www.googleapis.com/auth/userinfo.email',
-          "https://www.googleapis.com/auth/youtube.readonly"
-          ]
-API_SERVICE_NAME = 'youtube'
-API_VERSION = 'v3'
-
-
-def get_user_credentials(request, the_channel_title):
-    """
-        Gets the channel details using the channel title
-    """
-    try:
-        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-        # session_channel["channel_credentials"]
-        current_channel_credentials = dict(youtube_user.credential)
-        del current_channel_credentials['expiry']
-        return current_channel_credentials
-    except Exception:
-        # if the user doesn't have a YoutubeUserCredential object, return an error response with 401 Unauthorized status code
-        return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 def index(request):
     return HttpResponse(print_index_table())
-
-
-def test_api_request(request):
-    if not request.session.get('credentials'):
-        response = redirect('authorize')
-        return response
-
-    # Load credentials from the session.
-    credentials = google.oauth2.credentials.Credentials(
-        **request.session.get('credentials'))
-
-    youtube = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
-    channel = youtube.channels().list(mine=True, part='snippet').execute()
-
-    # Save credentials back to session in case access token was refreshed.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
-    request.session['credentials'] = credentials_to_dict(credentials)
-
-    # Save credentials in json file
-    credentials_dict = credentials_to_dict(credentials)
-    with open(credentials_file, "w") as write_file:
-        json.dump(credentials_dict, write_file, indent=4)
-
-    # json_channel = json.dumps(channel, indent = 4)
-    json_channel = json.dumps(channel)
-    print(json_channel)
-    return HttpResponse(json_channel)
 
 
 def insert_broadcast(youtube):
@@ -217,16 +143,9 @@ def create_broadcast(request):
     """
         Creates a broadcast, it is view based.
     """
-
-    # Opening JSON file
-    with open('credentials.json') as json_file:
-        credentials = json.load(json_file)
-
-    credentials = google.oauth2.credentials.Credentials(**credentials)
-
-    youtube = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
+    youtube = create_user_youtube_object(request)
+    if youtube is None:
+        return None
     # create broadcast time
     time_delt1 = timedelta(days=0, hours=0, minutes=5)
     # time_now = datetime.now()
@@ -252,97 +171,6 @@ def create_broadcast(request):
 
     # return json_stream_dict
     return HttpResponse(json_stream_dict)
-
-
-def authorize(request):
-    print("Inside authorize ......")
-    # Create flow instance to manage the OAuth 2.0 Authorization Grant Flow steps.
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES)
-
-    # The URI created here must exactly match one of the authorized redirect URIs
-    # for the OAuth 2.0 client, which you configured in the API Console. If this
-    # value doesn't match an authorized URI, you will get a 'redirect_uri_mismatch'
-    # error.
-    url = reverse('oauth2callback', request=request)
-    print("Reversed URL: ", url)
-
-    flow.redirect_uri = url
-
-    authorization_url, state = flow.authorization_url(
-        # Enable offline access so that you can refresh an access token without
-        # re-prompting the user for permission. Recommended for web server apps.
-        access_type='offline',
-        # Enable incremental authorization. Recommended as a best practice.
-        include_granted_scopes='true')
-
-    # Store the state so the callback can verify the auth server response.
-    request.session['state'] = state
-
-    request.session['authorization_url'] = authorization_url
-    print("authorization_url: ", authorization_url)
-    response = redirect(authorization_url)
-    return response
-
-
-def oauth2callback(request):
-    print("Request: ", request)
-    # print("Request.GET: ", request.GET)
-    # print("request.GET.keys(): ", request.GET.keys())
-    currentUrl = request.get_full_path()
-    print("request currentUrl: ", currentUrl)
-    # Specify the state when creating the flow in the callback so that it can
-    # verified in the authorization server response.
-    state = request.session['state']
-
-    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
-
-    url = reverse('oauth2callback', request=request)
-    print("Reversed URL: ", url)
-    flow.redirect_uri = url
-
-    # Use the authorization server's response to fetch the OAuth 2.0 tokens.
-    request_url = request.session.get('authorization_url')
-    authorization_response = currentUrl
-    flow.fetch_token(authorization_response=authorization_response)
-
-    # Store credentials in the session.
-    # ACTION ITEM: In a production app, you likely want to save these
-    #              credentials in a persistent database instead.
-    credentials = flow.credentials
-    print("OAUTH credentials: ", credentials)
-    request.session['credentials'] = credentials_to_dict(credentials)
-
-    response = redirect('test_api_request')
-    return response
-
-
-def revoke(request):
-    if not request.session.get('credentials'):
-        return HttpResponse('You need to <a href="/youtube/authorize">authorize</a> before ' +
-                            'testing the code to revoke credentials.')
-
-    credentials = google.oauth2.credentials.Credentials(
-        **request.session['credentials'])
-
-    revoke = requests.post('https://oauth2.googleapis.com/revoke',
-                           params={'token': credentials.token},
-                           headers={'content-type': 'application/x-www-form-urlencoded'})
-
-    status_code = getattr(revoke, 'status_code')
-    if status_code == 200:
-        return HttpResponse('Credentials successfully revoked.' + print_index_table())
-    else:
-        return HttpResponse('An error occurred.' + print_index_table())
-
-
-def clear_credentials(request):
-    if request.session.get('credentials'):
-        del request.session['credentials']
-
-    return HttpResponse('Credentials have been cleared.<br><br>' +
-                        print_index_table())
 
 
 def credentials_to_dict(credentials):
@@ -389,11 +217,8 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
     time_now = datetime.utcnow()
     future_date1 = time_now + time_delt1
     future_date_iso = future_date1.isoformat()
-    # videoPrivacyStatus = "private"  # ToDo get this from request
-    # testNameValue = "Python tests"  # ToDo get this from request
     videoPrivacyStatus = videoPrivacyStatus
     testNameValue = testNameValue
-    # videoTitle = "Test Broadcast " + testNameValue + " " + future_date_iso
     videoTitle = testNameValue + " " + future_date_iso
     print(future_date_iso)
 
@@ -401,8 +226,6 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
         part="snippet,contentDetails,statistics,status",
         body={
             "status": {
-                # "privacyStatus": "private",
-                # "privacyStatus": "public",
                 "privacyStatus": videoPrivacyStatus,
                 "selfDeclaredMadeForKids": False
             },
@@ -479,46 +302,7 @@ def insert_stream(youtube):
     return stream_dict
 
 
-# def create_broadcast(videoPrivacyStatus, testNameValue, request):
-#     """
-#         Creates a broadcast with a livestream bound
-#     """
-
-#     # Opening JSON file
-#     """with open(credentials_file) as json_file:
-#         credentials = json.load(json_file)"""
-
-#     # Get current channel credetials
-#     channel_title = request.data.get("channel_title")
-#     # json.loads(get_user_credentials(request, channel_title))
-#     credentials = get_user_credentials(request, channel_title)
-
-#     credentials = google.oauth2.credentials.Credentials(**credentials)
-
-#     youtube = googleapiclient.discovery.build(
-#         API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
-#     # Create broadcast
-#     new_broadcast_id = insert_broadcast(
-#         youtube, videoPrivacyStatus, testNameValue)
-
-#     # Create stream
-#     stream_dict = insert_stream(youtube)
-
-#     # Bind livestream and broadcast
-#     stream_dict['new_broadcast_id'] = new_broadcast_id
-#     stream_id = stream_dict['newStreamId']
-#     bind_broadcast(youtube, new_broadcast_id, stream_id)
-
-#     # Serializing json
-#     json_stream_dict = json.dumps(stream_dict)
-#     print(json_stream_dict)
-
-#     # return json_stream_dict
-#     return stream_dict
-
 class CreateBroadcastView(APIView):
-    # parser_classes = (MultiPartParser, FormParser)
     renderer_classes = [JSONRenderer]
 
     def post(self, request, *args, **kwargs):
@@ -555,15 +339,11 @@ class CreateBroadcastView(APIView):
         """
         Creates a broadcast with a live stream bound
         """
-        logger.info('Creating broadcast... ===========')
-        # Get current channel credentials
-        channel_title = request.data.get("channel_title")
-        credentials = get_user_credentials(request, channel_title)
-        credentials = google.oauth2.credentials.Credentials(**credentials)
-
-        # Build the YouTube API client
-        youtube = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+        print('Creating broadcast... ')
+        
+        youtube = create_user_youtube_object(request)
+        if youtube is None:
+            raise AttributeError('youtube object creation failed!!')
 
         # Check if the user's account has live streaming enabled
         list_response = youtube.liveBroadcasts().list(
@@ -619,26 +399,17 @@ class TransitionBroadcastView(APIView):
 
             return Response(transition_response, status=status.HTTP_200_OK)
         except Exception as e:
-            error = {'Error': e}
+            error = {'Error': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
     # Transitions a broadcast to complete status
 
+
 def transition_broadcast(the_broadcast_id, request):
 
-    # Opening JSON file
-    """with open(credentials_file) as json_file:
-        credentials = json.load(json_file)"""
-
-    # Get current channel credetials
-    channel_title = request.data.get("channel_title")
-    # json.loads(get_user_credentials(request, channel_title))
-    credentials = get_user_credentials(request, channel_title)
-
-    credentials = google.oauth2.credentials.Credentials(**credentials)
-
-    youtube = googleapiclient.discovery.build(
-        API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+    youtube = create_user_youtube_object(request)
+    if youtube is None:
+        raise AttributeError('youtube object creation failed!!')
 
     request = youtube.liveBroadcasts().transition(
         broadcastStatus="complete",
@@ -670,19 +441,9 @@ class PlaylistItemsInsertView(APIView):
             print("the_video_id: ", the_video_id)
             print("the_playlist_id: ", the_playlist_id)
 
-            # Create youtube object
-            """with open(credentials_file) as json_file:
-                credentials = json.load(json_file)"""
-
-            # Get current channel credetials
-            channel_title = request.data.get("channel_title")
-            # json.loads(get_user_credentials(request, channel_title))
-            credentials = get_user_credentials(request, channel_title)
-
-            credentials = google.oauth2.credentials.Credentials(**credentials)
-
-            youtube = googleapiclient.discovery.build(
-                API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+            youtube = create_user_youtube_object(request)
+            if youtube is None:
+                raise AttributeError('youtube object creation failed!!')
 
             # Make the insert request
             request = youtube.playlistItems().insert(
@@ -763,7 +524,6 @@ def fetch_playlists_with_pagination(youtube_object):
             pageToken=page_token
         )
         response = request.execute()
-       
 
         # Get next page token
         if "nextPageToken" in response.keys():
@@ -786,30 +546,17 @@ class FetchPlaylistsView(APIView):
 
     renderer_classes = [JSONRenderer]
 
-    def post(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         try:
-            print("Request: ", request)
-
-            # Create youtube object
-            """with open(credentials_file) as json_file:
-                credentials = json.load(json_file)"""
-
-            # Get current channel credetials
-            channel_title = request.data.get("channel_title")
-            # json.loads(get_user_credentials(request, channel_title))
-            credentials = get_user_credentials(request, channel_title)
-
-            credentials = google.oauth2.credentials.Credentials(**credentials)
-
-            youtube = googleapiclient.discovery.build(
-                API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
+            youtube = create_user_youtube_object(request)
+            if youtube is None:
+                raise AttributeError('youtube object creation failed!!')
 
             print('fetching playlist with pagination...')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
-            print('===== playlist(s) ===> ', len(playlists))
+            # print('===== playlist count ===> ', len(playlists))
 
             # Check if the playlist is empty
             if len(playlists) == 0:
@@ -817,7 +564,7 @@ class FetchPlaylistsView(APIView):
                 return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 # playlist id and title dictionary
-                id_title_dict = {}
+                user_playlists = {}
                 todays_playlist_dict = {}
 
                 # today's playlist title
@@ -828,16 +575,11 @@ class FetchPlaylistsView(APIView):
                 # Iterating through the json list
                 for playlist in playlists:
                     id = playlist["id"]
-                    print("Playlist ID = ", id)
+                    # print("Playlist ID = ", id)
                     title = playlist["snippet"]["title"]
-                    # print("Playlist Title = ",title)
-
-                    # Add playlist to dictionary
-                    # id_title_dict[id] = title
-
                     # Filter out daily playlists
                     if "Daily Playlist" not in title:
-                        id_title_dict[id] = title
+                        user_playlists[id] = title
                     elif todays_playlist_title == title:
                         todays_playlist_dict["todays_playlist_id"] = id
                         todays_playlist_dict["todays_playlist_title"] = title
@@ -847,93 +589,18 @@ class FetchPlaylistsView(APIView):
 
                 # Dictionary with all necessary data
                 youtube_details = {'channel_title': channel_title,
-                                'id_title_dict': id_title_dict,
-                                'todays_playlist_dict': todays_playlist_dict}
-                
+                                   'user_playlists': user_playlists,
+                                   'todays_playlist_dict': todays_playlist_dict}
+
                 return Response(youtube_details, status=status.HTTP_200_OK)
 
-                # return Response(id_title_dict, status=status.HTTP_200_OK)
+                # return Response(user_playlists, status=status.HTTP_200_OK)
         except Exception as err:
             print("Error while fetching playlists: " + str(err))
             return Response({'Error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-def fetch_user_playlists():
-    """
-        Handles requests to get the current youtube channel's
-        playlists
-    """
-
-    try:
-        # Create youtube object
-        with open(credentials_file) as json_file:
-            credentials = json.load(json_file)
-
-        credentials = google.oauth2.credentials.Credentials(**credentials)
-
-        youtube = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
-        """# Fetch the playlists
-        request = youtube.playlists().list(
-            part="snippet,contentDetails",
-            maxResults=25,
-            mine=True
-        )
-        response = request.execute()
-        print(response)
-
-        # Extract playlist id and names from data
-        playlists = response['items']"""
-
-        # Fetch all playlists with pagination
-        playlists = fetch_playlists_with_pagination(youtube)
-
-        # playlist id and title dictionary
-        id_title_dict = {}
-        todays_playlist_dict = {}
-        # today's playlist title
-        todays_playlist_title = get_todays_playlist_title()
-
-        # Current channel title
-        channel_title = ""
-        # Iterating through the json list
-        for playlist in playlists:
-            id = playlist["id"]
-            # print("Playlist ID = ",id)
-            title = playlist["snippet"]["title"]
-            # print("Playlist Title = ",title)
-
-            # Add playlist to dictionary
-            # id_title_dict[id] = title
-            # Filter out daily playlists
-            if "Daily Playlist" not in title:
-                id_title_dict[id] = title
-            elif todays_playlist_title == title:
-                todays_playlist_dict["todays_playlist_id"] = id
-                todays_playlist_dict["todays_playlist_title"] = title
-
-            # Current channel title
-            channel_title = playlist["snippet"]["channelTitle"]
-
-        print("id_title_dict: ", id_title_dict)
-
-        # add channel title
-        print("channel_title: ", channel_title)
-
-        # Dictionary with all necessary data
-        youtube_details = {'channel_title': channel_title,
-                           'id_title_dict': id_title_dict,
-                           'todays_playlist_dict': todays_playlist_dict}
-        return youtube_details
-
-    except Exception as err:
-        error_msg = "Error while getting playlists: " + str(err)
-        print(error_msg)
-        raise Exception(error_msg)
-
-
-def insert_video_into_playlist(the_video_id, the_playlist_id):
+def insert_video_into_playlist(request, the_video_id, the_playlist_id):
     """
         Handles requests to insert a video into a youtube channel
         playlist
@@ -942,14 +609,9 @@ def insert_video_into_playlist(the_video_id, the_playlist_id):
         print("the_video_id: ", the_video_id)
         print("the_playlist_id: ", the_playlist_id)
 
-        # Create youtube object
-        with open(credentials_file) as json_file:
-            credentials = json.load(json_file)
-
-        credentials = google.oauth2.credentials.Credentials(**credentials)
-
-        youtube = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+        youtube = create_user_youtube_object(request)
+        if youtube is None:
+            raise AttributeError('youtube object creation failed!!')
 
         # Make the insert request
         request = youtube.playlistItems().insert(
@@ -980,14 +642,9 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
     Handles requests to create a playlist
     """
     try:
-        # Get current channel credentials
-        channel_title = request.data.get("channel_title")
-        credentials = get_user_credentials(request, channel_title)
-        credentials = google.oauth2.credentials.Credentials(**credentials)
-
-        # Create youtube object
-        youtube = googleapiclient.discovery.build(
-            API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
+        youtube = create_user_youtube_object(request)
+        if youtube is None:
+            raise AttributeError('youtube object creation failed!!')
 
         # Check if a playlist with provided title exists
         playlists = fetch_playlists_with_pagination(youtube)
@@ -1059,128 +716,6 @@ class CreatePlaylistView(APIView):
                 return Response(error_msg, status=status.HTTP_409_CONFLICT)
             else:
                 return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
-
-
-class FetchPlaylistsViewV2(APIView):
-    """
-        Handles requests to get the current youtube channel's
-        playlists,sends the playlists as a list, earlier version
-        sends a dictionary
-    """
-
-    renderer_classes = [JSONRenderer]
-
-    def post(self, request, *args, **kwargs):
-        try:
-            print("Request: ", request)
-
-            # Create youtube object
-            """with open(credentials_file) as json_file:
-                credentials = json.load(json_file)"""
-
-            # Get current channel credetials
-            channel_title = request.data.get("channel_title")
-            # json.loads(get_user_credentials(request, channel_title))
-            credentials = get_user_credentials(request, channel_title)
-
-            credentials = google.oauth2.credentials.Credentials(**credentials)
-
-            youtube = googleapiclient.discovery.build(
-                API_SERVICE_NAME, API_VERSION, credentials=credentials, cache_discovery=False)
-
-            # Fetch all playlists with pagination
-            playlists = fetch_playlists_with_pagination(youtube)
-
-            # playlist id and title dictionary
-            id_title_dict = {}
-            todays_playlist_dict = {}
-            id_title_list = []
-
-            # today's playlist title
-            todays_playlist_title = get_todays_playlist_title()
-
-            # Current channel title
-            channel_title = ""
-            # Iterating through the json list
-            for playlist in playlists:
-                id = playlist["id"]
-                # print("Playlist ID = ",id)
-                title = playlist["snippet"]["title"]
-                # print("Playlist Title = ",title)
-
-                # Add playlist to dictionary
-                # id_title_dict[id] = title
-
-                # Filter out daily playlists
-                if "Daily Playlist" not in title:
-                    # id_title_dict[id] = title
-
-                    temp_dict = {}
-                    temp_dict["playlist_id"] = id
-                    temp_dict["playlist_title"] = title
-                    id_title_list.append(temp_dict)
-                elif todays_playlist_title == title:
-                    todays_playlist_dict["todays_playlist_id"] = id
-                    todays_playlist_dict["todays_playlist_title"] = title
-
-                # Current channel title
-                channel_title = playlist["snippet"]["channelTitle"]
-
-            print("id_title_dict: ", id_title_dict)
-
-            # Dummy dictionary for testing
-            # id_title_dict = { 'PL5G8ZO9YbJUkLn8d7cxEe-lm8BES7PMK3': 'information-retrieval', 'PL5G8ZO9YbJUlTepJf2K9DfaPQXd5d9mhc': 'discord', 'PL5G8ZO9YbJUmRADmMY7ytFNbyRm6Ao-c_': 'R language', 'PL5G8ZO9YbJUk4ZQXkCPst4IKckocKowAZ': 'Playing', 'PL5G8ZO9YbJUkuBPYE2ohhg8CC1kooYhyp': 'physics', 'PL5G8ZO9YbJUkNANUsQkG04KA09GRN5pBp': 'information retrieval', 'PL5G8ZO9YbJUlO_JuUn5zWvRTvqjb_2DD4': 'HTML', 'PL5G8ZO9YbJUkU-Wwtv0mvQ77TBRBaqp_T': 'calendly', 'PL5G8ZO9YbJUl8Cpmo62u3N6JfeONtFe6Q': 'React', 'PL5G8ZO9YbJUmzHnk0QJXRqu2NiSFF92_m': 'Git', 'PL5G8ZO9YbJUkFfO7Mu468lbeXDN2tuMYh': 'Algorithm analysis', 'PL5G8ZO9YbJUnUuCt2WKvE3nU7EB68R38R': 'stm32', 'PL5G8ZO9YbJUnm8iK6XwF3JYV4u0HerrNI': 'stm32', 'PL5G8ZO9YbJUngdOaufnpudnL_0J443fXu': 'music', 'PL5G8ZO9YbJUmWFU5XVqrR6KoneVQdPIPO': 'Biology', 'PL5G8ZO9YbJUndgIo48rpKnCxkAAx-9bEt': 'nigerian music', 'PL5G8ZO9YbJUnUPbd7GGqgvVfsccrFofhz': 'youtubeapi', 'PL5G8ZO9YbJUn01LnVyo0BJPBEbSGlaKwk': 'reddis', 'PL5G8ZO9YbJUkxaJSLikGdVVxDRGaZQK7D': 'ffmpeg', 'PL5G8ZO9YbJUkF89UXv_AEl_vSMvjcOZZP': 'brython', 'PL5G8ZO9YbJUk6F0h9yFJWRpwciCTb6jMS': 'regex', 'PL5G8ZO9YbJUlF3TMfknd7EI0QLEZlJn5c': 'clickup', 'PL5G8ZO9YbJUkI203F03aONzr2A1J-awXa': 'films', 'PL5G8ZO9YbJUm7C1TQHfqKENHrejzY7Cn6': 'CASE tools', 'PL5G8ZO9YbJUnTnS-YITmzBus4wuowuQo8': 'browser-extensions' }
-            # id_title_dict = {'PLtuQzcUOuJ4eOoBUj6Rx3sA4REJAXgTiz': 'Test Playlist 1'}
-
-            # add channel title
-            print("channel_title: ", channel_title)
-
-            # get daily playlist information from db
-
-            # Dictionary with all necessary data
-            youtube_details = {'channel_title': channel_title,
-                               'id_title_list': id_title_list,
-                               'todays_playlist_dict': todays_playlist_dict}
-            return Response(youtube_details, status=status.HTTP_200_OK)
-
-            # return Response(id_title_dict, status=status.HTTP_200_OK)
-        except Exception as err:
-            print("Error while getting playlists: " + str(err))
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
-
-
-class FetchChannels(APIView):
-    """
-        Gets Channels information
-    """
-
-    renderer_classes = [JSONRenderer]
-
-    def get(self, request, *args, **kwargs):
-        try:
-            # get_channel_details(request, "UX Live from uxlivinglab")
-            """current_credentials = get_user_credentials(request, "UX Live from uxlivinglab")
-            print("current_credentials: ",current_credentials)"""
-
-            all_channels = ChannelsRecord.objects.all()
-            channels_list = []
-
-            for channel in all_channels.iterator():
-                print("Channel id: ", channel.channel_id)
-                print("Channel title: ", channel.channel_title)
-                # print("Channel credentials: ", channel.channel_credentials)
-                temp_dict = {}
-                temp_dict["channel_id"] = channel.channel_id
-                temp_dict["channel_title"] = channel.channel_title
-                channels_list.append(temp_dict)
-
-            # Dictionary with all necessary data
-            channels_details = {'channels_list': channels_list}
-
-            return Response(channels_details, status=status.HTTP_200_OK)
-        except Exception as err:
-            print("Error while getting channels: " + str(err))
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
 
 def logout_view(request):

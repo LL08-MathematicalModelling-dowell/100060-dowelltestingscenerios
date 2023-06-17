@@ -20,10 +20,6 @@ from youtube.forms import AddChannelRecord, CreatePlaylist
 load_dotenv()
 
 
-class CamTest(TemplateView):
-    template_name = 'camera_test.html'
-
-
 def validate_youtube_channel(channel_credentials, channel_id):
     """Checks if a youtube channel ID and Credential is valid"""
 
