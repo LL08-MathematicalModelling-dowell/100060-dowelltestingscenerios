@@ -373,7 +373,7 @@ class LoadVideoView(APIView):
             return Response(videos, status=status.HTTP_200_OK)
         except Exception as e:
             # Return an error message
-            print('videos error  >> ', e)
+            # print('videos error  >> ', e)
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -394,3 +394,43 @@ def create_user_youtube_object(request):
         # If the user doesn't have a YoutubeUserCredential object,
         # return an error response with 401 Unauthorized status code
         return None
+
+
+
+class YouTubeVideoAPIView(APIView):
+    def get(self, request, broadcast_id):
+        # Retrieve the video from the YouTube API
+        video_data = self.get_video_data(request, broadcast_id)
+
+        if video_data:
+            return Response(video_data)
+        else:
+            return Response({'error': 'Video not found'}, status=404)
+
+    def get_video_data(self, request, broadcast_id):
+        # Set up the YouTube API client
+        # api_key = 'YOUR_YOUTUBE_API_KEY'  # If using API key authentication
+        # credentials = Credentials.from_authorized_user_info(
+        #     {'client_id': 'YOUR_CLIENT_ID', 'client_secret': 'YOUR_CLIENT_SECRET'}
+        # )  # If using OAuth 2.0 authentication
+
+        youtube = create_user_youtube_object(request) # build('youtube', 'v3', credentials=credentials, developerKey=api_key)
+
+        try:
+            # Make a request to the YouTube API to retrieve video details
+            response = youtube.videos().list(
+                part='snippet',
+                id=broadcast_id
+            ).execute()
+
+            if 'items' in response and len(response['items']) > 0:
+                video_data = response['items'][0]['snippet']
+                return video_data
+            else:
+                return None
+
+        except Exception as e:
+            # Handle any error that occurred during the API request
+            print(f'An error occurred: {e}')
+            return None
+

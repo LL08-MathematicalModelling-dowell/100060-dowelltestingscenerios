@@ -83,7 +83,7 @@ let tableChannels = [];
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
-
+let player;
 
 // video timer
 let videoTimer = document.querySelector(".video-timer")
@@ -533,9 +533,9 @@ async function recordMergedStream() {
 
     // Calculate dynamic webcam stream height and width
     let webcamStreamWidth = Math.floor(0.15 * screenWidth);
-    //// // console.log("webcamStreamWidth: " + webcamStreamWidth);
+    // console.log("webcamStreamWidth: " + webcamStreamWidth);
     let webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
-    //// // console.log("webcamStreamHeight: " + webcamStreamHeight);
+    // console.log("webcamStreamHeight: " + webcamStreamHeight);
 
     // Add the webcam stream. Position it on the bottom left and resize it to 0.15 of screen width.
     merger.addStream(webCamStream, {
@@ -753,7 +753,7 @@ async function recordScreenAndAudio() {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
-        //// // console.log("Sending screen data to screen websocket");
+        // console.log("Sending screen data to screen websocket");
         let recordWebcam = cameraCheckbox.checked;
         let recordScreen = screenCheckbox.checked;
         if ((recordScreen == true) && (recordWebcam == true)) {
@@ -1768,7 +1768,7 @@ async function createWebsocket() {
 }
 
 async function createBroadcast() {
-  url = "youtube/createbroadcast/api/"
+  url = "/youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
   console.log(videoPrivacyStatus);
@@ -1844,7 +1844,7 @@ async function createBroadcast() {
 }
 
 async function endBroadcast() {
-  url = "youtube/transitionbroadcast/api/";
+  url = "/youtube/transitionbroadcast/api/";
   let broadcast_data = new Object();
   broadcast_data.the_broadcast_id = newBroadcastID;
   broadcast_data.channel_title = currentChannelTitle;
@@ -1868,7 +1868,12 @@ async function endBroadcast() {
       data = json;
       console.log("transition complete broadcast data: ", data);
     })
-    .then(console.log("Broadcast Trasitioned to complete state!"))
+    .then(() => {
+      console.log("Broadcast Trasitioned to complete state!");
+      const previewButton = document.getElementById('playback-video-button');
+      previewButton.style.display = 'block';
+    }
+    )
     .catch((err) => {
       console.error("Broadcast Trasitioning to complete state failed!");
     });
@@ -3567,14 +3572,21 @@ function resetonStartRecording() {
 
 
 // ===================================================================================================
+const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
+const btnCloseVideoPreviewModal = document.getElementById('close-preview-video-modal');
+const btnDeleteVideoPreviewModal = document.getElementById('preview-btn-delete');
+const okBotton = document.getElementById('preview-btn-ok');
+const youtubePreview = document.getElementById('youtube-preview');
+const video_Id = newBroadcastID;
 
-// YouTube video ID
-// 'ODviQcilJmI' // 'E1ZFIVfPfMY';// newBroadcastID; //'YOUR_YOUTUBE_VIDEO_ID';
+
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
 // Function to open the modal
 function openModal(videoId) {
-  // modal.style.display = 'block';
-
   // Load YouTube video preview
   const youtubePreview = document.getElementById('youtube-preview');
   youtubePreview.innerHTML = `
@@ -3590,16 +3602,10 @@ function openModal(videoId) {
 }
 
 
-// Creating new playlist modal
-async function previewVideo() {
-  const videoId = '6DJj2zZCHaM';//newBroadcastID; 6DJj2zZCHaM
-  console.log('==================== Video Id >>> ', videoId);
 
-  const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
-  const btnCloseVideoPreviewModal = document.getElementById('close-preview-video-modal');
-  const btnDeleteVideoPreviewModal = document.getElementById('preview-btn-delete');
-  const okBotton = document.getElementById('preview-btn-ok');
-  const youtubePreview = document.getElementById('youtube-preview');
+async function previewVideo() {
+  const video_Id = newBroadcastID;
+  console.log('==== Video Id >>> ', video_Id);
 
   // Close modal if open
   btnCloseVideoPreviewModal.click();
@@ -3607,32 +3613,34 @@ async function previewVideo() {
   // Show modal
   VideoPreviewModal.show();
 
+  openModal(video_Id);
 
   okBotton.addEventListener('click', () => {
     youtubePreview.innerHTML = '';
     btnCloseVideoPreviewModal.click()
-  })
+  });
   btnCloseVideoPreviewModal.addEventListener('click', () => {
     youtubePreview.innerHTML = '';
     btnCloseVideoPreviewModal.click()
-  })
+  });
   btnDeleteVideoPreviewModal.addEventListener('click', () => {
-    youtubePreview.innerHTML = '';
-    btnCloseVideoPreviewModal.click();
-    deleteVideo(videoId);
-  })
-  openModal();
-
+    openModal_delete();
+  });
 }
 
 
-async function deleteVideo(video_id) {
-  let csrftoken = await getCookie('csrftoken');
+async function deleteVideo(video_Id) {
 
+  let csrftoken = await getCookie('csrftoken');
+  console.log('video id ', video_Id)
   // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
       // Successful response
+      let statusBar = document.getElementById("app-status");
+
+      msg = 'SUCCESS: Video deleted successfully';
+      statusBar.innerHTML = msg;
       return response.json();
     } else if (response.status === 401) {
       // Unauthorized error
@@ -3648,18 +3656,18 @@ async function deleteVideo(video_id) {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken, // Include the CSRF token
+      'X-CSRFToken': csrftoken,
     },
     body: JSON.stringify({
-      video_id: video_id, // Replace with the actual video ID
+      video_id: video_Id,
     }),
   })
     .then(handleResponse)
     .then(data => {
       // Success response
-      console.log(data); // Video deleted successfully
-      console.log(data.message); // Video deleted successfully
-      console.log(data.response); // Response from the server
+      console.log('Delete response data >>> ', data); // Video deleted successfully
+      console.log('Delete Response Message >> ', data.message); // Video deleted successfully
+      console.log('Delete data.response >> ', data.response); // Response from the server
     })
     .catch(error => {
       // Error response
@@ -3667,3 +3675,27 @@ async function deleteVideo(video_id) {
     });
 }
 
+// =============================================================
+function openModal_delete() {
+  const modal = document.getElementById('confirmationModal_delete');
+  modal.style.display = 'block';
+}
+
+function closeModal_delete() {
+  var modal = document.getElementById('confirmationModal_delete');
+  modal.style.display = 'none';
+}
+
+function deleteItem_delete() {
+  const video_Id = newBroadcastID;
+
+  // Perform delete operation here
+  deleteVideo(video_Id)
+    .then(() => {
+      closeModal_delete();
+      youtubePreview.innerHTML = '';
+      btnCloseVideoPreviewModal.click();
+    });
+  console.log('Item deleted');
+
+}

@@ -172,8 +172,8 @@
                     </a>
                     <span class="tooltip-text">Library</span>
                 </div>
-                <button onClick='previewVideo()'>Preview Video</button>
-
+                <button id='playback-video-button' onClick='previewVideo()' style="display:none;" >Playback Video</button>
+                
                 {% comment %} <div class="add-channel-btn tooltip-container">
                     <button id="view_records" onClick="showAddChannelModal()">
                         <i class="fab fa-youtube"></i>
@@ -420,82 +420,6 @@
     </div>
 
 
-    <!-- Task Error occurred modal
-    <div class="modal" id="taskErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Clickup Task Error Modal</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                        id="btnCloseClickupErrorModal"></button>
-                </div>
-                <div class="modal-body">
-                    <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>An error has occurred while processing clickup task, please do the
-                        following:
-                    </p>
-                    <ol>
-                        <li>Try checking if there is something wrong with the clickup task that has the provided id.
-                        </li>
-                        <li>Try re-entering or changing the clickup task id below and click retry.</li>
-                        <li>
-                            If you wish to save the recording data without clickup notes, click on the
-                            Save Without Notes button.
-                        </li>
-                    </ol>
-                    <p>
-                        1. Try checking if there is something wrong with the clickup task.
-                    </p>
-                    <p>
-                        2. Try re-entering or changing the clickup task id below and click retry.
-                    </p> -->
-                    <!-- <div class="mb-3">
-                        <label class="form-label required">New Clickup Task ID</label>
-                        <input type="text" class="form-control" id="clickup-task-id-retry">
-                        <p style="color:red;" id="clickup-task-id-retry-error"></p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="replaceClickupTaskID()">Retry</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCloseErrorModal"
-                        onClick="uploadWithoutClickupNotes()">
-                        Save Without Notes
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div> --> 
-
-<!-- Get clickup task id from user -->
-<!-- <div class="modal" id="getTaskIdFromUserModal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Clickup Task ID</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    id="btnCloseGetTaskIdFromUserModal"></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Please enter your clickup task ids separated by a comma if you have more than one.
-                </p>
-                <div class="mb-3">
-                    <label class="form-label required">Enter Clickup Task ID</label>
-                    <input type="text" class="form-control" id="clickupTaskIdFromUser"
-                        placeholder="370382A,33k9h43B,33k9h43D">
-                    <p style="color:red;" id="clickupTaskIdFromUserError"></p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onClick="saveTaskIDFromUser()">Save</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="btnCloseErrorModal"
-                    onClick="keyLogFileCheck()">Close</button>
-            </div>
-        </div>
-    </div>
-</div> -->
-
 <!-- Network Error occurred modal -->
 <div class="modal" id="networkErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -529,39 +453,6 @@
         </div>
     </div>
 </div>
-
-<!-- Key log file upload modal
-<div class="modal" id="keyLogFileUploadModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Test Files Upload</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeFileModal2"
-                    hidden></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Please upload the file generated by selenium ide.
-                </p>
-                <div class="mt-2 mb-4">
-                    <input type="file" id="inpt-test-file" />
-                </div>
-                <p>
-                    Please upload the file generated by Beanote/Clickup.
-                </p>
-                <div class="mt-2 mb-2">
-                    <input type="file" id="inpt-beanote-file" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="btnUploadKeyLogFile"
-                    onclick="uploadSeleniumIdeFile()">Upload</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                    id="btnCloseKeyLogFileUploadModal" onClick="stopRecording()">Close</button>
-            </div>
-        </div>
-    </div>
-</div> -->
 
 <!-- Beanote file upload modal-->
 <div class="modal" id="beanoteFileUploadModal">
@@ -623,30 +514,6 @@
         </div>
     </div>
 </div>
-
-<!-- Confirm playlist selection modal -->
-<!-- <div class="modal" id="confirm-playlist-selection-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirm Playlist Selection</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    id="btn-close-confirm-playlist-selection-modal" hidden></button>
-            </div>
-            <div class="modal-body">
-                <p id="playlist-confirmation-message">
-                    Are you sure you want to use the playlist
-                </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                    onclick="showSelectYoutubePlaylistModal()">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="insertVideoIntoPlaylist()"
-                    data-bs-dismiss="modal">Start Live</button>
-            </div>
-        </div>
-    </div>
-</div> -->
 
 <!-- New Playlist Details Modal -->
 <div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -888,19 +755,8 @@
     </div>
 </div>
 <!-- ====================================================================== -->
-<div id="videoModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <div id="youtubePreview" style="margin:0"></div>
-        <div id="preview-buttons" style="align-content:right; padding: 10px 0 0 0; margin-buttom: 0;">
-            <button id="deleteButton" style="padding: 5px">Delete</button>
-            <button id="deleteButton" style="padding: 5px">Close</button>
-        </div>
-    </div>
-</div>
-<!-- =================================================================================== -->
 
-<!-- Add Channel Modal-->
+<!-- Preview Recorded video Modal-->
 <div class="modal" id="preview-video-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog" id="modal-dialog-video-modal">
         <div class="modal-content" id="modal-content-video-modal">
@@ -917,12 +773,20 @@
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="preview-btn-delete">Delete</button>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
-
-
+<!-- =================================================================================== -->
+  <div id="confirmationModal_delete" class="modal_delete">
+    <div class="modal-content_delete">
+      <p style="color: indianred;">Are you sure you want to delete this video?</p>
+      <div class="modal-buttons_delete">
+        <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
+        <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
+      </div>
+    </div>
+  </div>
+<!-- ====================================================================================== -->
 
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"

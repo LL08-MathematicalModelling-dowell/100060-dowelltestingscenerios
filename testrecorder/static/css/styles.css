@@ -788,3 +788,50 @@ iframe {
   height: 50px;
   margin-top: 0px;
 }
+
+/* ============================================================================= */
+
+.modal_delete {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  height: fit-content;
+  overflow: auto;
+  /* background-color: rgba(0, 0, 0, 0.4); */
+  width: fit-content;
+  margin-top: 20%;
+  margin-left: 40%;
+  /* position: absolute; */
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+#confirm-cancel{
+  background-color:#198754;
+}
+
+#confirm-delete{
+background-color: #bb2d3b;
+}
+
+.modal-content_delete {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: fit-content;
+  border-radius: 20px;
+}
+
+.modal-buttons_delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-buttons_delete button {
+  margin-left: 10px;
+}

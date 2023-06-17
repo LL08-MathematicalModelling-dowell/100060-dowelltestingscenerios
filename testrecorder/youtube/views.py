@@ -402,7 +402,7 @@ class TransitionBroadcastView(APIView):
             error = {'Error': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-    # Transitions a broadcast to complete status
+    
 
 
 def transition_broadcast(the_broadcast_id, request):

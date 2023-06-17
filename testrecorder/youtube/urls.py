@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (logout_view, index, create_broadcast,
                     CreateBroadcastView, TransitionBroadcastView, PlaylistItemsInsertView,
                     FetchPlaylistsView, CreatePlaylistView)
-from .views_w import UserChannelsView, DeleteVideoView, LoadVideoView
+from .views_w import UserChannelsView, DeleteVideoView, LoadVideoView, YouTubeVideoAPIView
 
 urlpatterns = [
     path('', index, name='index'),
@@ -20,5 +20,7 @@ urlpatterns = [
     path('channels/api/', UserChannelsView.as_view(), name='user_channel'),
     path('delete-video/api/', DeleteVideoView.as_view(), name='delete-video'),
     path('videos/api/',  LoadVideoView.as_view(), name='videos'),
+    path('video/<str:broadcast_id>/',
+         YouTubeVideoAPIView.as_view(), name='youtube_video'),
+
 ]
-# Testing_new_deploy 2023-06-15T14:19:21.936291
