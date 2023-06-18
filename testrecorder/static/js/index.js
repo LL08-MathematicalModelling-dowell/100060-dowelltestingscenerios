@@ -1032,6 +1032,7 @@ async function validateModal() {
   testDescriptionValue = null;
   testRecordingData = null;
 
+
   let currentChannelTitleIsValid = true
   currentChannelTitle = document.getElementById("selectChannel").name;
   // Remove leading and trailling white space
@@ -1093,12 +1094,6 @@ async function validateModal() {
     testNameIsValid = false;
   }
 
-  // Check for space inside string
-  if (/\s/.test(testNameValue)) {
-    testNameErrorMsg = "Please replace the space with an underscore for example hi_you";
-    testNameIsValid = false;
-  }
-
   document.getElementById("test-name-error").innerHTML = testNameErrorMsg;
 
   // All test details are available now
@@ -1117,9 +1112,6 @@ async function validateModal() {
         resetStateOnError();
         showErrorModal();
       });
-    /*.catch((error) => {
-      console.error("Failed to set video privacy status")
-    });*/
   }
 }
 
