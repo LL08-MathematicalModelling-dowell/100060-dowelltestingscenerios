@@ -368,6 +368,8 @@ class LoadVideoView(APIView):
                             'videoThumbnail': videoItem['snippet']['thumbnails'].get('default', {}).get('url', 'No Thumbnail Available'),
                             'videoDescription': videoItem['snippet']['description'],
                         } for videoItem in playlist_videos
+                        if videoItem['snippet']['title'] != 'Deleted video'
+
                     ]
 
                     temp_playlist['videos'] = video  # playlist_videos
@@ -381,7 +383,7 @@ class LoadVideoView(APIView):
         except Exception as e:
             # Return an error message
             print('videos error  >> ', e)
-            raise Exception('load video error >>>> ', e)
+            # raise Exception('load video error >>>> ', e)
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
