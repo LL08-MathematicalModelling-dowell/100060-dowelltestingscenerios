@@ -143,7 +143,7 @@
                     <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
                         <i class="fas fa-save"></i>
                     </button>
-                    <span class="tooltip-text">Create new genre</span>
+                    <span class="tooltip-text">Create new Playlist</span>
 
                 </div>
                 <div class="record-btn tooltip-container">
@@ -515,7 +515,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" style="text-align: cen;">Create New Genre</h5>
+                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-new-playlist-details-modal"></button>
             </div>
@@ -524,7 +524,7 @@
                     <form id="create-playlist">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Genre Name</strong></label>
+                            <label class="form-label plst required"><strong>Playlist Name</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
                                 id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
