@@ -97,28 +97,7 @@ let totalTime = 0;
 
 // });
 if (window.location.pathname === '/library/') {
-  // let channels = null;
-  // let playlists = null;
-  // let videos = null;
-  // $.get('/youtube/channels/', (data, textSt) => {
-  //   if (textSt === 'success') {
-  //     channels = data;
-  //     console.log('===== Channel ========> ', channels);
-  //   }
-  // });
-
-  // $.get('/youtube/fetchplaylists/api/', (data, textSt) => {
-  //   playlists = data.user_playlists;
-  //   console.log('Playlist response ', playlists);
-  // });
-
-  // $.get('/youtube/videos/', (data, textSt) => {
-  //   if (textSt === 'success') {
-  //     videos = data;
-  //     console.log('====== VIDEOS ========> ', videos);
-  //   }
-  // });
-
+  let selected_Video_Id = null;
   load_gallery();
 }
 
@@ -3486,6 +3465,7 @@ async function play_first_video() {
   const videos = document.getElementById("all_video");
   if (videos.length > 0) {
     const video_id = videos.options[0].value;
+    selected_Video_Id = video_id;
     await play(video_id);
   }
 }
@@ -3545,6 +3525,9 @@ async function load_videos(playlist_id) {
     // Add event listener to the select element
     selectElement.addEventListener('change', function () {
       const selectedVideoId = this.value;
+
+      selected_Video_Id = selectedVideoId;
+      console.log('selected video id > ', selected_Video_Id);
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
@@ -3671,10 +3654,11 @@ async function deleteVideo(video_Id) {
   function handleResponse(response) {
     if (response.ok) {
       // Successful response
-      let statusBar = document.getElementById("app-status");
-
-      msg = 'SUCCESS: Video deleted successfully';
-      statusBar.innerHTML = msg;
+      if (window.location.pathname === '/') {
+        let statusBar = document.getElementById("app-status");
+        msg = 'SUCCESS: Video deleted successfully';
+        statusBar.innerHTML = msg;
+      }
       return response.json();
     } else if (response.status === 401) {
       // Unauthorized error
@@ -3713,6 +3697,9 @@ async function deleteVideo(video_Id) {
 function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
+  if (window.location.pathname === '/library/') {
+    console.log('selected video id > ', selected_Video_Id);
+  }
 }
 
 function closeModal_delete() {
@@ -3721,14 +3708,21 @@ function closeModal_delete() {
 }
 
 function deleteItem_delete() {
-  const video_Id = newBroadcastID;
+  const video_Id = (window.location.pathname === '/library/')
+    ? selected_Video_Id
+    : newBroadcastID;
 
   // Perform delete operation here
   deleteVideo(video_Id)
     .then(() => {
       closeModal_delete();
-      youtubePreview.innerHTML = '';
-      btnCloseVideoPreviewModal.click();
+      if (window.location.pathname === '/library/') {
+        const videoPlayer = document.getElementById('player');
+        videoPlayer.innerHTML = ''
+      } else {
+        youtubePreview.innerHTML = '';
+        btnCloseVideoPreviewModal.click();
+      }
     });
   console.log('Item deleted');
 

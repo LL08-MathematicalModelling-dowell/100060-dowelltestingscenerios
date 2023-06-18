@@ -67,14 +67,15 @@ class UserChannelsView(APIView):
             credential = youtube_user.credential
 
             # Get credential from dowell database
+            """ This Code snippet will be used in the future
             user_email = request.user.email
             user_info = self.fetch_user_credential_from_dowell_connection_db(
                 user_email)
             if user_info.get('data') is not None:
                 credential_from_dowell_db = user_info.get(
                     'data').get('email_credentials')
-               # print('credential_from_dowell_db ===> ',  credential_from_dowell_db)
-
+            print('credential_from_dowell_db ===> ',  credential_from_dowell_db)
+            """
         except YoutubeUserCredential.DoesNotExist:
             # If the user doesn't have a YoutubeUserCredential object,
             # return an error response with 401 Unauthorized status code
@@ -90,6 +91,9 @@ class UserChannelsView(APIView):
             youtube = build('youtube', 'v3',
                             credentials=credentials, cache_discovery=False)
 
+            youtube = create_user_youtube_object(request)
+            if youtube is None:
+                raise AttributeError('youtube object creation failed!!')
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
             # print('channel Response ===> ', channels_response)
@@ -302,22 +306,25 @@ class LoadVideoView(APIView):
             Exception: If an error occurs during the loading process.
         """
         try:
-            # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-        except YoutubeUserCredential.DoesNotExist:
-            # If the user doesn't have a YoutubeUserCredential object,
-            # return an error response with 401 Unauthorized status code
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            #     # Retrieve the YoutubeUserCredential object associated with the authenticated user
+            #     youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+            # except YoutubeUserCredential.DoesNotExist:
+            #     # If the user doesn't have a YoutubeUserCredential object,
+            #     # return an error response with 401 Unauthorized status code
+            #     return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        try:
-            # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            credentials = Credentials.from_authorized_user_info(
-                info=youtube_user.credential)
+            # try:
+            #     # Retrieve the user's credentials associated with the YoutubeUserCredential object
+            #     credentials = Credentials.from_authorized_user_info(
+            #         info=youtube_user.credential)
 
-            # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            youtube = build('youtube', 'v3',
-                            credentials=credentials, cache_discovery=False)
+            #     # Create a YouTube object using the v3 version of the API and the retrieved credentials
+            #     youtube = build('youtube', 'v3',
+            #                     credentials=credentials, cache_discovery=False)
 
+            youtube = create_user_youtube_object(request)
+            if youtube is None:
+                raise AttributeError('youtube object creation failed!!')
             # Perform the YouTube Channels API call
             channels_response = youtube.channels().list(
                 part='contentDetails',
@@ -358,7 +365,7 @@ class LoadVideoView(APIView):
                         {
                             'videoId': videoItem['snippet']['resourceId']['videoId'],
                             'videoTitle': videoItem['snippet']['title'],
-                            'videoThumbnail': videoItem['snippet']['thumbnails']['default']['url'],
+                            'videoThumbnail': videoItem['snippet']['thumbnails'].get('default', {}).get('url', 'No Thumbnail Available'),
                             'videoDescription': videoItem['snippet']['description'],
                         } for videoItem in playlist_videos
                     ]
@@ -373,7 +380,8 @@ class LoadVideoView(APIView):
             return Response(videos, status=status.HTTP_200_OK)
         except Exception as e:
             # Return an error message
-            # print('videos error  >> ', e)
+            print('videos error  >> ', e)
+            raise Exception('load video error >>>> ', e)
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -396,7 +404,6 @@ def create_user_youtube_object(request):
         return None
 
 
-
 class YouTubeVideoAPIView(APIView):
     def get(self, request, broadcast_id):
         # Retrieve the video from the YouTube API
@@ -409,12 +416,7 @@ class YouTubeVideoAPIView(APIView):
 
     def get_video_data(self, request, broadcast_id):
         # Set up the YouTube API client
-        # api_key = 'YOUR_YOUTUBE_API_KEY'  # If using API key authentication
-        # credentials = Credentials.from_authorized_user_info(
-        #     {'client_id': 'YOUR_CLIENT_ID', 'client_secret': 'YOUR_CLIENT_SECRET'}
-        # )  # If using OAuth 2.0 authentication
-
-        youtube = create_user_youtube_object(request) # build('youtube', 'v3', credentials=credentials, developerKey=api_key)
+        youtube = create_user_youtube_object(request)
 
         try:
             # Make a request to the YouTube API to retrieve video details
@@ -433,4 +435,3 @@ class YouTubeVideoAPIView(APIView):
             # Handle any error that occurred during the API request
             print(f'An error occurred: {e}')
             return None
-
