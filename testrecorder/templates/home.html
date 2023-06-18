@@ -158,12 +158,6 @@
                     </button>
                     <span class="tooltip-text">Stop Recording</span>
                 </div>
-                <div class="share-record-btn tooltip-container" style="display:none">
-                    <button id="share_records" onClick="shareLinkModal()">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                    <span class="tooltip-text">Share Video</span>
-                </div>
                 <div class="library-btn tooltip-container">
                     <a href="{% url 'library' %}">
                         <button id="library">
@@ -172,14 +166,20 @@
                     </a>
                     <span class="tooltip-text">Library</span>
                 </div>
+                <div class="share-record-btn tooltip-container" style="display:none">
+                    <button id="share_records" onClick="shareLinkModal()">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <span class="tooltip-text">Share Video</span>
+                </div>
                 <div class="playback-btn tooltip-container" id="playback-video-button" style="display:none;">
-                    <button onClick='previewVideo()' >
+                    <button onClick='previewVideo()'>
                         <i class="fab fa-youtube"></i>
                     </button>
                     <span class="tooltip-text">Replay recorded video</span>
                 </div>
             </div>
-           
+
         </div>
         {% else %}
         <div class="main-content-btns">
