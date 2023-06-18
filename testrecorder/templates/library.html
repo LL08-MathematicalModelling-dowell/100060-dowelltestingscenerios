@@ -26,34 +26,9 @@
 {% endblock %}
 
 {% block body %}
-<div class="section" style="margin-top:3rem;">
-  <div class="playlist-videos">
-    <div class="playlist">
-      <h4>Select Playlist</h4>
-        <div id="playlist-select">
-          <select id="userLibraryPlaylist" class="form-control"></select>
-        </div>
-    </div>
-    <div class="video-list">
-      <h4>All Videos</h4>
-        <div id="video-select">
-          <select id="all_video" class="form-control"></select>
-        </div>
-    </div>
-  </div>
-  <div class="video-player">
-    <h4>Player</h4>
-        <div id="player-container">
-          <div id="player"></div>
-          <div id="player-controls">
-            <button id="download-button" disabled>Delete</button>
-            <br>
-          </div>
-        </div>
-  </div>
-</div>
-{% comment %} <div class="section">
-  <div class="row">
+
+<div class="container" style="display: flex; flex-direction: column;  align-content: space-between;">
+  <div class="row" style="display: flex; flex-direction: row; align-content: space-between; padding: 20px;">
     <div class="col-lg-4">
       <div class="section">
         <h4>Select Playlist</h4>
@@ -85,7 +60,7 @@
       </div>
     </div>
   </div>
-</div> {% endcomment %}
+</div> 
 
 
 <!-- Application JavaScript -->
@@ -93,21 +68,9 @@
 {#script for player #}
 <script>
   let player = document.getElementById('player');
-  // const playButton = document.getElementById('play-btn');
-  // const pauseButton = document.getElementById('pause-btn');
-  // const volumeSlider = document.getElementById('volume-slider');
   const deleteButton = document.getElementById('delete-button');
   const downloadButton = document.getElementById('download-button');
 
-  // playButton.addEventListener('click', () => {
-  //   player.play();
-  // });
-  // pauseButton.addEventListener('click', () => {
-  //   player.pause();
-  // });
-  // volumeSlider.addEventListener('input', () => {
-  //   player.volume = volumeSlider.value;
-  // });
   deleteButton.addEventListener('click', () => {
     // Handle delete functionality
   });
