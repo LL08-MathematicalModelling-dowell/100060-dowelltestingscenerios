@@ -746,3 +746,115 @@ iframe {
 #player-controls{
   width: 100%;
 }
+
+
+/* ======================================================= */
+
+#youtube-preview {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+#youtube-preview iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#modal-dialog-video-modal {
+  position: relative;
+  max-width: 35%;
+  margin: var(--bs-modal-margin);
+  pointer-events: none;
+  margin: 180px auto;
+}
+
+#modal-content-video-modal {
+  background-color: #fefefe;
+  margin: 5% auto;
+  width: 100%;
+}
+
+#modal-header-video-modal {
+  padding: 5px;
+  background-color: #f1f1f1;
+  color: red;
+}
+
+#modal-footer-video-modal {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  padding: calc(var(--bs-modal-padding) - var(--bs-modal-footer-gap) * .5);
+  background-color: var(--bs-modal-footer-bg);
+  border-top: var(--bs-modal-footer-border-width) solid var(--bs-modal-footer-border-color);
+  border-bottom-right-radius: var(--bs-modal-inner-border-radius);
+  border-bottom-left-radius: var(--bs-modal-inner-border-radius);
+  height: 50px;
+  margin-top: 0px;
+}
+
+/* ============================================================================= */
+
+.modal_delete {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  height: fit-content;
+  overflow: auto;
+  /* background-color: rgba(0, 0, 0, 0.4); */
+  width: fit-content;
+  margin-top: 20%;
+  margin-left: 40%;
+  /* position: absolute; */
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+#confirm-cancel{
+  background-color:#198754;
+}
+
+#confirm-delete{
+background-color: #bb2d3b;
+}
+
+.modal-content_delete {
+  background-color: #fefefe;
+  margin: 15% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: fit-content;
+  border-radius: 20px;
+}
+
+.modal-buttons_delete {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-buttons_delete button {
+  margin-left: 10px;
+}
+
+.playback-btn button{
+  background: rgb(79, 11, 22);
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}

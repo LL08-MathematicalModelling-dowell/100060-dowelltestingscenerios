@@ -1,4 +1,3 @@
-// $(document).ready(() => {
 // Some app controls
 let video = document.getElementById('video')
 let cameraCheckbox = document.getElementById('webcam-recording')
@@ -85,7 +84,7 @@ let tableChannels = [];
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
-
+// let player = null;
 
 // video timer
 let videoTimer = document.querySelector(".video-timer")
@@ -98,28 +97,7 @@ let totalTime = 0;
 
 // });
 if (window.location.pathname === '/library/') {
-  // let channels = null;
-  // let playlists = null;
-  // let videos = null;
-  // $.get('/youtube/channels/', (data, textSt) => {
-  //   if (textSt === 'success') {
-  //     channels = data;
-  //     console.log('===== Channel ========> ', channels);
-  //   }
-  // });
-
-  // $.get('/youtube/fetchplaylists/api/', (data, textSt) => {
-  //   playlists = data.user_playlists;
-  //   console.log('Playlist response ', playlists);
-  // });
-
-  // $.get('/youtube/videos/', (data, textSt) => {
-  //   if (textSt === 'success') {
-  //     videos = data;
-  //     console.log('====== VIDEOS ========> ', videos);
-  //   }
-  // });
-
+  let selected_Video_Id = null;
   load_gallery();
 }
 
@@ -246,14 +224,9 @@ generateString(6).then((randomString) => {
   fileRandomString = randomString;
 })
 
-// Clickup error modal
-// let taskErrorModal = new bootstrap.Modal(document.getElementById('taskErrorOccurred'));
-
-// // user settings modal
-// let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
 
 // Get task id from user modal
-let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
+// let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
 
 // Fill user email settings if it exists
 document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
@@ -324,7 +297,28 @@ async function captureMediaDevices(currentMediaConstraints) {
   }
 }
 
-// Gets screen recording stream
+// // Gets screen recording stream
+// async function captureScreen(mediaConstraints = {
+//   video: {
+//     cursor: 'always',
+//     resizeMode: 'crop-and-scale'
+//   },
+//   // audio: true
+// }) {
+
+//   try {
+//     screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
+//     return screenStream
+//   }
+//   catch (err) {
+//     let msg = "STATUS: Error while getting screen stream."
+//     document.getElementById("app-status").innerHTML = msg;
+//     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
+//     // Tell user, stop the recording.
+//     resetStateOnError();
+//   }
+// }
+
 async function captureScreen(mediaConstraints = {
   video: {
     cursor: 'always',
@@ -332,13 +326,27 @@ async function captureScreen(mediaConstraints = {
   },
   // audio: true
 }) {
-
   try {
-    screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints)
-    return screenStream
-  }
-  catch (err) {
-    let msg = "STATUS: Error while getting screen stream."
+    if (isMobileDevice()) {
+      // Create the <script> element
+      var scriptElement = document.createElement('script');
+      scriptElement.src = 'https://www.WebRTC-Experiment.com/RecordRTC.js';
+
+      // Find the <head> element
+      var headElement = document.head || document.getElementsByTagName('head')[0];
+
+      // Append the <script> element to the <head> element
+      headElement.appendChild(scriptElement);
+
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const videoStream = new RecordRTC(stream, { type: 'video' });
+      return videoStream.stream;
+    } else {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia(mediaConstraints);
+      return screenStream;
+    }
+  } catch (err) {
+    let msg = "STATUS: Error while getting screen stream.";
     document.getElementById("app-status").innerHTML = msg;
     alert("Error while getting screen stream!\n -Please share screen when requested.\n -Try to start the recording again.");
     // Tell user, stop the recording.
@@ -346,7 +354,13 @@ async function captureScreen(mediaConstraints = {
   }
 }
 
-//@Muhammad Ahmed
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+
+
+//@Muhammad Ahmed 
 // VOice mute/Unmute
 async function microphoneStatus() {
  try {
@@ -475,9 +489,9 @@ async function recordMergedStream() {
 
     // Calculate dynamic webcam stream height and width
     let webcamStreamWidth = Math.floor(0.15 * screenWidth);
-    //// // console.log("webcamStreamWidth: " + webcamStreamWidth);
+    // console.log("webcamStreamWidth: " + webcamStreamWidth);
     let webcamStreamHeight = Math.floor((webcamStreamWidth * screenHeight) / screenWidth);
-    //// // console.log("webcamStreamHeight: " + webcamStreamHeight);
+    // console.log("webcamStreamHeight: " + webcamStreamHeight);
 
     // Add the webcam stream. Position it on the bottom left and resize it to 0.15 of screen width.
     merger.addStream(webCamStream, {
@@ -695,7 +709,7 @@ async function recordScreenAndAudio() {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
         appWebsocket.send(event.data);
       } else if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == false)) {
-        //// // console.log("Sending screen data to screen websocket");
+        // console.log("Sending screen data to screen websocket");
         let recordWebcam = cameraCheckbox.checked;
         let recordScreen = screenCheckbox.checked;
         if ((recordScreen == true) && (recordWebcam == true)) {
@@ -1656,7 +1670,7 @@ async function createWebsocket() {
 }
 
 async function createBroadcast() {
-  url = "youtube/createbroadcast/api/"
+  url = "/youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
   console.log(videoPrivacyStatus);
@@ -1698,18 +1712,18 @@ async function createBroadcast() {
     .then((json) => {
       try {
         data = json;
-        // // // console.log("data: ", data);
+        // console.log("data: ", data);
         newStreamId = data.newStreamId;
         newStreamName = data.newStreamName;
         newStreamIngestionAddress = data.newStreamIngestionAddress;
         //newRtmpUrl=data.newRtmpUrl;
         newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
         newBroadcastID = data.new_broadcast_id;
-        // // // console.log("newStreamId:", newStreamId);
-        // // // console.log("newStreamName:", newStreamName);
-        // // // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
-        // // // console.log("newRtmpUrl:", newRtmpUrl);
-        // // // console.log("new_broadcast_id:", newBroadcastID);
+        // console.log("newStreamId:", newStreamId);
+        // console.log("newStreamName:", newStreamName);
+        // console.log("newStreamIngestionAddress", newStreamIngestionAddress);
+        // console.log("newRtmpUrl:", newRtmpUrl);
+        // console.log("new_broadcast_id:", newBroadcastID);
       }
       catch {
         // resetStateOnError();
@@ -1726,13 +1740,13 @@ async function createBroadcast() {
   if (broadcastCreated == true) {
     // Request user to select a Channel
     // showSelectYoutubePlaylistModal();
-    // // console.log("broadcast created");
+    // console.log("broadcast created");
     insertVideoIntoPlaylist()
   }
 }
 
 async function endBroadcast() {
-  url = "youtube/transitionbroadcast/api/";
+  url = "/youtube/transitionbroadcast/api/";
   let broadcast_data = new Object();
   broadcast_data.the_broadcast_id = newBroadcastID;
   broadcast_data.channel_title = currentChannelTitle;
@@ -1754,9 +1768,14 @@ async function endBroadcast() {
     })
     .then((json) => {
       data = json;
-      // // console.log("data: ", data);
+      console.log("transition complete broadcast data: ", data);
     })
-    .then(console.log("Broadcast Trasitioned to complete state!"))
+    .then(() => {
+      console.log("Broadcast Trasitioned to complete state!");
+      const previewButton = document.getElementById('playback-video-button');
+      previewButton.style.display = 'block';
+    }
+    )
     .catch((err) => {
       console.error("Broadcast Trasitioning to complete state failed!");
     });
@@ -2343,6 +2362,7 @@ async function showUserSettingsModal() {
 
 // Shows get task id from user modal
 async function showGetTaskIdFromUserModal() {
+  console.log(' showGetTaskIdFromUserModal() running...');
 
   // Stop video display tracks
   await stopVideoElemTracks(video);
@@ -2401,7 +2421,7 @@ async function showGetTaskIdFromUserModal() {
       btnCloseGetTaskIdFromUserModal.click();
 
       // Show modal
-      getTaskIdFromUserModal.show();
+      // getTaskIdFromUserModal.show();
     } else {
       // Proceed to check for beanote and selenium ide fiels
       keyLogFileCheck();
@@ -2826,19 +2846,7 @@ async function handleCreatePlaylistRequest() {
 
 
   document.getElementById("p_title-error").innerHTML = msg;
-
-  // Get playlist description
-  // let newPlaylistDescription = document.getElementById("playlist_description_modal").value;
-
-  // Get playlist privacy status
-  // let newPlaylistPrivacyStatus = document.getElementById("playlist_privacy_status_modal").value;
   let newPlaylistPrivacyStatus = document.querySelector('input[name="privacy_status"]:checked').value;
-  // if (newPlaylistPrivacyStatus === true) {
-  //   newPlaylistPrivacyStatus = "public"
-  // } else {
-  //   newPlaylistPrivacyStatus = "private"
-  // }
-
 
   if (docIsValid) {
     // close create new playlist modal
@@ -3020,19 +3028,10 @@ async function showNetworkErrorSystemTrayNotification() {
 
 // Shows the network error occurred modal
 async function showNetworkErrorOccurredModal() {
-
   // Show network error system tray notification
   showNetworkErrorSystemTrayNotification();
-
   // Show an alert instead of a modal, with small delay
   setTimeout(showNetworkErrorAlert, 50);
-
-  /*// close modal if open
-  const btnCloseNetworkErrorOccurredModal = document.getElementById('close-network-error-occurred-modal');
-  btnCloseNetworkErrorOccurredModal.click();
-  // Show modal
-  const networkErrorOccurredModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-  networkErrorOccurredModal.show();*/
 }
 
 // Shows a network error alert
@@ -3361,6 +3360,7 @@ async function play_first_video() {
   const videos = document.getElementById("all_video");
   if (videos.length > 0) {
     const video_id = videos.options[0].value;
+    selected_Video_Id = video_id;
     await play(video_id);
   }
 }
@@ -3421,18 +3421,21 @@ async function load_videos(playlist_id) {
     selectElement.addEventListener('change', function () {
       const selectedVideoId = this.value;
 
+      selected_Video_Id = selectedVideoId;
+      console.log('selected video id > ', selected_Video_Id);
+
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
-        play(selectedVideo.id, selectedVideo.title);
+        play(selectedVideo.id);
       }
     });
 
   }
 }
 
-async function play(videoId, title = '') {
+async function play(videoId, playerElementID = 'player') {
   // console.log('Playing video:', title, 'with videoId:', videoId)
-  const playerElement = document.getElementById('player');
+  const playerElement = document.getElementById(playerElementID);
   if (!window.YT) {
     const tag = document.createElement('script');
     tag.src = 'https://www.youtube.com/iframe_api';
@@ -3462,11 +3465,9 @@ async function play(videoId, title = '') {
 }
 
 function resetonStartRecording() {
-
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
-
-  // reset video title
+  // reset video title 
   document.querySelector(".video-title").innerHTML = "";
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = false;
@@ -3477,5 +3478,151 @@ function resetonStartRecording() {
   document.querySelector('#public-videos').disabled = false;
   document.querySelector('#private-videos').disabled = false;
   document.querySelector('#unlisted-videos').disabled = false;
+
+}
+
+
+
+// ===================================================================================================
+const VideoPreviewModal = new bootstrap.Modal(document.getElementById('preview-video-modal'));
+const btnCloseVideoPreviewModal = document.getElementById('close-preview-video-modal');
+const btnDeleteVideoPreviewModal = document.getElementById('preview-btn-delete');
+const okBotton = document.getElementById('preview-btn-ok');
+const youtubePreview = document.getElementById('youtube-preview');
+const video_Id = newBroadcastID;//68JdFfoGvZQ
+
+
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+// Function to open the modal
+function openModal(videoId) {
+  // Load YouTube video preview
+  const youtubePreview = document.getElementById('youtube-preview');
+  youtubePreview.innerHTML = `
+    <iframe 
+      width="100%" 
+      height="100%" 
+      src="https://www.youtube.com/embed/${videoId}" 
+      frameborder="0" 
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+      allowfullscreen
+    ></iframe>
+  `;
+}
+
+
+
+async function previewVideo() {
+  const video_Id = newBroadcastID;
+  console.log('==== Video Id >>> ', video_Id);
+
+  // Close modal if open
+  btnCloseVideoPreviewModal.click();
+
+  // Show modal
+  VideoPreviewModal.show();
+
+  openModal(video_Id);
+
+  okBotton.addEventListener('click', () => {
+    youtubePreview.innerHTML = '';
+    btnCloseVideoPreviewModal.click()
+  });
+  btnCloseVideoPreviewModal.addEventListener('click', () => {
+    youtubePreview.innerHTML = '';
+    btnCloseVideoPreviewModal.click()
+  });
+  btnDeleteVideoPreviewModal.addEventListener('click', () => {
+    openModal_delete();
+  });
+}
+
+
+async function deleteVideo(video_Id) {
+
+  let csrftoken = await getCookie('csrftoken');
+  console.log('video id ', video_Id)
+  // Function to handle the fetch response
+  function handleResponse(response) {
+    if (response.ok) {
+      // Successful response
+      try{
+        let statusBar = document.getElementById("app-status");
+        msg = 'SUCCESS: Video deleted successfully';
+        statusBar.innerHTML = msg;
+      }
+      catch {
+        console.log('unable to log delete success message');
+      }
+
+      return response.json();
+    } else if (response.status === 401) {
+      // Unauthorized error
+      throw new Error('Account is not a Google account');
+    } else {
+      // Other error
+      throw new Error('An error occurred while deleting the video');
+    }
+  }
+
+  // Fetch request to delete the video
+  fetch('/youtube/delete-video/api/', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken,
+    },
+    body: JSON.stringify({
+      video_id: video_Id,
+    }),
+  })
+    .then(handleResponse)
+    .then(data => {
+      // Success response
+      console.log('Delete response data >>> ', data); // Video deleted successfully
+      console.log('Delete Response Message >> ', data.message); // Video deleted successfully
+      console.log('Delete data.response >> ', data.response); // Response from the server
+    })
+    .catch(error => {
+      // Error response
+      console.error(error);
+    });
+}
+
+// =============================================================
+function openModal_delete() {
+  const modal = document.getElementById('confirmationModal_delete');
+  modal.style.display = 'block';
+  if (window.location.pathname === '/library/') {
+    console.log('selected video id > ', selected_Video_Id);
+  }
+}
+
+function closeModal_delete() {
+  var modal = document.getElementById('confirmationModal_delete');
+  modal.style.display = 'none';
+}
+
+function deleteItem_delete() {
+  const video_Id = (window.location.pathname === '/library/')
+    ? selected_Video_Id
+    : newBroadcastID;
+
+  // Perform delete operation here
+  deleteVideo(video_Id)
+    .then(() => {
+      closeModal_delete();
+      if (window.location.pathname === '/library/') {
+        const videoPlayer = document.getElementById('player');
+        videoPlayer.innerHTML = ''
+      } else {
+        youtubePreview.innerHTML = '';
+        btnCloseVideoPreviewModal.click();
+      }
+    });
+  console.log('Item deleted');
 
 }
