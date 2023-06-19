@@ -105,6 +105,48 @@ def create_playlist():
 
     return jsonify(new_playlist)
 
+@app.route('/startLiveStream', methods=['POST'])
+def start_live_stream():
+    if 'credentials' not in session:
+        return redirect('/')
+
+    cred = credentials.Credentials.from_authorized_user_info(session['credentials'])
+    youtube = googleapiclient.discovery.build(API_SERVICE_NAME, API_VERSION, credentials=cred)
+
+    # Extract live stream details from the request
+    title = request.form.get('title')
+    description = request.form.get('description')
+    
+    time_delt1 = timedelta(days=0, hours=0, minutes=1)  # ToDo use milliseconds
+    # time_now = datetime.now()
+    time_now = datetime.utcnow()
+    future_date1 = time_now + time_delt1
+    future_date_iso = future_date1.isoformat()
+    # Start a live broadcast
+    live_broadcast = youtube.liveBroadcasts().insert(
+        part='snippet,status',
+        body={
+            'snippet': {
+                'title': 'title',
+                'description': 'description',
+                'scheduledStartTime': future_date_iso,
+            },
+            'status': {
+                'privacyStatus': 'public'
+            }
+        }
+    ).execute()
+
+    # Retrieve the broadcast ID and status
+    broadcast_id = live_broadcast['id']
+    broadcast_status = live_broadcast['status']['lifeCycleStatus']
+
+    # If the broadcast is active, return the broadcast ID
+    if broadcast_status == 'live':
+        return jsonify({'broadcast_id': broadcast_id})
+    else:
+        return jsonify({'error': 'Failed to start live stream'})
+
 def credentials_to_dict(credentials):
     return {
         'token': credentials.token,
