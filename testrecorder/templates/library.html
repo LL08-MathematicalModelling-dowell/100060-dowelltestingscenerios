@@ -26,39 +26,30 @@
 {% endblock %}
 
 {% block body %}
-
-<div class="container" style="display: flex; flex-direction: column;  align-content: space-between;">
-  <div class="row" style="display: flex; flex-direction: row; align-content: space-between; padding: 20px;">
-    <div class="col-lg-4">
-      <div class="section">
-        <h2>Select Playlist</h2>
+<div class="section" style="margin-top:3rem;">
+  <div class="playlist-videos">
+    <div class="playlist">
+      <h4>Select Playlist</h4>
         <div id="playlist-select">
           <select id="userLibraryPlaylist" class="form-control"></select>
         </div>
-      </div>
     </div>
-    <div class="col-lg-4">
-      <div class="section">
-        <h2>All Videos</h2>
+    <div class="video-list">
+      <h4>All Videos</h4>
         <div id="video-select">
           <select id="all_video" class="form-control"></select>
         </div>
-      </div>
     </div>
   </div>
-  <div>
-    <div class="col-lg-4">
-      <div class="section">
-        <h2>Player</h2>
+  <div class="video-player">
+    <h4>Player</h4>
         <div id="player-container">
           <div id="player"></div>
           <div id="player-controls">
-            <button id="download-button" disabled>Download</button>
-            <button id="delete-button" disabled>Delete Video</button>
+            <button id="delete-button">Delete</button>
+            <br>
           </div>
         </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -69,8 +60,6 @@
 <script>
   let player = document.getElementById('player');
   const deleteButton = document.getElementById('delete-button');
-  const downloadButton = document.getElementById('download-button');
-
   deleteButton.addEventListener('click', () => {
     // Handle delete functionality
   });
