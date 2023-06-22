@@ -179,7 +179,7 @@ function disablePublic() {
 if (window.location.pathname === '/') {
   // switch camera button
   switchCamera.addEventListener("click", () => {
-    currentCamera = currentCamera === "user" ? "environment" : "user";
+    currentCamera = (currentCamera === "user") ? "environment" : "user";
     video.srcObject.getTracks().forEach(track => track.stop());
     videoConstraints = {
       facingMode: currentCamera
