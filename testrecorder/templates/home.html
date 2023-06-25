@@ -85,9 +85,9 @@
                 <p><span class="hour-time">00</span>:<span class="minute-time">00</span>:<span
                         class="second-time">00</span></p>
             </div>
-            <div class="switch-camera">
+            <!-- <div class="switch-camera">
                 <button class="switch-btn"><i class="fas fa-camera-rotate fa-xl"></i></button>
-            </div>
+            </div> -->
         </div>
         <!-- Settings and controls -->
         <div class="main-content-check-boxes">
@@ -140,19 +140,13 @@
             {% if user.is_authenticated %}
             <div class="main-content-btns">
                 <div class="create-playlist-btn tooltip-container">
-                    {% comment %} <button id="create-playlist" onClick="handleCreatePlaylistRequest()">
-                        <i class="fas fa-save"></i>
-                    </button> {% endcomment %}
                     <button id="create-playlist" onClick="showCreatingNewPlaylistModal()">
                         <i class="fas fa-save"></i>
                     </button>
-                    <span class="tooltip-text">Create new genre</span>
+                    <span class="tooltip-text">Create new Playlist</span>
 
                 </div>
                 <div class="record-btn tooltip-container">
-                    {% comment %} <button id="start" onClick="validateModal()">
-                        <i class="fas fa-record-vinyl"></i>
-                    </button> {% endcomment %}
                     <button id="start" onClick="validateAll()">
                         <i class="fas fa-record-vinyl"></i>
                     </button>
@@ -164,12 +158,6 @@
                     </button>
                     <span class="tooltip-text">Stop Recording</span>
                 </div>
-                <div class="share-record-btn tooltip-container" style="display:none">
-                    <button id="share_records" onClick="shareLinkModal()">
-                        <i class="fas fa-share-alt"></i>
-                    </button>
-                    <span class="tooltip-text">Share Video</span>
-                </div>
                 <div class="library-btn tooltip-container">
                     <a href="{% url 'library' %}">
                         <button id="library">
@@ -178,252 +166,253 @@
                     </a>
                     <span class="tooltip-text">Library</span>
                 </div>
-                <button id='playback-video-button' onClick='previewVideo()' style="display:none;" >Playback Video</button>
-                
-                {% comment %} <div class="add-channel-btn tooltip-container">
-                    <button id="view_records" onClick="showAddChannelModal()">
+                <div class="share-record-btn tooltip-container" style="display:none">
+                    <button id="share_records" onClick="shareLinkModal()">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <span class="tooltip-text">Share Video</span>
+                </div>
+                <div class="playback-btn tooltip-container" id="playback-video-button" style="display:none;">
+                    <button onClick='previewVideo()'>
                         <i class="fab fa-youtube"></i>
                     </button>
-                    <span class="tooltip-text">Save Channel Details</span>
-                </div> {% endcomment %}
+                    <span class="tooltip-text">Replay recorded video</span>
+                </div>
             </div>
-            {% else %}
-            <div class="main-content-btns">
-                <div class="create-playlist-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
-                    <span class="tooltip-text">Login First</span>
 
-                </div>
-                <div class="record-btn tooltip-container">
-                    <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
-                    <span class="tooltip-text">Login First</span>
-                </div>
-            </div>
-            {% endif %}
         </div>
-    </main>
+        {% else %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
+                <span class="tooltip-text">Login First</span>
 
-    <!-- Status bar -->
-    <div class="status-bar">
-        <div id="app-status">STATUS: Waiting to Record.</div>
-    </div>
+            </div>
+            <div class="record-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+        </div>
+        {% endif %}
+</div>
+</main>
 
-    <!-- Test Details Modal Deleted -->
+<!-- Status bar -->
+<div class="status-bar">
+    <div id="app-status">STATUS: Waiting to Record.</div>
+</div>
 
-    <!-- Share youtube link Modal -->
-    <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Share Video on</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        id="close-share-link-modal"></button>
-                </div>
-                <div class="modal-body modal-link">
-                    <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
-                            onClick="shareToFacebook()"></i></a>
-                    <a href="." class="twitter" target="blank"><i class="fab fa-twitter"
-                            onClick="shareToTwitter()"></i></a>
-                    <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
-                            onClick="shareToLinkedin()"></i></a>
-                    <a href="." class="envelope" target="blank"><i class="fas fa-envelope"
-                            onClick="shareToEmail()"></i></a>
-                    <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
-                            onClick="shareToWhatsapp()"></i></a>
-                    <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
-                </div>
+<!-- Test Details Modal Deleted -->
+
+<!-- Share youtube link Modal -->
+<div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Video on</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-share-link-modal"></button>
+            </div>
+            <div class="modal-body modal-link">
+                <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
+                        onClick="shareToFacebook()"></i></a>
+                <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
+                        onClick="shareToLinkedin()"></i></a>
+                <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
+                        onClick="shareToWhatsapp()"></i></a>
+                <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- User Settings Modal -->
-    <div class="modal" id="user-settings-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">User Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                        id="close-user-settings-modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form>
-                        <div class="mb-3">
-                            <label class="form-label required">User ClickUp Email address</label>
-                            <input type="email" class="form-control" id="userClickupEmail">
-                            <p style="color:red;" id="userEmailError"></p>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onClick="saveClickupUserEmail()">Save</button>
-                    <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-                </div>
+<!-- User Settings Modal -->
+<div class="modal" id="user-settings-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-user-settings-modal"></button>
             </div>
-        </div>
-    </div>
-
-    <!-- Test files upload in progress modal-->
-    <div class="modal" id="uploadInProgress" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">File Upload In Progress</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p>
-                        Test information upload in progress, please wait.
-                    </p>
-                    <div class="progress mt-2 mb-2" style="height: 20px;">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                            role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"
-                            id="uploadProgressBar">0%</div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label required">User ClickUp Email address</label>
+                        <input type="email" class="form-control" id="userClickupEmail">
+                        <p style="color:red;" id="userEmailError"></p>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="btnCloseUploadigModal">Close</button>
-                </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onClick="saveClickupUserEmail()">Save</button>
+                <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Test files upload complete modal-->
-    <div class="modal" id="uploadComplete" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">File Upload Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Test files upload in progress modal-->
+<div class="modal" id="uploadInProgress" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Upload In Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Test information upload in progress, please wait.
+                </p>
+                <div class="progress mt-2 mb-2" style="height: 20px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"
+                        id="uploadProgressBar">0%</div>
                 </div>
-                <div class="modal-body">
-                    <p style="font-size: 2rem; color: rgb(0, 255, 0);">
-                        File upload Complete!
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseUploadigModal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Select camera Modal -->
-    <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Select a Camera</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
-                </div>
-                <div class="modal-body">
-                    <select name="" class="form-control" id="video-source">
-                        <option value="user">Front Camera</option>
-                        <option value="environment">Back Camera</option>
-                    </select>
-                    <div style="color:red;" id="camera-error"></div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                        id="closecameraModal">Cancel</button>
-                    <button type="submit" class="btn btn-success" id="choose-camera"
-                        data-bs-dismiss="modal">Select</button>
-                </div>
-
+<!-- Test files upload complete modal-->
+<div class="modal" id="uploadComplete" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Upload Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 2rem; color: rgb(0, 255, 0);">
+                    File upload Complete!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
             </div>
         </div>
     </div>
-    <!-- Creating broadcast in progress-->
-    <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Setting up recording</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                        id="btnCloseCreatingBroadcastModal" hidden></button>
-                </div>
-                <div class="modal-body">
-                    <div class="d-flex justify-content-center">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
+</div>
+
+<!-- Select camera Modal -->
+<div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a Camera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
+            </div>
+            <div class="modal-body">
+                <select name="" class="form-control" id="video-source">
+                    <option value="user">Front Camera</option>
+                    <option value="environment">Back Camera</option>
+                </select>
+                <div style="color:red;" id="camera-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    id="closecameraModal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<!-- Creating broadcast in progress-->
+<div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Setting up recording</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btnCloseCreatingBroadcastModal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Test Files upload failed modal -->
-    <div class="modal" id="uploadFailed" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">File Upload Status</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p style="font-size: 2rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>File upload Failed!
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" onclick="retryTestFilesUpload()">Retry</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="btnCloseUploadFailedModal">Close</button>
-                </div>
+<!-- Test Files upload failed modal -->
+<div class="modal" id="uploadFailed" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Upload Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 2rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>File upload Failed!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="retryTestFilesUpload()">Retry</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseUploadFailedModal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Error occurred modal -->
-    <div class="modal" id="errorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Error Modal</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>Check your internet connection, do a hard refresh (Ctrl + F5),
-                        and try again.
-                        If the issue persists please contact the admin.
-                    </p>
-                    <p id="errorMessage">
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="btnCloseErrorModal">Close</button>
-                </div>
+<!-- Error occurred modal -->
+<div class="modal" id="errorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Error Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>Check your internet connection, do a hard refresh (Ctrl + F5),
+                    and try again.
+                    If the issue persists please contact the admin.
+                </p>
+                <p id="errorMessage">
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseErrorModal">Close</button>
             </div>
         </div>
     </div>
-    <!-- Error occurred modal -->
-    <div class="modal" id="livestreamErrorModal" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">LiveStream Error!!</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="livestreamErrorOccurred" style="font-size: 1.15rem; color: rgb(255, 0, 0);">
-                        <i class="bi-x"></i>
-                    </p>
-                    <p>
-                        <i>For more information on how to activate your youtube account for livestreaming click <a
-                                href="https://support.google.com/youtube/answer/2474026?hl=en&co=GENIE.Platform%3DDesktop&oco=0"
-                                target="_blank" rel="noopener noreferrer">here!</a><i>
-                    </p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                        id="btnCloseErrorModal">Close</button>
-                </div>
+</div>
+<!-- Error occurred modal -->
+<div class="modal" id="livestreamErrorModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">LiveStream Error!!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="livestreamErrorOccurred" style="font-size: 1.15rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>
+                </p>
+                <p>
+                    <i>For more information on how to activate your youtube account for livestreaming click <a
+                            href="https://support.google.com/youtube/answer/2474026?hl=en&co=GENIE.Platform%3DDesktop&oco=0"
+                            target="_blank" rel="noopener noreferrer">here!</a><i>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseErrorModal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
 
 <!-- Network Error occurred modal -->
@@ -526,7 +515,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" style="text-align: cen;">Create New Genre</h5>
+                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"
                     id="close-new-playlist-details-modal"></button>
             </div>
@@ -535,7 +524,7 @@
                     <form id="create-playlist">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label class="form-label plst required"><strong>Genre Name</strong></label>
+                            <label class="form-label plst required"><strong>Playlist Name</strong></label>
                             <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
                                 id="p_title-error"></p>
                             {{ add_playlist.playlist_title }}
@@ -684,6 +673,29 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeAudioModal"></button>
             </div>
             <div class="modal-body">
+                <div class="dropdown">
+                    <select name="" class="form-control" id="audio-source">
+                        <option value="" style='width: 100%'>Select an Audio</option>
+                    </select>
+                    <span class="dropdown-indicator">&#x25BE;</span>
+                </div>
+                <div style="color:red;" id="audio-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    id="closeAudioModal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="choose-audio" data-bs-dismiss="modal">Select</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select an Audio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeAudioModal"></button>
+            </div>
+            <div class="modal-body">
                 <select name="" class="form-control" id="audio-source">
                     <option value="">Select an Audio</option>
                 </select>
@@ -696,7 +708,7 @@
             </div>
 
         </div>
-    </div>
+    </div> -->
 </div>
 <!-- Select camera Modal -->
 <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -776,22 +788,23 @@
                 </div>
                 <div class="modal-footer" id="modal-footer-video-modal">
                     <button class="btn btn-success" id="preview-btn-ok">OK</button>
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="preview-btn-delete">Delete</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                        id="preview-btn-delete">Delete</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <!-- =================================================================================== -->
-  <div id="confirmationModal_delete" class="modal_delete">
+<div id="confirmationModal_delete" class="modal_delete">
     <div class="modal-content_delete">
-      <p style="color: indianred;">Are you sure you want to delete this video?</p>
-      <div class="modal-buttons_delete">
-        <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
-        <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
-      </div>
+        <p style="color: indianred;">Are you sure you want to delete this video?</p>
+        <div class="modal-buttons_delete">
+            <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
+            <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
+        </div>
     </div>
-  </div>
+</div>
 <!-- ====================================================================================== -->
 
 <!-- Bootstrap Bundle with Popper -->

@@ -26,33 +26,53 @@
 {% endblock %}
 
 {% block body %}
-<div class="section" style="margin-top:3rem;">
-  <div class="playlist-videos">
-    <div class="playlist">
-      <h4>Select Playlist</h4>
+
+<div class="container" style="display: flex; flex-direction: column; margin: 40px; align-content: space-between;" >
+  <div class="row" style="display: flex; flex-direction: row; align-content: space-between; padding: 20px;">
+    <div class="col-lg-4">
+      <div class="section">
+        <h4>Select Playlist</h4>
         <div id="playlist-select">
           <select id="userLibraryPlaylist" class="form-control"></select>
         </div>
+      </div>
     </div>
-    <div class="video-list">
-      <h4>All Videos</h4>
+    <div class="col-lg-4">
+      <div class="section">
+        <h4>All Videos</h4>
         <div id="video-select">
           <select id="all_video" class="form-control"></select>
         </div>
+      </div>
     </div>
   </div>
-  <div class="video-player">
-    <h4>Player</h4>
+  <div>
+    <div class="">
+      <div class="section">
+        <h4>Player</h4>
         <div id="player-container">
           <div id="player"></div>
           <div id="player-controls">
-            <button id="delete-button">Delete</button>
-            <br>
+            <!-- <button id="download-button" disabled>Download</button> -->
+            <button id="delete-button" onclick="openModal_delete()">Delete Video</button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</div> 
+
+<!-- =================================================================================== -->
+<div id="confirmationModal_delete" class="modal_delete">
+  <div class="modal-content_delete">
+      <p style="color: indianred;">Are you sure you want to delete this video?</p>
+      <div class="modal-buttons_delete">
+          <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
+          <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
+      </div>
   </div>
 </div>
-
+<!-- ====================================================================================== -->
 
 <!-- Application JavaScript -->
 
@@ -62,9 +82,6 @@
   const deleteButton = document.getElementById('delete-button');
   deleteButton.addEventListener('click', () => {
     // Handle delete functionality
-  });
-  downloadButton.addEventListener('click', () => {
-    // Handle download functionality
   });
 </script>
 {% endblock body %}

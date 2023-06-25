@@ -261,7 +261,7 @@ img {
   outline: 1px solid #fa3d4a;
   border-radius: 0.5rem;
 }
-.switch-btn {
+/* .switch-btn {
   padding: 0.2rem 0.5rem;
   font-size: 1.5rem;
   border: none;
@@ -273,7 +273,7 @@ img {
   right: 10%;
   display: none;
   z-index: 99;
-}
+} */
 
 .video-timer {
   position: absolute;
@@ -845,4 +845,31 @@ background-color: #bb2d3b;
 
 .modal-buttons_delete button {
   margin-left: 10px;
+}
+
+.playback-btn button{
+  background: rgb(79, 11, 22);
+  padding: 0.3rem 0.6rem;
+  font-size: 1.4rem;
+  margin-right: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--white-clr);
+  outline: none;
+  border: none;
+}
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-indicator {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: #6a2525;
 }
