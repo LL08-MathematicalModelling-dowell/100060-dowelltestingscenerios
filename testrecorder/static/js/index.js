@@ -762,7 +762,7 @@ async function recordScreenAndAudio() {
   screenRecorder = new MediaRecorder(stream, options);
 
   screenRecorder.ondataavailable = event => {
-    //// // console.log("Data available");
+    // console.log("Data available");
     if (recordinginProgress == true) {
       if ((event.data.size > 0) && (recordingSynched == true) && (streamScreenToYT == true)) {
         appWebsocket.send(event.data);
@@ -903,7 +903,7 @@ async function startRecording() {
   // Generate random string for appending to file name
   generateString(6).then((randomString) => {
     fileRandomString = randomString;
-    //// // console.log("fileRandomString: ", fileRandomString)
+    // console.log("fileRandomString: ", fileRandomString)
   })
 
   // Enable or disable audio recording
@@ -953,15 +953,6 @@ async function startRecording() {
   let recordScreen = screenCheckbox.checked;
   if ((recordScreen == true) && (recordWebcam == true)) {
     try {
-
-      //old code commited Ahmed
-      // await recordStream();
-      // console.log("Done with webcam and audio.")
-      // await recordScreenAndAudio();
-      // console.log("Done with screen and audio.")
-      // await recordMergedStream();
-      // console.log("Done with merged.")
-
       // Muhammad Ahmed
       await camAndScreenShare();
       console.log("cam and screen share at a time ")
@@ -971,10 +962,6 @@ async function startRecording() {
       streamWebcamToYT = false;
       streamScreenToYT = false;
       streamMergedToYT = true;
-      /*screenRecorder.start(200);
-      webcamRecorder.start(200);
-      mergedStreamRecorder.start(200);*/
-
       // Create websockets now
       createAllsockets();
 
