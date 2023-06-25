@@ -725,7 +725,7 @@ async function recordScreenAndAudio() {
         ...mergeAudioStreams(screenStream, audioStream)
       ];
 
-      //// // console.log('Tracks to add to stream', tracks);
+      // console.log('Tracks to add to stream', tracks);
       stream = new MediaStream(tracks);
     } catch (error) {
       console.error("Error while creating merged audio streams: ", error)
