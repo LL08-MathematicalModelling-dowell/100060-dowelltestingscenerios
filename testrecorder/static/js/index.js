@@ -252,6 +252,16 @@ async function showCameraModal() {
 
 }
 
+//@Muhammad Ahmed 
+// VOice mute/Unmute
+async function microphoneStatus() {
+  try {
+    const microphoneBtn = document.getElementById('audio-settings');
+    return !!microphoneBtn.checked;
+  } catch (error) {
+    console.error('Error getting microphone status: ', error);
+  }
+}
 
 // show select audio modal
 async function showAudioModal() {
@@ -269,7 +279,7 @@ async function showAudioModal() {
     const showAudio = new bootstrap.Modal(document.getElementById('audioModal'));
     showAudio.hide();
   }
-  await microphoneStatus()
+  // await microphoneStatus()
 }
 
 document.getElementById('closeAudioModal').addEventListener('click', () => audioCheckbox.checked = false);
@@ -415,25 +425,11 @@ function isMobileDevice() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
-
-
-//@Muhammad Ahmed 
-// VOice mute/Unmute
-async function microphoneStatus() {
-  try {
-    const microphoneBtn = document.getElementById('audio-settings');
-    return !!microphoneBtn.checked;
-  } catch (error) {
-    console.error('Error getting microphone status: ', error);
-  }
-}
-
-
 // Records webcam and audio
 async function recordStream() {
   // webCamStream = await getAllCamera();
   webCamStream = await captureMediaDevices(webcamMediaConstraints);
-  console.log(webcamMediaConstraints);
+  // console.log(webcamMediaConstraints);
 
   video.src = null
   video.srcObject = webCamStream
@@ -525,14 +521,14 @@ async function recordMergedStream() {
 
     // Set width and height of merger
     let screenWidth = merger.width;
-    console.log(screenWidth);
+    // console.log(screenWidth);
     let screenHeight = merger.height;
     merger.setOutputSize(screenWidth, screenHeight);
 
     // Check if we need to add audio stream
     let recordAudio = await microphoneStatus();
     let muteState = !recordAudio;
-    //// // console.log("muteState: ",muteState)
+    // console.log("muteState: ",muteState)
 
     // Add the screen capture. Position it to fill the whole stream (the default)
     merger.addStream(screenStream, {
@@ -799,10 +795,10 @@ async function camAndScreenShare() {
     screenStream = await captureScreen();
 
     showNotificationPermission = await Notification.requestPermission();
-    console.log("showNotificationPermission: ", showNotificationPermission);
+    // console.log("showNotificationPermission: ", showNotificationPermission);
 
     webCamStream = await captureMediaDevices(webcamMediaConstraints);
-    console.log(webcamMediaConstraints);
+    // console.log(webcamMediaConstraints);
     video.src = null
     video.srcObject = webCamStream
     video.muted = true
@@ -832,8 +828,8 @@ async function camAndScreenShare() {
     const videoTrack = screenStream.getVideoTracks()[0];
     const width = videoTrack.getSettings().width;
     const height = videoTrack.getSettings().height;
-    console.log('Width:', width);
-    console.log('Height:', height);
+    // console.log('Width:', width);
+    // console.log('Height:', height);
 
     const mergerOptions = { width: screenStream.width, height: screenStream.height, mute: true };
 
@@ -856,7 +852,7 @@ async function camAndScreenShare() {
     let mergedStream = new MediaStream();
     // Add merged stream tracks to the final merged stream
     merger.result.getTracks().forEach(track => mergedStream.addTrack(track));
-    console.log('mergedStream ', mergedStream);
+    // console.log('mergedStream ', mergedStream);
 
     mergedStreamRecorder = new MediaRecorder(mergedStream, options);
 
@@ -915,8 +911,8 @@ async function startRecording() {
       webcamMediaConstraints = {
         video: videoConstraints, audio: audioConstraints
       };
-      console.log(videoConstraints);
-      console.log(audioConstraints);
+      // console.log(videoConstraints);
+      // console.log(audioConstraints);
       // Enable audio recording for screen recording
       screenAudioConstraints = {
         audio: {
@@ -966,7 +962,7 @@ async function startRecording() {
       createAllsockets();
 
       msg = "STATUS: Recording Started."
-      console.log(msg);
+      // console.log(msg);
       document.getElementById("app-status").innerHTML = msg;
     }
     catch (err) {
@@ -1034,7 +1030,7 @@ async function validateAll() {
     } else {
       audioConstraints.deviceId = { exact: selectAudio.value };
     }
-    console.log(audioConstraints);
+    // console.log(audioConstraints);
   }
   if (webCam == true) {
     webcamMediaConstraints = null
@@ -1067,7 +1063,7 @@ async function validateModal() {
 
   // Get permission to show notifications in system tray
   showNotificationPermission = await Notification.requestPermission();
-  console.log("showNotificationPermission: ", showNotificationPermission);
+  // console.log("showNotificationPermission: ", showNotificationPermission);
 
   // Clear previous test data
   userPlaylistSelection = null;
@@ -1084,7 +1080,7 @@ async function validateModal() {
   currentChannelTitle = currentChannelTitle.trim();
   let channelTitleErrorMsg = "";
 
-  // // console.log("currentChannelTitle:", currentChannelTitle);
+  // console.log("currentChannelTitle:", currentChannelTitle);
 
   if (currentChannelTitle === "") {
     channelTitleErrorMsg = "Please select one channel";
@@ -1096,7 +1092,7 @@ async function validateModal() {
   let playlistIsValid = true;
   userPlaylistSelection = document.getElementById("selectPlaylist").value;
   userPlaylistSelection = userPlaylistSelection.trim();
-  // // console.log("userPlaylistSelection:", userPlaylistSelection);
+  // console.log("userPlaylistSelection:", userPlaylistSelection);
   let playlistError = "";
   if (userPlaylistSelection === "") {
     playlistError = "Please select a playlist";
@@ -1710,7 +1706,7 @@ async function createBroadcast() {
   url = "/youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
-  console.log(videoPrivacyStatus);
+  // console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
   // broadcast_data.channel_title = channel_title;
@@ -1805,7 +1801,7 @@ async function endBroadcast() {
     })
     .then((json) => {
       data = json;
-      console.log("transition complete broadcast data: ", data);
+      // console.log("transition complete broadcast data: ", data);
     })
     .then(() => {
       console.log("Broadcast Trasitioned to complete state!");
@@ -3459,7 +3455,7 @@ async function load_videos(playlist_id) {
       const selectedVideoId = this.value;
 
       selected_Video_Id = selectedVideoId;
-      console.log('selected video id > ', selected_Video_Id);
+      // console.log('selected video id > ', selected_Video_Id);
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
@@ -3550,7 +3546,7 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
-  console.log('==== Video Id >>> ', video_Id);
+  // console.log('==== Video Id >>> ', video_Id);
 
   // Close modal if open
   btnCloseVideoPreviewModal.click();
@@ -3576,7 +3572,7 @@ async function previewVideo() {
 async function deleteVideo(video_Id) {
 
   let csrftoken = await getCookie('csrftoken');
-  console.log('video id ', video_Id)
+  // console.log('video id ', video_Id)
   // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
@@ -3587,7 +3583,7 @@ async function deleteVideo(video_Id) {
         statusBar.innerHTML = msg;
       }
       catch {
-        console.log('unable to log delete success message');
+        console.log('unable to log "delete success" message');
       }
 
       return response.json();
@@ -3611,26 +3607,26 @@ async function deleteVideo(video_Id) {
       video_id: video_Id,
     }),
   })
-    .then(handleResponse)
-    .then(data => {
-      // Success response
-      console.log('Delete response data >>> ', data); // Video deleted successfully
-      console.log('Delete Response Message >> ', data.message); // Video deleted successfully
-      console.log('Delete data.response >> ', data.response); // Response from the server
-    })
-    .catch(error => {
-      // Error response
-      console.error(error);
-    });
+    .then(handleResponse);
+    // .then(data => {
+    //   // Success response
+    //   // console.log('Delete response data >>> ', data); // Video deleted successfully
+    //   // console.log('Delete Response Message >> ', data.message); // Video deleted successfully
+    //   // console.log('Delete data.response >> ', data.response); // Response from the server
+    // })
+    // .catch(error => {
+    //   // Error response
+    //   console.error(error);
+    // });
 }
 
 // =============================================================
 function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
-  if (window.location.pathname === '/library/') {
-    console.log('selected video id > ', selected_Video_Id);
-  }
+  // if (window.location.pathname === '/library/') {
+  //   console.log('selected video id > ', selected_Video_Id);
+  // }
 }
 
 function closeModal_delete() {
