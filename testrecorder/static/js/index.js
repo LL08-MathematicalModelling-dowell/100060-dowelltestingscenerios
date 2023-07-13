@@ -387,7 +387,7 @@ async function microphoneStatus() {
  * assigns it to the video element, and creates a MediaRecorder to handle the recording.
  * The recorded data is sent to the appropriate websockets based on the recording settings.
  */
-async function recordWebcamStream() {
+async function recordWebcamStream(appWebsocket) {
   try {
     webcamMediaConstraints = {
       video: videoConstraints, audio: true
@@ -419,6 +419,7 @@ async function recordWebcamStream() {
         if (recordingSynched && streamWebcamToYT) {
           appWebsocket.send(event.data); // Send the data to the appWebsocket
         } else if (recordingSynched && !streamScreenToYT) {
+
           recordWebcam = cameraCheckbox.checked; // Check if webcam recording is enabled
           recordScreen = screenCheckbox.checked; // Check if screen recording is enabled
 
@@ -538,13 +539,13 @@ async function stopRecording() {
   testRecordingData.set('user_files_timestamp', filesTimestamp);
 
   // Send data to server for storage
-  sendAvailableData(globalProgress);
+  sendAvailableData();
 }
 
 /**
  * Records the screen and audio.
  */
-async function recordScreenAndAudio() {
+async function recordScreenAndAudio(appWebsocket) {
   try {
     // Get the screen recording stream
     screenStream = await getScreenStream();
@@ -627,27 +628,17 @@ async function recordScreenAndAudio() {
 
     // Create a new MediaRecorder instance with the stream and options
     screenRecorder = new MediaRecorder(stream, options);
-
-    // let socket;
-    // if (webcamWebSocket) {
-    //   socket = webcamWebSocket;
-    // } else if (screenWebSocket) {
-    //   socket = screenWebSocket
-    // } else if (webcamScreenWebSocket) {
-    //   socket = webcamScreenWebSocket;
-    // } else {
-    //   socket = appWebsocket;
-    // }
     // Handle the 'dataavailable' event of the MediaRecorder
     screenRecorder.ondataavailable = (event) => {
       if (recordinginProgress && recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
           // Send the recorded data to the appWebsocket
           appWebsocket.send(event.data);
-        } else if (screenCheckbox.checked && cameraCheckbox.checked) {
-          // Send the recorded data to the screenWebSocket
-          webcamScreenWebSocket.send(event.data);
-        }
+        } 
+        // else if (screenCheckbox.checked && cameraCheckbox.checked) {
+        //   // Send the recorded data to the screenWebSocket
+        //   webcamScreenWebSocket.send(event.data);
+        // }
       }
     };
 
@@ -679,7 +670,7 @@ async function recordScreenAndAudio() {
  * The merged stream is then displayed in the video element.
  * The merged stream is also recorded and sent to the appropriate websockets.
  */
-async function newRecordWebcamAndScreen(recordScreen, recordWebcam) {
+async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
   // Initialize variables
   let merger;
   let cameraStream;
@@ -696,10 +687,6 @@ async function newRecordWebcamAndScreen(recordScreen, recordWebcam) {
     screenStream = await screenAndAudioStream();
     // Get the webcam stream
     webcamStream = await webcamStream();
-
-    // // Set the webcam stream as the video source
-    // video.srcObject = webcamStream;
-    // video.muted = true;
 
     // Get supported media type options
     options = await getSupportedMediaType();
@@ -739,23 +726,24 @@ async function newRecordWebcamAndScreen(recordScreen, recordWebcam) {
     }
 
     // Start the merger and set the video source to the merged stream
-    merger.start();
+    await merger.start();
     video.srcObject = merger.result;
 
     // Create a new MediaRecorder for the merged stream
     mergedStreamRecorder = new MediaRecorder(merger.result, options);
-    mergedStreamRecorder.start(200);
+    mergedStreamRecorder.start(100);
 
     // Handle the data available event for the merged stream recorder
     mergedStreamRecorder.ondataavailable = event => {
       if (recordinginProgress && recordingSynched && event.data.size > 0) {
         if (streamWebcamToYT) {
-          appWebsocket.send(event.data);
-        } else {
-          if (recordScreen && recordWebcam) {
-            appWebsocket.send(event.data);// webcamWebSocket.send(event.data);
-          }
-        }
+          webcamScreenWebSocket.send(event.data);
+        } 
+        // else {
+          // if (recordScreen && recordWebcam) {
+          //   appWebsocket.send(event.data);// webcamWebSocket.send(event.data);
+          // }
+        // }
       }
     };
 
@@ -880,88 +868,115 @@ async function startRecording() {
     video: false
   };
 
-  // Show the creating broadcast modal
-  showCreatingBroadcastModal(true);
-
   // Record merged screen and webcam stream, webcam stream, or screen stream
   recordWebcam = cameraCheckbox.checked;
   recordScreen = screenCheckbox.checked;
 
-  if (recordScreen && recordWebcam) {
-    try {
+  try {
+    [socket, socketType] = await createAllsockets();
+    // Show the creating broadcast modal
+    showCreatingBroadcastModal(true);
+
+    await createBroadcast();
+
+    // Show the creating broadcast modal
+    showCreatingBroadcastModal(false);
+
+    if (recordScreen && recordWebcam) {
       // Record merged screen and webcam stream
-      newRecordWebcamAndScreen(recordScreen, recordWebcam)
-        .then(() => {
-          console.log("Recording merged screen and webcam stream");
-
-          // Synchronize recording
-          recordingSynched = true;
-          streamWebcamToYT = false;
-          streamScreenToYT = false;
-          streamMergedToYT = true;
-
-          // Create websockets now
-          createAllsockets()
-            .then(() => {
-              const msg = "STATUS: Recording Started.";
-              console.log(msg);
-              document.getElementById("app-status").innerHTML = msg;
-            });
-        });
-    } catch (err) {
-      // Handle error while recording merged stream
-      handleRecordingError("Merged stream recording Error: " + err.message);
+      await newRecordWebcamAndScreen(socket);
+      // Synchronize recording
+      recordingSynched = true;
+      streamWebcamToYT = false;
+      streamScreenToYT = false;
+      streamMergedToYT = true;
+    } else if (!recordScreen && recordWebcam) {
+      await recordWebcamStream(socket);
+      recordingSynched = true;
+      streamWebcamToYT = true;
+      streamScreenToYT = false;
+      streamMergedToYT = false;
+    } else if (recordScreen && !recordWebcam) {
+      await recordScreenAndAudio(socket);
+      recordingSynched = true;
+      streamWebcamToYT = false;
+      streamScreenToYT = true;
+      streamMergedToYT = false;
     }
-  } else if (!recordScreen && recordWebcam) {
-    try {
-      // Record webcam stream
-      const msg = "STATUS: Recording Started.";
+
+    let errorStop = false;
+    // WebSocket close event handler
+    socket.onclose = function (evt) {
+      if (evt.code != 1000) {
+        if (!errorStop) {
+          errorStop = true;
+        }
+      }
+    };
+
+    // Rest of the code...
+    // WebSocket error event handler
+    socket.onerror = function (evt) {
+      const msg = "STATUS: WebSocket creation error.";
       document.getElementById("app-status").innerHTML = msg;
+      console.error("WebSocket creation error: ", evt.message);
+      // Tell the user and stop the recording
+      resetStateOnError();
+      showErrorModal();
+    };
+    // WebSocket open event handler
+    socket.onopen = function (evt) {
+      let socketMsg = "";
+      mediaFileName = testNameValue + "_" + filesTimestamp + "_" + socketType + ".webm";
+      socketMsg = "FILENAME," + mediaFileName;
+      socket.send(socketMsg);
 
-      recordWebcamStream()
-        .then(() => {
-          recordingSynched = true;
-          streamWebcamToYT = true;
-          streamScreenToYT = false;
-          streamMergedToYT = false;
-
-          // Create websockets now
-          createAllsockets()
-            .then(() => {
-              const msg = "STATUS: Recording Started.";
-              console.log(msg);
-              document.getElementById("app-status").innerHTML = msg;
-            });
-        });
-    } catch (err) {
-      // Handle error while recording webcam stream
-      handleRecordingError("Webcam recording Error: " + err.message);
-    }
-  } else if (recordScreen && !recordWebcam) {
-    try {
-      // Record screen stream
-      const msg = "STATUS: Recording Started.";
+      // Alert the user that the WebSocket is open
+      const msg = "STATUS: WebSocket created.";
       document.getElementById("app-status").innerHTML = msg;
-
-      recordScreenAndAudio()
-        .then(() => {
-          recordingSynched = true;
-          streamWebcamToYT = false;
-          streamScreenToYT = true;
-          streamMergedToYT = false;
-
-          // Create websockets now
-          createAllsockets()
-            .then(() => {
-              const msg = "STATUS: Recording Started.";
-              console.log(msg);
-              document.getElementById("app-status").innerHTML = msg;
-            });
-        });
-    } catch (err) {
-      // Handle error while recording screen stream
-      handleRecordingError("Screen recording Error: " + err.message);
+      // No need to reconnect
+      websocketReconnect = false;
     }
+
+    // WebSocket message event handler
+    socket.onmessage = function (e) {
+      let receivedMsg = e.data;
+      msgRcvdFlag = true;
+
+      // Check if the received message contains the RTMP URL acknowledgement
+      if (receivedMsg.includes("RTMP url received: rtmp://")) {
+        recordinginProgress = true;
+
+        let recordWebcam = cameraCheckbox.checked;
+        let recordScreen = screenCheckbox.checked;
+        if (recordScreen && recordWebcam) {
+          // Start merged stream recording
+          if (mergedStreamRecorder && (mergedStreamRecorder.state !== 'recording')) {
+            mergedStreamRecorder.start(200);
+          }
+        } else if (recordWebcam) {
+          // Start webcam recording
+          if (webcamRecorder && (webcamRecorder.state !== 'recording')) {
+            webcamRecorder.start(200);
+          }
+        } else if (recordScreen) {
+          // Start screen recording
+          if (screenRecorder && (screenRecorder.state !== 'recording')) {
+            screenRecorder.start(200);
+          }
+        }
+
+        // Update application status
+        const msg = "STATUS: Recording in Progress.";
+        document.getElementById("app-status").innerHTML = msg;
+      }
+      // else {
+      //     console.error('RTMP url ACK not received, message recieve is >> ', receivedMsg);
+      // }
+    };
+  } catch (err) {
+    // Handle error while recording merged stream 
+    handleRecordingError("Recording Error: " + err.message);
   }
 
   /**
@@ -1122,7 +1137,7 @@ async function validateModal() {
 }
 
 // Sends recorded test data using axios
-async function sendAvailableData(prevProgress) {
+async function sendAvailableData() {
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
   // show stop button
@@ -1475,6 +1490,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
   // Determine the WebSocket protocol based on the current page protocol
   const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
   let socketType = '';
+  socket = null;
   if (recordScreen ? !recordWebcam : recordWebcam) {
     const endpoint = wsStart + window.location.host + "/ws/app/";
     socket = appWebsocket = new WebSocket(endpoint);
@@ -1484,76 +1500,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
     socket = webcamScreenWebSocket = new WebSocket(endpoint);
     socketType = 'webcamScreen';
   }
-
-  let errorStop = false;
-
-  // WebSocket close event handler
-  socket.onclose = function (evt) {
-    if (evt.code != 1000) {
-      if (!errorStop) {
-        errorStop = true;
-      }
-    }
-  };
-  // WebSocket error event handler
-  socket.onerror = function (evt) {
-    const msg = "STATUS: WebSocket creation error.";
-    document.getElementById("app-status").innerHTML = msg;
-    console.error("WebSocket creation error: ", evt.message);
-    // Tell the user and stop the recording
-    resetStateOnError();
-    showErrorModal();
-  };
-  // WebSocket open event handler
-  socket.onopen = function (evt) {
-    let socketMsg = "";
-    mediaFileName = testNameValue + "_" + filesTimestamp + "_" + socketType + ".webm";
-    socketMsg = "FILENAME," + mediaFileName;
-    socket.send(socketMsg);
-
-    // Alert the user that the WebSocket is open
-    const msg = "STATUS: WebSocket created.";
-    document.getElementById("app-status").innerHTML = msg;
-    // No need to reconnect
-    websocketReconnect = false;
-  }
-
-  // WebSocket message event handler
-  socket.onmessage = function (e) {
-    let receivedMsg = e.data;
-    msgRcvdFlag = true;
-
-    // Check if the received message contains the RTMP URL acknowledgement
-    if (receivedMsg.includes("RTMP url received: rtmp://")) {
-      recordinginProgress = true;
-
-      let recordWebcam = cameraCheckbox.checked;
-      let recordScreen = screenCheckbox.checked;
-      if (recordScreen && recordWebcam) {
-        // Start merged stream recording
-        if (mergedStreamRecorder && (mergedStreamRecorder.state !== 'recording')) {
-          mergedStreamRecorder.start(200);
-        }
-      } else if (recordWebcam) {
-        // Start webcam recording
-        if (webcamRecorder && (webcamRecorder.state !== 'recording')) {
-          webcamRecorder.start(200);
-        }
-      } else if (recordScreen) {
-        // Start screen recording
-        if (screenRecorder && (screenRecorder.state !== 'recording')) {
-          screenRecorder.start(200);
-        }
-      }
-
-      // Update application status
-      const msg = "STATUS: Recording in Progress.";
-      document.getElementById("app-status").innerHTML = msg;
-    }
-    // else {
-    //     console.error('RTMP url ACK not received, message recieve is >> ', receivedMsg);
-    // }
-  };
+  return [socket, socketType]
 }
 
 
@@ -1877,105 +1824,25 @@ async function stopStreams() {
   }
 }
 
-/**
- * Creates a WebSocket connection for webcam or screen recording.
- * Determines the WebSocket protocol based on the current page protocol.
- * Creates the WebSocket endpoint URL and initializes a new WebSocket instance.
- * Handles the WebSocket events such as open, message, and error.
- * Updates the appropriate WebSocket variable based on the socketType.
- */
-async function createWebcamScreenSocket(socketType = "webcamScreen") {
-  // Determine the WebSocket protocol based on the current page protocol
-  const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-
-  // Create the WebSocket endpoint URL
-  const endpoint = wsStart + window.location.host + "/ws/app/";
-
-  // Assign the WebSocket instance to the appropriate variable based on the socketType
-  if (socketType === "webcam") {
-    webcamWebSocket = new WebSocket(endpoint);
-    socket = webcamWebSocket;
-  } else if (socketType === "screen") {
-    screenWebSocket = new WebSocket(endpoint);
-    socket = screenWebSocket;
-  } else if (socketType === "webcamScreen") {
-    // const endpoint = wsStart + window.location.host + "/ws/webcamscreen/";
-    webcamScreenWebSocket = new WebSocket(endpoint);
-    socket = webcamScreenWebSocket;
-  } else {
-    socket = appWebsocket;
-  }
-
-  // WebSocket open event handler
-  socket.onopen = function (e) {
-    let msg = "";
-    mediaFileName = testNameValue + "_" + filesTimestamp + "_" + socketType + ".webm";
-    msg = "FILENAME," + mediaFileName;
-    socket.send(msg);
-  };
-
-  // WebSocket message event handler
-  socket.onmessage = function (e) {
-    receivedMsg = e.data;
-    msgRcvdFlag = true;
-
-    // Check if the received message contains the acknowledgement for the recording filename
-    if (receivedMsg.includes("Received Recording File Name")) {
-      // Webcam socket was created, create screen socket if both webcam and screen recording are enabled
-      let recordWebcam = cameraCheckbox.checked;
-      let recordScreen = screenCheckbox.checked;
-      if (recordScreen && recordWebcam) {
-        try {
-          if (socketType === "webcam") {
-            // Create the screen socket
-            createWebcamScreenSocket("webcam");
-          } else {
-            // Start recording or broadcasting
-            createBroadcast();
-          }
-        } catch (err) {
-          console.error("Error while creating webcam socket: " + err.message);
-          // Tell the user, stop the recording
-          resetStateOnError();
-          showErrorModal();
-        }
-      }
-    } else {
-      // Handle the next message
-      console.log(receivedMsg);
-      console.log("Received data: ", receivedMsg);
-    }
-  };
-
-  // WebSocket error event handler
-  socket.onerror = function (evt) {
-    const msg = socketType + " WebSocket creation error: ";
-    console.error(msg, evt);
-    // Tell the user, stop the recording
-    resetStateOnError();
-    showErrorModal();
-  };
-}
-
 // Creates all the required websockets
 async function createAllsockets() {
   recordWebcam = cameraCheckbox.checked;
   recordScreen = screenCheckbox.checked;
+  let socketX = null;
+  let socketTypeX = null;
   try {
     // Create youtube websocket first, then others follow on success
-    createRecordingTimestamp()
-      .then(createWebsocket(recordWebcam, recordScreen))
-      .then(createBroadcast())
-      .catch((err) => {
-        throw new Error(err);
-      });
+    await createRecordingTimestamp();
+    [socketX, socketTypeX] = await createWebsocket(recordWebcam, recordScreen);
+    return [socketX, socketTypeX];
   } catch (err) {
-    console.error("Error while Creating sockets: " + err.message);
+    console.error("Error while creating sockets: " + err.message);
     // Tell user, stop the recording.
     resetStateOnError();
     showErrorModal();
   }
 }
+
 
 // Creates a timestamp for the files
 async function createRecordingTimestamp() {
