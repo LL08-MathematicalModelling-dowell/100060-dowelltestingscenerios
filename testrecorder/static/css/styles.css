@@ -261,6 +261,10 @@ img {
   outline: 1px solid #fa3d4a;
   border-radius: 0.5rem;
 }
+.login-btn{
+  background: var(--dark-clr);
+  border-radius: 0;
+}
 /* .switch-btn {
   padding: 0.2rem 0.5rem;
   font-size: 1.5rem;
@@ -806,18 +810,9 @@ iframe {
   display: none;
   position: fixed;
   z-index: 1;
-  left: 0;
-  top: 0;
-  height: fit-content;
-  overflow: auto;
-  /* background-color: rgba(0, 0, 0, 0.4); */
-  width: fit-content;
-  margin-top: 20%;
-  margin-left: 40%;
-  /* position: absolute; */
-  padding-bottom: 56.25%;
-  height: 0;
-  overflow: hidden;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
 }
 
 #confirm-cancel{
