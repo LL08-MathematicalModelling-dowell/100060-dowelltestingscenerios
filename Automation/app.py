@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, session
+from flask import Flask, request, redirect, session, Response, jsonify
 from flask_restful import Api
 from google.oauth2 import credentials
 from login import login
@@ -33,10 +33,13 @@ def index():
 def callback():
     flow.fetch_token(authorization_response=request.url)
     if not flow.credentials:
-        return 'Failed to retrieve access token.'
+        e='Failed to retrieve access token.'
+        error_message = {'error': e}
+        return jsonify(error_message), 400
 
     session['credentials'] = credentials_to_dict(flow.credentials)
-    return redirect('/channel')
+    #return redirect('/channel')
+    return Response(status=200)
 
 @app.route('/channel')
 def channel():
@@ -56,8 +59,8 @@ def channel():
     # Extract channel information
     channel_info = channels_response['items'][0]['snippet']
 
-    return f"Channel Title: {channel_info['title']}"
-    # return channel_info
+    #return f"Channel Title: {channel_info['title']}"
+    return channel_info
 
 @app.route('/playlists')
 def playlists():
