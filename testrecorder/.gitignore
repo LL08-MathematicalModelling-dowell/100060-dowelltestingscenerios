@@ -4,3 +4,5 @@ db.sqlite3
 /static/
 *.sqlite3
 testrecorder/staticfiles
+test.js
+utils.js
