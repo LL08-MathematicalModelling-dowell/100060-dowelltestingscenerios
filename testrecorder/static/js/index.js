@@ -418,7 +418,8 @@ async function recordWebcamStream(appWebsocket) {
       if (recordinginProgress && event.data.size > 0) {
         if (recordingSynched && streamWebcamToYT) {
           appWebsocket.send(event.data); // Send the data to the appWebsocket
-        } else if (recordingSynched && !streamScreenToYT) {
+        } 
+        else if (recordingSynched && !streamScreenToYT) {
 
           recordWebcam = cameraCheckbox.checked; // Check if webcam recording is enabled
           recordScreen = screenCheckbox.checked; // Check if screen recording is enabled
@@ -634,11 +635,7 @@ async function recordScreenAndAudio(appWebsocket) {
         if (streamScreenToYT) {
           // Send the recorded data to the appWebsocket
           appWebsocket.send(event.data);
-        } 
-        // else if (screenCheckbox.checked && cameraCheckbox.checked) {
-        //   // Send the recorded data to the screenWebSocket
-        //   webcamScreenWebSocket.send(event.data);
-        // }
+        }
       }
     };
 
@@ -715,7 +712,6 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
 
     // Create a VideoStreamMerger and add the screen stream
     merger = new VideoStreamMerger(mergerOptions);
-    // console.log('merger >>>>>> ', merger);
     merger.addStream(screenStream, { x: 0, y: 0, width: merger.width, height: merger.height });
 
     // Check if camera stream is available and add it to the merger
@@ -731,19 +727,13 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
 
     // Create a new MediaRecorder for the merged stream
     mergedStreamRecorder = new MediaRecorder(merger.result, options);
-    mergedStreamRecorder.start(100);
 
     // Handle the data available event for the merged stream recorder
-    mergedStreamRecorder.ondataavailable = event => {
-      if (recordinginProgress && recordingSynched && event.data.size > 0) {
-        if (streamWebcamToYT) {
+    mergedStreamRecorder.ondataavailable = (event) => {
+      if (recordingSynched && event.data.size > 0) {
+        if (streamMergedToYT) {
           webcamScreenWebSocket.send(event.data);
-        } 
-        // else {
-          // if (recordScreen && recordWebcam) {
-          //   appWebsocket.send(event.data);// webcamWebSocket.send(event.data);
-          // }
-        // }
+        }
       }
     };
 
@@ -753,6 +743,8 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
       const msg = "STATUS: Merged Stream Recording stopped.";
       document.getElementById("app-status").innerHTML = msg;
     };
+    // start merge stream recording
+    mergedStreamRecorder.start(200);
   } catch (err) {
     // Handle errors during recording
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream.";
@@ -943,12 +935,14 @@ async function startRecording() {
       let receivedMsg = e.data;
       msgRcvdFlag = true;
 
+      console.log('socket on message >>>   ', receivedMsg);
+
       // Check if the received message contains the RTMP URL acknowledgement
       if (receivedMsg.includes("RTMP url received: rtmp://")) {
         recordinginProgress = true;
 
-        let recordWebcam = cameraCheckbox.checked;
-        let recordScreen = screenCheckbox.checked;
+        recordWebcam = cameraCheckbox.checked;
+        recordScreen = screenCheckbox.checked;
         if (recordScreen && recordWebcam) {
           // Start merged stream recording
           if (mergedStreamRecorder && (mergedStreamRecorder.state !== 'recording')) {
@@ -1399,7 +1393,6 @@ async function resetStateOnError() {
   showCreatingBroadcastModal(false);
 }
 
-
 // Updates the test information upload progress bar
 async function setProgressBarValue(newProgress) {
   let uploadProgressBar = document.getElementById('uploadProgressBar');
@@ -1440,17 +1433,13 @@ async function generateString(length) {
 // Shows upload failed modal
 async function showUploadFailedModal() {
   modalstate = document.getElementById('uploadFailed').classList.contains('show');
-  //// // console.log("modalstate", modalstate);
-
   if (modalstate != true) {
     let uploadFailedModal = document.getElementById('uploadFailed');
     uploadFailedModal.classList.add('show');
-    //// // console.log("modal shown");
   }
 }
 
 async function set_video_links(linksData) {
-  //// // console.log("linksData", linksData)
   let webcamLink = document.getElementById('webcam_link');
   let screenLink = document.getElementById('screen_link');
   let mergedLink = document.getElementById('merged_link');
@@ -1474,11 +1463,11 @@ async function set_video_links(linksData) {
     keyLogFileLink.value = linksData.key_log_file;
   }
 }
-// ==========================================================================================
-// ==========================================================================================
-// ==========================================================================================
-// ==========================================================================================
 
+// ==========================================================================================
+// ==========================================================================================
+// ==========================================================================================
+// ==========================================================================================
 
 /**
  * Creates a WebSocket connection to the server.
@@ -1496,19 +1485,17 @@ async function createWebsocket(recordWebcam, recordScreen) {
     socket = appWebsocket = new WebSocket(endpoint);
     socketType = recordScreen ? 'screen' : 'webcam';
   } else if (recordScreen && recordWebcam) {
-    const endpoint = wsStart + window.location.host + "/ws/webcamscreen/";
+    const endpoint = wsStart + window.location.host + "/ws/app/";
     socket = webcamScreenWebSocket = new WebSocket(endpoint);
     socketType = 'webcamScreen';
   }
   return [socket, socketType]
 }
 
-
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
-
 
 async function createBroadcast() {
   url = "/youtube/createbroadcast/api/"
@@ -1583,7 +1570,6 @@ async function endBroadcast() {
   broadcast_data.channel_title = currentChannelTitle;
   json_broadcast_data = JSON.stringify(broadcast_data);
   let csrftoken = await getCookie('csrftoken');
-  //headers: {"Content-type":"application/json;charset=UTF-8"}
   const myHeaders = new Headers();
   myHeaders.append('Accept', 'application/json');
   myHeaders.append('Content-type', 'application/json');
@@ -1658,7 +1644,6 @@ async function shareToWhatsapp() {
 }
 async function copyLink() {
   let youtubeLink = "https://youtu.be/" + newBroadcastID;
-
   // Create a temporary input element to copy link
   var tempInput = document.createElement("input");
   tempInput.value = youtubeLink;
@@ -1671,17 +1656,13 @@ async function copyLink() {
 
 
 async function shareLinkModal() {
-
   // close modal if open
   const btnCloseTestDetailsModal = document.getElementById('close-share-link-modal');
   btnCloseTestDetailsModal.click();
-
-
   // Show modal
   const testDetailsModal = new bootstrap.Modal(document.getElementById('share-link-modal'));
   testDetailsModal.show();
 }
-
 
 // Shows upload failed modal
 async function showErrorModal(liveStreamError = null, message = null) {
@@ -1707,16 +1688,9 @@ networkTimer = setInterval(() => {
 
 // Function to check network status
 async function checkNetworkStatus() {
-  //// // console.log("Checking network status:");
   let currentDateTime = new Date();
-  //// // console.log("The current date time is as follows:");
-  //// // console.log(currentDateTime);
   let resultInSeconds = currentDateTime.getTime() / 1000;
-  //// // console.log("The current date time in seconds is as follows:")
-  //// // console.log(resultInSeconds);
   let timeNow = resultInSeconds;
-  //// // console.log("Disconnect time count: ", ((timeNow - lastMsgRcvTime)*1000));
-
   if (msgRcvdFlag === true) {
     lastMsgRcvTime = timeNow;
     msgRcvdFlag = false;
@@ -1760,15 +1734,12 @@ async function setVideoPrivacyStatus() {
   }
 }
 
-
-// Stop streams
 /**
  * Stops the recording streams.
  */
 async function stopStreams() {
 
   let video = document.getElementById('video')
-
   // Stop video display tracks
   await stopVideoElemTracks(video);
   // recording timer
@@ -1869,27 +1840,6 @@ async function stopVideoElemTracks(videoElem) {
   } catch (error) {
     console.error("Error while stopping video display tracks: ", error.message)
   }
-
-  // // audio stream
-  // try {
-  //   audioStream.getTracks().forEach(track => track.stop());
-  // } catch (error) {
-
-  // }
-
-  // // screen stream
-  // try {
-  //   screenStream.getTracks().forEach(track => track.stop());
-  // } catch (error) {
-
-  // }
-
-  // // webcam stream
-  // try {
-  //   webcamStream.getTracks().forEach(track => track.stop());
-  // } catch (error) {
-
-  // }
 }
 
 // Inserts a video into a youtube playlist
@@ -1973,8 +1923,6 @@ async function insertVideoIntoTodaysPlaylist() {
     .then(response => {
       // console.log(response)
       responseStatus = response.status;
-      // console.log("Insert video into daily playlist Response Status", responseStatus);
-      // Return json data
       return response.json();
     })
     .then((json) => {
@@ -1987,7 +1935,6 @@ async function insertVideoIntoTodaysPlaylist() {
 
       } else {
         // Server error message
-        // console.log("Server Error Message: ", json)
         msg = "STATUS: Failed to Insert Video Into Daily Playlist."
         document.getElementById("app-status").innerHTML = msg;
 
@@ -2024,10 +1971,8 @@ function sendRTMPURL() {
   if (recordAudio == true) {
     let msg = "browser_sound," + newRtmpUrl;
     appWebsocket.send(msg)
-    // console.log("Sent RTMP URL: ", msg)
   } else {
     socket.send(newRtmpUrl)
-    // console.log("Sent RTMP URL: ", newRtmpUrl)
   }
   // display some buttons and remove some
   displayUtilities()
@@ -2035,11 +1980,9 @@ function sendRTMPURL() {
 
 // Shows youtube playlist insert video error modal
 async function playlistInsertVideoErrorModal() {
-
   // close modal if open
   const btnClosePlaylistInsertErrorModal = document.getElementById('btnClosePlaylistInsertErrorModal');
   btnClosePlaylistInsertErrorModal.click();
-
   // Show modal
   const playlistInsertErrorModal = new bootstrap.Modal(document.getElementById('playlist-insert-video-error-modal'));
   playlistInsertErrorModal.show();
@@ -2330,7 +2273,6 @@ async function showPlaylistCreationErrorModal() {
   const playlistCreationErrorModal = new bootstrap.Modal(document.getElementById('playlist-creation-error-modal'));
   playlistCreationErrorModal.show();
 }
-
 
 async function getSupportedMediaType() {
   let options = null;
