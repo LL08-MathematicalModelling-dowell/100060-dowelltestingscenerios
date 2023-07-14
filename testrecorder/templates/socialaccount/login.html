@@ -13,7 +13,8 @@
     
     <p>{% blocktrans with provider.name as provider %}You are about to connect a new third party account from {{ provider }}.{% endblocktrans %}</p>
     {% else %}
-    <h2>Sign In Via</h2>
+    <h2>Sign In</h2>
+    <br>
     {% comment %} <h1>{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1> {% endcomment %}
     
     {% comment %} <p>{% blocktrans with provider.name as provider %}You are about to sign in using a third party account from {{ provider }}.{% endblocktrans %}</p> {% endcomment %}
@@ -21,7 +22,7 @@
     
     <form method="post">
       {% csrf_token %}
-      <button type="submit" class="login-btn"><img src="{% static 'images/developed-with-youtube-sentence-case-light.png' %}" alt=""></button>
+      <button type="submit" class="login-btn"><img src="{% static 'images/btn_google_signin_light.png' %}" alt=""></button>
     </form>
   </div>
 </div>
