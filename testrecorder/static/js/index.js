@@ -97,19 +97,28 @@ let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
 
+$(document).ready( () => {
+  if ((window.location.pathname === '/') && isAuthenticated) {
+    // display user
+    let userIcon = document.querySelector(".user-icon");
+    let userDisplay = document.querySelector(".user-display");
+    userIcon.addEventListener("click", function () {
+      userDisplay.classList.toggle("show-user-bar");
+    });
 
-if (window.location.pathname === '/') {
-  fetchUserChannel().then(status => {
-    if (status === 'OK') {
-      loadUserPlaylist();
-    }
-  });
-}
+    fetchUserChannel().then(status => {
+      if (status === 'OK') {
+        loadUserPlaylist();
+      }
+    });
+  }
 
-if (window.location.pathname === '/library/') {
-  let selected_Video_Id = null; // DONT DELETE, used to declare selected_Video -id
-  load_gallery();
-}
+  if ((window.location.pathname === '/library/') && isAuthenticated) {
+    let selected_Video_Id = null; // DONT DELETE!!!, this variable is used to declare selected_Video -id
+    load_gallery();
+  }
+});
+
 
 function displayTimer() {
   videoTimer.classList.add("show-cam-timer")
@@ -221,15 +230,6 @@ if (window.location.pathname === '/') {
   });
 }
 */
-
-if (window.location.pathname === '/') {
-  // display user
-  let userIcon = document.querySelector(".user-icon");
-  let userDisplay = document.querySelector(".user-display");
-  userIcon.addEventListener("click", function () {
-    userDisplay.classList.toggle("show-user-bar");
-  });
-}
 
 // Generate random string for appending to file name
 generateString(6).then((randomString) => {
@@ -426,7 +426,7 @@ async function recordWebcamStream(appWebsocket) {
       if (recordinginProgress && event.data.size > 0) {
         if (recordingSynched && streamWebcamToYT) {
           appWebsocket.send(event.data); // Send the data to the appWebsocket
-        } 
+        }
         else if (recordingSynched && !streamScreenToYT) {
 
           recordWebcam = cameraCheckbox.checked; // Check if webcam recording is enabled
@@ -2889,7 +2889,7 @@ async function deleteVideo(video_Id) {
 function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
-  if (window.location.pathname === '/library/') {
+  if (window.location.pathname === '/library/' &&  isAuthenticated) {
     console.log('selected video id > ', selected_Video_Id);
   }
 }
@@ -2900,7 +2900,7 @@ function closeModal_delete() {
 }
 
 function deleteItem_delete() {
-  const video_Id = (window.location.pathname === '/library/')
+  const video_Id = (window.location.pathname === '/library/' && isAuthenticated)
     ? selected_Video_Id
     : newBroadcastID;
 
@@ -2908,7 +2908,7 @@ function deleteItem_delete() {
   deleteVideo(video_Id)
     .then(() => {
       closeModal_delete();
-      if (window.location.pathname === '/library/') {
+      if (window.location.pathname === '/library/' &&  isAuthenticated) {
         const videoPlayer = document.getElementById('player');
         videoPlayer.innerHTML = ''
       } else {
