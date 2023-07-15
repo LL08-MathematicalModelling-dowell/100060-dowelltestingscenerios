@@ -97,7 +97,15 @@ let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
 
-// });
+
+if (window.location.pathname === '/') {
+  fetchUserChannel().then(status => {
+    if (status === 'OK') {
+      loadUserPlaylist();
+    }
+  });
+}
+
 if (window.location.pathname === '/library/') {
   let selected_Video_Id = null; // DONT DELETE, used to declare selected_Video -id
   load_gallery();
@@ -2550,14 +2558,6 @@ async function fetchUserChannel() {
     });
 
   return status;
-}
-
-if (window.location.pathname === '/') {
-  fetchUserChannel().then(status => {
-    if (status === 'OK') {
-      loadUserPlaylist();
-    }
-  });
 }
 
 async function loadUserPlaylist() {
