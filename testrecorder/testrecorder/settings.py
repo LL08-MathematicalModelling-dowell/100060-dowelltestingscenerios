@@ -40,7 +40,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 
 # SESSION_COOKIE_SECURE = True
 
-CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
+# CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
 
 # # Allow cors
 CORS_ALLOWED_ORIGIN = [

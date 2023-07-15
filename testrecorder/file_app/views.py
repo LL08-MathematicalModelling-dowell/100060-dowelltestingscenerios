@@ -341,117 +341,117 @@ class FileView(APIView):
             megadrive_record.app_type = "UX_001"
 
             # Process Clickup Task === Depricate, To be removedsoon  ===
-            try:
-                if 'clickupTaskIDs' in request.data.keys():
-                    clickupTaskID = request.data['clickupTaskIDs']
-                    print("Clickup Task IDs: ", clickupTaskID)
+            # try:
+            #     if 'clickupTaskIDs' in request.data.keys():
+            #         clickupTaskID = request.data['clickupTaskIDs']
+            #         print("Clickup Task IDs: ", clickupTaskID)
 
-                    # Convert task id string to a list
-                    clickup_task_ids = clickupTaskID.split(",")
-                    print("Clickup Task IDs: ", clickup_task_ids)
+            #         # Convert task id string to a list
+            #         clickup_task_ids = clickupTaskID.split(",")
+            #         print("Clickup Task IDs: ", clickup_task_ids)
 
-                    # Get the notes for each task id in list
-                    for task_id in clickup_task_ids:
-                        try:
-                            topics_notes, random_notes = self.note_organiser(
-                                task_id)
-                        except Exception as err:
-                            print(
-                                "Trying to use webpage_note_organiser because: " + str(err))
-                            topics_notes, random_notes = self.webpage_note_organiser(
-                                task_id)
-                        # topics_notes,random_notes = "",""
+            #         # Get the notes for each task id in list
+            #         for task_id in clickup_task_ids:
+            #             try:
+            #                 topics_notes, random_notes = self.note_organiser(
+            #                     task_id)
+            #             except Exception as err:
+            #                 print(
+            #                     "Trying to use webpage_note_organiser because: " + str(err))
+            #                 topics_notes, random_notes = self.webpage_note_organiser(
+            #                     task_id)
+            #             # topics_notes,random_notes = "",""
 
-                        # Don't proceed if there was a problem getting topics notes or random notes
-                        if topics_notes:
-                            print("topics_notes: ", topics_notes)
-                            topicsNotes = {"Topics": topics_notes}
-                        else:
-                            msg = "Failed to get topics_notes for; "+task_id
-                            print(msg)
-                            raise Exception(msg)
+            #             # Don't proceed if there was a problem getting topics notes or random notes
+            #             if topics_notes:
+            #                 print("topics_notes: ", topics_notes)
+            #                 topicsNotes = {"Topics": topics_notes}
+            #             else:
+            #                 msg = "Failed to get topics_notes for; "+task_id
+            #                 print(msg)
+            #                 raise Exception(msg)
 
-                        if random_notes:
-                            print("random_notes: ", random_notes)
-                            randomNotes = {"Random_Notes": random_notes}
-                        else:
-                            msg = "Failed to get random_notes for; "+task_id
-                            print(msg)
-                            raise Exception(msg)
+            #             if random_notes:
+            #                 print("random_notes: ", random_notes)
+            #                 randomNotes = {"Random_Notes": random_notes}
+            #             else:
+            #                 msg = "Failed to get random_notes for; "+task_id
+            #                 print(msg)
+            #                 raise Exception(msg)
 
-                        # Add current task id notes to global notes list
-                        # topicsNotes = {"Topics": topics_notes}
-                        # randomNotes = {"Random_Notes": random_notes}
-                        Clickup_Notes = [topicsNotes, randomNotes]
-                        clickup_task_notes_list.append(Clickup_Notes)
-                    # print("Clickup_Notes: ",json.dumps(Clickup_Notes))
-                    megadrive_record.clickup_task_notes = clickup_task_notes_list
-                    print("clickup_task_notes_list: ",
-                          json.dumps(clickup_task_notes_list))
-                else:
-                    print("Clickup Task ID Not Available!")
-            except Exception as err:
-                msg1 = "Error while handling Clickup Task: " + str(err)
-                msg = "Failed to get topics_notes for; "+task_id
-                print(msg1)
-                # msg = str(err)
-                msg_dict = {"error_msg": msg}
-                # return Response(json_msg, status=status.HTTP_400_BAD_REQUEST)
-                return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data=msg_dict)
+            #             # Add current task id notes to global notes list
+            #             # topicsNotes = {"Topics": topics_notes}
+            #             # randomNotes = {"Random_Notes": random_notes}
+            #             Clickup_Notes = [topicsNotes, randomNotes]
+            #             clickup_task_notes_list.append(Clickup_Notes)
+            #         # print("Clickup_Notes: ",json.dumps(Clickup_Notes))
+            #         megadrive_record.clickup_task_notes = clickup_task_notes_list
+            #         print("clickup_task_notes_list: ",
+            #               json.dumps(clickup_task_notes_list))
+            #     else:
+            #         print("Clickup Task ID Not Available!")
+            # except Exception as err:
+            #     msg1 = "Error while handling Clickup Task: " + str(err)
+            #     msg = "Failed to get topics_notes for; "+task_id
+            #     print(msg1)
+            #     # msg = str(err)
+            #     msg_dict = {"error_msg": msg}
+            #     # return Response(json_msg, status=status.HTTP_400_BAD_REQUEST)
+            #     return JsonResponse(status=status.HTTP_400_BAD_REQUEST, data=msg_dict)
 
             # Process keylog file
-            try:
-                keylog_file_name = request.data['key_log_file'].name
-                print("Keylog File Name: ", keylog_file_name)
+            # try:
+            #     keylog_file_name = request.data['key_log_file'].name
+            #     print("Keylog File Name: ", keylog_file_name)
 
-                # Create folder to store the files
-                folder_created, new_path = self.create_recording_folder(
-                    megadrive_record.user_name, megadrive_record.user_files_timestamp)
+            #     # Create folder to store the files
+            #     folder_created, new_path = self.create_recording_folder(
+            #         megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
-                if folder_created:
-                    # save keylog file
-                    keylog_filedata = request.data['key_log_file']
-                    keylog_recording_file_path = new_path+"/"+keylog_file_name
-                    print("keylog_recording_file_path: ",
-                          keylog_recording_file_path)
-                    with open(keylog_recording_file_path, 'wb+') as destination:
-                        for chunk in keylog_filedata.chunks():
-                            destination.write(chunk)
+            #     if folder_created:
+            #         # save keylog file
+            #         keylog_filedata = request.data['key_log_file']
+            #         keylog_recording_file_path = new_path+"/"+keylog_file_name
+            #         print("keylog_recording_file_path: ",
+            #               keylog_recording_file_path)
+            #         with open(keylog_recording_file_path, 'wb+') as destination:
+            #             for chunk in keylog_filedata.chunks():
+            #                 destination.write(chunk)
 
-                    megadrive_record.key_log_file = self.convert_file_path_to_link(
-                        keylog_recording_file_path)
-                else:
-                    msg = "Failed to save keylog file"
-                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            except Exception as err:
-                print("Error while handling keylog file: " + str(err))
+            #         megadrive_record.key_log_file = self.convert_file_path_to_link(
+            #             keylog_recording_file_path)
+            #     else:
+            #         msg = "Failed to save keylog file"
+            #         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            # except Exception as err:
+            #     print("Error while handling keylog file: " + str(err))
 
-            # Process Beanote file
-            try:
-                beanote_file_name = request.data['beanote_file'].name
-                print("Beanote File Name: ", beanote_file_name)
+            # # Process Beanote file
+            # try:
+            #     beanote_file_name = request.data['beanote_file'].name
+            #     print("Beanote File Name: ", beanote_file_name)
 
-                # Create folder to store the files
-                folder_created, new_path = self.create_recording_folder(
-                    megadrive_record.user_name, megadrive_record.user_files_timestamp)
+            #     # Create folder to store the files
+            #     folder_created, new_path = self.create_recording_folder(
+            #         megadrive_record.user_name, megadrive_record.user_files_timestamp)
 
-                if folder_created:
-                    # save beanote file
-                    beanote_filedata = request.data['beanote_file']
-                    beanote_recording_file_path = new_path+"/"+beanote_file_name
-                    print("beanote_recording_file_path: ",
-                          beanote_recording_file_path)
-                    with open(beanote_recording_file_path, 'wb+') as destination:
-                        for chunk in beanote_filedata.chunks():
-                            destination.write(chunk)
+            #     if folder_created:
+            #         # save beanote file
+            #         beanote_filedata = request.data['beanote_file']
+            #         beanote_recording_file_path = new_path+"/"+beanote_file_name
+            #         print("beanote_recording_file_path: ",
+            #               beanote_recording_file_path)
+            #         with open(beanote_recording_file_path, 'wb+') as destination:
+            #             for chunk in beanote_filedata.chunks():
+            #                 destination.write(chunk)
 
-                    megadrive_record.beanote_file = self.convert_file_path_to_link(
-                        beanote_recording_file_path)
-                else:
-                    msg = "Failed to save beanote file"
-                    return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            except Exception as err:
-                print("Error while handling beanote file: " + str(err))
+            #         megadrive_record.beanote_file = self.convert_file_path_to_link(
+            #             beanote_recording_file_path)
+            #     else:
+            #         msg = "Failed to save beanote file"
+            #         return Response(msg, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            # except Exception as err:
+            #     print("Error while handling beanote file: " + str(err))
 
             # Process webcam file
             try:
