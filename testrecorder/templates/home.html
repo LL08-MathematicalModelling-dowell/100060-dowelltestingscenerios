@@ -8,7 +8,14 @@
 {% block title %}
 <title>Live UX Storyboard</title>
 {% endblock title %}
+
+<!-- {% block index_js %}
+  {% if not index_js_loaded %} -->
 <script src="{% static '/js/index.js' %}"></script>
+<!-- {% with index_js_loaded=True %}
+    {% endwith %}
+  {% endif %}
+{% endblock %} -->
 
 {% block body %}
 <!-- lower nav -->
@@ -192,7 +199,11 @@
 
 <!-- Status bar -->
 <div class="status-bar">
+    {% if user.is_authenticated %}
     <div id="app-status">STATUS: Waiting to Record.</div>
+    {% else %}
+    <div id="app-status"></div>
+    {% endif %}
 </div>
 
 <!-- Test Details Modal Deleted -->

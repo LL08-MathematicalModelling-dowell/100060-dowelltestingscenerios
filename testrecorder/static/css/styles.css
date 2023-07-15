@@ -682,12 +682,14 @@ img {
 }
 
 .form-container {
-  width: 80%;
+  position: relative;
+  display: grid;
   margin: 0 auto;
   background: var(--white-clr);
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: var(--light-shadow);
+  width: 40%;
 }
 
 .form-container label {
@@ -713,13 +715,13 @@ img {
 
 @media screen and (min-width:768px) {
   .form-container {
-    width: 60%;
+    width: 40%;
   }
 }
 
 @media screen and (min-width:996px) {
   .form-container {
-    width: 50%;
+    width: 30%;
   }
 }
 .select2-container--default .select2-selection--single  {
