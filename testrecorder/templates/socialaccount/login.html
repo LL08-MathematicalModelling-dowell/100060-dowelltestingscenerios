@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block head_title %}{% trans "Sign In" %}{% endblock %}
 
@@ -12,14 +13,16 @@
     
     <p>{% blocktrans with provider.name as provider %}You are about to connect a new third party account from {{ provider }}.{% endblocktrans %}</p>
     {% else %}
-    <h1>{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1>
+    <h2>Sign In</h2>
+    <br>
+    {% comment %} <h1>{% blocktrans with provider.name as provider %}Sign In Via {{ provider }}{% endblocktrans %}</h1> {% endcomment %}
     
-    <p>{% blocktrans with provider.name as provider %}You are about to sign in using a third party account from {{ provider }}.{% endblocktrans %}</p>
+    {% comment %} <p>{% blocktrans with provider.name as provider %}You are about to sign in using a third party account from {{ provider }}.{% endblocktrans %}</p> {% endcomment %}
     {% endif %}
     
     <form method="post">
       {% csrf_token %}
-      <button type="submit">{% trans "Continue" %}</button>
+      <button type="submit" class="login-btn"><img src="{% static 'images/btn_google_signin_light.png' %}" alt=""></button>
     </form>
   </div>
 </div>
