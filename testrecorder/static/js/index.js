@@ -97,7 +97,7 @@ let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
 
-$(document).ready( () => {
+$(document).ready(() => {
   if ((window.location.pathname === '/') && isAuthenticated) {
     // display user
     let userIcon = document.querySelector(".user-icon");
@@ -284,11 +284,11 @@ document.getElementById('choose-audio').addEventListener('click', () => {
   }
 });
 
-function stopMediaTracks(stream) {
-  stream.getTracks().forEach(track => {
-    track.stop();
-  });
-}
+// function stopMediaTracks(stream) {
+//   stream.getTracks().forEach(track => {
+//     track.stop();
+//   });
+// }
 
 
 /**
@@ -423,17 +423,10 @@ async function recordWebcamStream(appWebsocket) {
 
     // Handle the 'dataavailable' event of the MediaRecorder
     webcamRecorder.ondataavailable = event => {
-      if (recordinginProgress && event.data.size > 0) {
-        if (recordingSynched && streamWebcamToYT) {
-          appWebsocket.send(event.data); // Send the data to the appWebsocket
-        }
-        else if (recordingSynched && !streamScreenToYT) {
-
-          recordWebcam = cameraCheckbox.checked; // Check if webcam recording is enabled
-          recordScreen = screenCheckbox.checked; // Check if screen recording is enabled
-
-          if (recordScreen && recordWebcam) {
-            webcamWebSocket.send(event.data); // Send the data to the webcamWebSocket
+      if (recordingSynched && event.data.size > 0) {
+        if (streamWebcamToYT) {
+          if (appWebsocket.readyState === WebSocket.OPEN) {
+            appWebsocket.send(event.data); // Send the data to the appWebsocket
           }
         }
       }
@@ -641,8 +634,10 @@ async function recordScreenAndAudio(appWebsocket) {
     screenRecorder.ondataavailable = (event) => {
       if (recordinginProgress && recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
-          // Send the recorded data to the appWebsocket
-          appWebsocket.send(event.data);
+          if (appWebsocket.readyState === WebSocket.OPEN) {
+            // Send the recorded data to the appWebsocket
+            appWebsocket.send(event.data);
+          }
         }
       }
     };
@@ -686,7 +681,7 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
   try {
     // Request permission for showing notifications
     showNotificationPermission = await Notification.requestPermission();
-    console.log("showNotificationPermission:", showNotificationPermission);
+    // console.log("showNotificationPermission:", showNotificationPermission);
 
     // Get the screen recording stream
     screenStream = await screenAndAudioStream();
@@ -740,7 +735,9 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
     mergedStreamRecorder.ondataavailable = (event) => {
       if (recordingSynched && event.data.size > 0) {
         if (streamMergedToYT) {
-          webcamScreenWebSocket.send(event.data);
+          if (webcamScreenWebSocket.readyState === WebSocket.OPEN) {
+            webcamScreenWebSocket.send(event.data);
+          }
         }
       }
     };
@@ -943,7 +940,7 @@ async function startRecording() {
       let receivedMsg = e.data;
       msgRcvdFlag = true;
 
-      console.log('socket on message >>>   ', receivedMsg);
+      // console.log('socket on message >>>   ', receivedMsg);
 
       // Check if the received message contains the RTMP URL acknowledgement
       if (receivedMsg.includes("RTMP url received: rtmp://")) {
@@ -1060,7 +1057,7 @@ async function validateAll() {
 async function validateModal() {
   // Get permission to show notifications in system tray
   const showNotificationPermission = await Notification.requestPermission();
-  console.log("showNotificationPermission: ", showNotificationPermission);
+  // console.log("showNotificationPermission: ", showNotificationPermission);
 
   // Clear previous test data
   userPlaylistSelection = null;
@@ -1593,7 +1590,7 @@ async function endBroadcast() {
     })
     .then((json) => {
       data = json;
-      console.log("transition complete broadcast data: ", data);
+      // console.log("transition complete broadcast data: ", data);
     })
     .then(() => {
       console.log("Broadcast Trasitioned to complete state!");
@@ -2811,7 +2808,7 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
-  console.log('==== Video Id >>> ', video_Id);
+  // console.log('==== Video Id >>> ', video_Id);
 
   // Close modal if open
   btnCloseVideoPreviewModal.click();
@@ -2889,7 +2886,7 @@ async function deleteVideo(video_Id) {
 function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
-  if (window.location.pathname === '/library/' &&  isAuthenticated) {
+  if (window.location.pathname === '/library/' && isAuthenticated) {
     console.log('selected video id > ', selected_Video_Id);
   }
 }
@@ -2908,7 +2905,7 @@ function deleteItem_delete() {
   deleteVideo(video_Id)
     .then(() => {
       closeModal_delete();
-      if (window.location.pathname === '/library/' &&  isAuthenticated) {
+      if (window.location.pathname === '/library/' && isAuthenticated) {
         const videoPlayer = document.getElementById('player');
         videoPlayer.innerHTML = ''
       } else {
