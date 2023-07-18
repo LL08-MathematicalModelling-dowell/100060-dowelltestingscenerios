@@ -22,9 +22,9 @@
 <div class="lower-nav">
     {% load socialaccount %}
     {% if user.is_authenticated %}
-    <script>
+    <!-- <script>
         var isAuthenticated =  true;
-    </script>
+    </script> -->
 
     <div class="authenticated-user">
 
@@ -57,9 +57,9 @@
         </div>
     </div>
     {% else %}
-    <script>
+    <!-- <script>
         var isAuthenticated =  false;
-    </script>
+    </script> -->
     <div class="story-name lower-nav-item">
         <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select
             Channel</a>
