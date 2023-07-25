@@ -426,6 +426,7 @@ async function recordWebcamStream(appWebsocket) {
       if (recordingSynched && event.data.size > 0) {
         if (streamWebcamToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
+            console.log('webcam event data >>> ', event.data)
             appWebsocket.send(event.data); // Send the data to the appWebsocket
           }
         }
@@ -635,6 +636,7 @@ async function recordScreenAndAudio(appWebsocket) {
       if (recordinginProgress && recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
+            console.log('screen and audio stream event data >> ', event.data)
             // Send the recorded data to the appWebsocket
             appWebsocket.send(event.data);
           }
@@ -1485,13 +1487,19 @@ async function createWebsocket(recordWebcam, recordScreen) {
   const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
   let socketType = '';
   socket = null;
+  const endpoint = wsStart + window.location.host + "/ws/app/";
+  console.log('websocket endpoint >> ', endpoint)
+  socket = new WebSocket(endpoint);
+  console.log('socket created  >> ', socket)
+
+
   if (recordScreen ? !recordWebcam : recordWebcam) {
-    const endpoint = wsStart + window.location.host + "/ws/app/";
-    socket = appWebsocket = new WebSocket(endpoint);
+    // const endpoint = wsStart + window.location.host + "/ws/app/";
+    appWebsocket = socket;
     socketType = recordScreen ? 'screen' : 'webcam';
   } else if (recordScreen && recordWebcam) {
-    const endpoint = wsStart + window.location.host + "/ws/app/";
-    socket = webcamScreenWebSocket = new WebSocket(endpoint);
+    // const endpoint = wsStart + window.location.host + "/ws/app/";
+    webcamScreenWebSocket = socket;
     socketType = 'webcamScreen';
   }
   return [socket, socketType]
@@ -1756,7 +1764,7 @@ async function stopStreams() {
   // Synchronized recording stop
   recordingSynched = false;
   //let logKeyboard = keyLogCheckbox.checked;
-  let logKeyboard = false;
+  logKeyboard = false;
   recordWebcam = cameraCheckbox.checked;
   recordScreen = screenCheckbox.checked;
 

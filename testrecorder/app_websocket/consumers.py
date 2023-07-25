@@ -10,11 +10,15 @@ import subprocess
 from django.conf import settings
 import django
 import os
+
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
+
 from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
 from file_app.views import save_recording_metadata
+
 
 class VideoConsumer(AsyncConsumer):
 
@@ -87,7 +91,7 @@ class VideoConsumer(AsyncConsumer):
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
                 # Send an acknowledgement for rtmp url received
-                msg = "RTMP url received: "+self.rtmpUrl
+                msg = "RTMP url received: " + self.rtmpUrl
                 await self.send({"type": "websocket.send", "text": msg})
             elif 'rtmp://a.rtmp.youtube.com' in data or 'rtmps://a.rtmps.youtube.com' in data:
                 # Case where no browser audio is enabled
@@ -134,7 +138,7 @@ class VideoConsumer(AsyncConsumer):
                     command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
                 # Send an acknowledgement for rtmp url received
-                msg = "RTMP url received: "+self.rtmpUrl
+                msg = "RTMP url received: " + self.rtmpUrl
                 await self.send({"type": "websocket.send", "text": msg})
 
         if 'bytes' in event.keys():
