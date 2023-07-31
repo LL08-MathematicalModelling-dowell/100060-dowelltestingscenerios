@@ -426,7 +426,7 @@ async function recordWebcamStream(appWebsocket) {
       if (recordingSynched && event.data.size > 0) {
         if (streamWebcamToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            console.log('webcam event data >>> ', event.data)
+            // console.log('webcam event data >>> ', event.data)
             appWebsocket.send(event.data); // Send the data to the appWebsocket
           }
         }
@@ -636,7 +636,7 @@ async function recordScreenAndAudio(appWebsocket) {
       if (recordinginProgress && recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            console.log('screen and audio stream event data >> ', event.data)
+            // console.log('screen and audio stream event data >> ', event.data)
             // Send the recorded data to the appWebsocket
             appWebsocket.send(event.data);
           }
@@ -688,7 +688,7 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
     // Get the screen recording stream
     screenStream = await screenAndAudioStream();
     // Get the webcam stream
-    webcamStream = await webcamStream();
+    webcamStream = await getwebcamStream();
 
     // Get supported media type options
     options = await getSupportedMediaType();
@@ -827,7 +827,7 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
     return stream;
   }
 
-  async function webcamStream() {
+  async function getwebcamStream() {
     webcamMediaConstraints = {
       video: videoConstraints, audio: true
     };
@@ -1326,6 +1326,10 @@ async function resetStateOnError() {
       }
       if (mergedStreamRecorder && mergedStreamRecorder.stream) {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+
+        screenStream.getTracks().forEach((track) => track.stop());
+
+        webcamStream.getTracks().forEach((track) => track.stop())
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1488,9 +1492,9 @@ async function createWebsocket(recordWebcam, recordScreen) {
   let socketType = '';
   socket = null;
   const endpoint = wsStart + window.location.host + "/ws/app/";
-  console.log('websocket endpoint >> ', endpoint)
+  // console.log('websocket endpoint >> ', endpoint)
   socket = new WebSocket(endpoint);
-  console.log('socket created  >> ', socket)
+  // console.log('socket created  >> ', socket)
 
 
   if (recordScreen ? !recordWebcam : recordWebcam) {
@@ -1769,7 +1773,7 @@ async function stopStreams() {
   recordScreen = screenCheckbox.checked;
 
   // Stop the webcam stream
-  if (recordWebcam) {
+  if (!recordScreen && recordWebcam) {
     try {
       if (webcamRecorder && webcamRecorder.stream) {
         webcamRecorder.stream.getTracks().forEach(track => track.stop());
@@ -1782,7 +1786,7 @@ async function stopStreams() {
   }
 
   // Stop the screen stream
-  if (recordScreen) {
+  if (recordScreen && !recordWebcam) {
     try {
       if (screenRecorder && screenRecorder.stream) {
         screenRecorder.stream.getTracks().forEach(track => track.stop());
@@ -1799,8 +1803,10 @@ async function stopStreams() {
     try {
       if (mergedStreamRecorder && mergedStreamRecorder.stream) {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+        screenStream.getTracks().forEach((track) => track.stop());
+        webcamStream.getTracks().forEach((track) => track.stop())
       } else {
-        console.error("mergedStreamRecorder or mergedStreamRecorder.stream is not available.");
+        console.error("mergedStreamRecorder or mergedStreamRecorder.stream is not available."); 
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1875,10 +1881,7 @@ async function insertVideoIntoPlaylist() {
     }
   })
     .then(response => {
-      // console.log(response)
       responseStatus = response.status;
-      // console.log("Insert video into user playlist Response Status", responseStatus);
-      // Return json data
       return response.json();
     })
     .then((json) => {
