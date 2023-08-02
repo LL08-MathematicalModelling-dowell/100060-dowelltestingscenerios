@@ -415,7 +415,7 @@ async function recordWebcamStream(appWebsocket) {
     if (options === null) {
       // Alert the user if required codecs are not found
       alert("None of the required codecs was found!\n - Please update your browser and try again.");
-      document.location.reload(); // Reload the page
+      document.location.reload(); 
     }
 
     // Create a new MediaRecorder instance with the webcam stream and options
@@ -426,8 +426,7 @@ async function recordWebcamStream(appWebsocket) {
       if (recordingSynched && event.data.size > 0) {
         if (streamWebcamToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            // console.log('webcam event data >>> ', event.data)
-            appWebsocket.send(event.data); // Send the data to the appWebsocket
+            appWebsocket.send(event.data);
           }
         }
       }
@@ -633,11 +632,9 @@ async function recordScreenAndAudio(appWebsocket) {
     screenRecorder = new MediaRecorder(stream, options);
     // Handle the 'dataavailable' event of the MediaRecorder
     screenRecorder.ondataavailable = (event) => {
-      if (recordinginProgress && recordingSynched && event.data.size > 0) {
+      if (recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            // console.log('screen and audio stream event data >> ', event.data)
-            // Send the recorded data to the appWebsocket
             appWebsocket.send(event.data);
           }
         }
@@ -1497,7 +1494,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
   // console.log('socket created  >> ', socket)
 
 
-  if (recordScreen ? !recordWebcam : recordWebcam) {
+  if ((recordScreen && !recordWebcam) || (!recordScreen && recordWebcam)) { // (recordScreen ? !recordWebcam : recordWebcam) {
     // const endpoint = wsStart + window.location.host + "/ws/app/";
     appWebsocket = socket;
     socketType = recordScreen ? 'screen' : 'webcam';
