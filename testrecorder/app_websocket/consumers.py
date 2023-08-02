@@ -1,10 +1,6 @@
-# import asyncio
 import json
-# from blinker import receiver_connected
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
-# from random import randint
-# from time import sleep
 import subprocess
 from django.conf import settings
 import django
