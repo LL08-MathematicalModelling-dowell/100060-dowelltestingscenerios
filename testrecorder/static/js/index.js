@@ -1447,30 +1447,45 @@ async function showUploadFailedModal() {
   }
 }
 
+/**
+ * Set video links based on provided data.
+ *
+ * @param {Object} linksData - An object containing the video link data.
+ * @param {string} linksData.webcam_file - The webcam video link.
+ * @param {string} linksData.screen_file - The screen video link.
+ * @param {string} linksData.merged_webcam_screen_file - The merged webcam and screen video link.
+ * @param {string} linksData.beanote_file - The beanote file link.
+ * @param {string} linksData.key_log_file - The key log file link.
+ */
 async function set_video_links(linksData) {
-  let webcamLink = document.getElementById('webcam_link');
-  let screenLink = document.getElementById('screen_link');
-  let mergedLink = document.getElementById('merged_link');
-  let beanoteFileLink = document.getElementById('beanote_file_link');
-  let keyLogFileLink = document.getElementById('key_log_file_link');
+  try {
+    let webcamLink = document.getElementById('webcam_link');
+    let screenLink = document.getElementById('screen_link');
+    let mergedLink = document.getElementById('merged_link');
+    let beanoteFileLink = document.getElementById('beanote_file_link');
+    let keyLogFileLink = document.getElementById('key_log_file_link');
 
-  // Set links value, check if data exists first
-  if ("webcam_file" in linksData) {
-    webcamLink.value = linksData.webcam_file;
-  }
-  if ("screen_file" in linksData) {
-    screenLink.value = linksData.screen_file;
-  }
-  if ("merged_webcam_screen_file" in linksData) {
-    mergedLink.value = linksData.merged_webcam_screen_file;
-  }
-  if ("beanote_file" in linksData) {
-    beanoteFileLink.value = linksData.beanote_file;
-  }
-  if ("key_log_file" in linksData) {
-    keyLogFileLink.value = linksData.key_log_file;
+    // Set links value, check if data exists first
+    if (linksData.hasOwnProperty("webcam_file")) {
+      webcamLink.value = linksData.webcam_file;
+    }
+    if (linksData.hasOwnProperty("screen_file")) {
+      screenLink.value = linksData.screen_file;
+    }
+    if (linksData.hasOwnProperty("merged_webcam_screen_file")) {
+      mergedLink.value = linksData.merged_webcam_screen_file;
+    }
+    if (linksData.hasOwnProperty("beanote_file")) {
+      beanoteFileLink.value = linksData.beanote_file;
+    }
+    if (linksData.hasOwnProperty("key_log_file")) {
+      keyLogFileLink.value = linksData.key_log_file;
+    }
+  } catch (error) {
+    console.error("Error occurred while setting video links:", error.message);
   }
 }
+
 
 // ==========================================================================================
 // ==========================================================================================
