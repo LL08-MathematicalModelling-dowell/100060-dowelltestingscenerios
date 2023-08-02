@@ -1466,19 +1466,19 @@ async function set_video_links(linksData) {
     let keyLogFileLink = document.getElementById('key_log_file_link');
 
     // Set links value, check if data exists first
-    if (linksData.hasOwnProperty("webcam_file")) {
+    if (linksData.hasOwnProperty("webcam_file") && webcamLink) {
       webcamLink.value = linksData.webcam_file;
     }
-    if (linksData.hasOwnProperty("screen_file")) {
+    if (linksData.hasOwnProperty("screen_file") && screenLink) {
       screenLink.value = linksData.screen_file;
     }
-    if (linksData.hasOwnProperty("merged_webcam_screen_file")) {
+    if (linksData.hasOwnProperty("merged_webcam_screen_file") && mergedLink) {
       mergedLink.value = linksData.merged_webcam_screen_file;
     }
-    if (linksData.hasOwnProperty("beanote_file")) {
+    if (linksData.hasOwnProperty("beanote_file") && beanoteFileLink) {
       beanoteFileLink.value = linksData.beanote_file;
     }
-    if (linksData.hasOwnProperty("key_log_file")) {
+    if (linksData.hasOwnProperty("key_log_file") && keyLogFileLink) {
       keyLogFileLink.value = linksData.key_log_file;
     }
   } catch (error) {
