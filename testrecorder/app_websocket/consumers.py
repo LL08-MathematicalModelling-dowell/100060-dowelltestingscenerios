@@ -19,7 +19,7 @@ import subprocess
 
 class VideoConsumer(AsyncConsumer):
     """
-    Consumer that accept websocket connection and live stream
+    Socket Consumer that accept websocket connection and live stream
      data from frontend and sends this stream to youtube
     """
     def __init__(self):
