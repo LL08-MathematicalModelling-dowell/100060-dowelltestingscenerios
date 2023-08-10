@@ -419,4 +419,4 @@ def credentials_to_dict(credentials):
 if __name__ == "__main__":
 #   app.run(host="127.0.0.1",port=8000)
     # The above code is running a Flask application with Socket.IO support on port 8000.
-    socketio.run(app, port=8000)
+    socketio.run(app, host='0.0.0.0)
