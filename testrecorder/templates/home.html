@@ -68,7 +68,7 @@
     <!-- user Name -->
 </div>
 <!-- end lower nav -->
-<div class="user-display">
+{% comment %} <div class="user-display">
     <div>
         <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}"
             disabled>
@@ -78,7 +78,7 @@
         <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
         <div style="color:red;" id="username-error"></div>
     </div>
-</div>
+</div> {% endcomment %}
 <!-- Main container -->
 <div class="contain">
 
