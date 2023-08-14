@@ -33,7 +33,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 # Allow cors
-# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 CSRF_COOKIE_SECURE = True
 
@@ -126,7 +126,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
     }
 }
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
@@ -224,10 +224,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # STATIC_ROOT = '/home/100034/testrecorder/static'
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 
 
 # Temporary files directory
