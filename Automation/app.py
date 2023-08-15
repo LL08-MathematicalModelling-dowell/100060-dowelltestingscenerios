@@ -65,7 +65,7 @@ socketio = SocketIO(app)
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    redirect_uri='http://0.0.0.0:8000/callback'
+    redirect_uri='http://automation.liveuxstoryboard.com:8000/callback'
 )
 
 
