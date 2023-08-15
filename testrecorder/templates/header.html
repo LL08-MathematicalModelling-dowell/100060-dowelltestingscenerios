@@ -1,65 +1,37 @@
 {% load static %}
-  <!-- header -->
-  <header>
-    <nav>
-      <!-- upper nav -->
-      <div class="upper-nav">
-        <!-- upper nav icon -->
-        <a href="https://uxlive.org"><div class="upper-nav-icon active">
+<header>
+  <nav>
+    <div class="upper-nav">
+      <a href="https://uxlive.org">
+        <div class="upper-nav-icon active">
           <i class="fas fa-home"></i>
-        </div></a>
-        {% comment %} <a href="#"><div class="upper-nav-icon">
-          <i class="fas fa-sign-in"></i>
-        </div></a> {% endcomment %}
-        <!--<a href="#"><div class="upper-nav-icon">
-          <div class="six-icon-flex">
-            <div class="six-icon">
-              6
-            </div>
-            <div class="six-content">
-              <div class="">Learning</div>
-              <div class="">Mode</div>
-            </div>
-          </div>
-        </div></a>-->
-        <a href="https://uxlive.org/privacy-policy"><div class="upper-nav-icon active">
-          <i class="fa-solid fa-shield-alt"></i>
-        </div></a>
-        <a href="#"><div class="upper-nav-icon">
-          <i class="fas fa-cog"></i>
-        </div></a>
-        {% comment %} <a href="#"><div class="upper-nav-icon">
-          <!-- <i class="fas fa-"></i> -->
-          <!-- ai picture -->
-          <img src="{% static 'images/Ai.jpeg' %}" alt="">
-        </div></a> {% endcomment %}
-        {% if user.is_authenticated %}
-        <div class="user-icon upper-nav-icon">
-            <i class="fas fa-user-circle"></i>
-            <!-- <div class="lower-nav-label">User</div> -->
         </div>
-        {% endif %}
-        <a href="{% url 'about' %}"><div class="upper-nav-icon dowell-logo">
-          <!-- <i class="fas fa-"></i> -->
-          <!-- dowell logo -->
+      </a>
+      <a href="https://uxlive.org/privacy-policy">
+        <div class="upper-nav-icon active">
+          <i class="fa-solid fa-shield-alt"></i>
+        </div>
+      </a>
+      <a href="#">
+        <div class="upper-nav-icon">
+          <i class="fas fa-cog"></i>
+        </div>
+      </a>
+      <a href="{% url 'about' %}">
+        <div class="upper-nav-icon dowell-logo">
           <img src="{% static 'images/favicon.jpg' %}" alt="">
-        </div></a>
-        <!-- end upper nav icon -->
-      </div>
-      <!-- end upper nav -->
-      <!-- lower nav -->
-      <!-- end lower nav -->
-    </nav>
-    <div class="user-display">
+        </div>
+      </a>
+    </div>
+  </nav>
+  <div class="user-display">
     <div>
-        <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}"
-            disabled>
-        <div style="color:red;" id="username-error"></div>
+      <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}" disabled>
+      <div style="color:red;" id="username-error"></div>
     </div>
     <div>
-        <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
-        <div style="color:red;" id="username-error"></div>
+      <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
+      <div style="color:red;" id="logout-error"></div>
     </div>
-</div>
-  </header>
-  <!-- header -->
+  </div>
+</header>

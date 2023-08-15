@@ -29,6 +29,9 @@ button{
 body{
   line-height: 1.05!important;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--dark-clr);
 }
 a {
   text-decoration: none;
@@ -252,7 +255,7 @@ img {
   align-items: center;
 }
 .main-contents{
-  height: 70vh;
+  height: 74vh;
   background: var(--dark-clr);
   color: var(--white-clr);
   position: relative;
@@ -539,11 +542,17 @@ img {
   text-align: center;
 }
 .youtube-copyright {
-  background: var(--dark-clr);
-  color: var(--white-clr);
+  background-image: url(../images/developed-with-youtube-sentence-case-light.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: var(--dark-clr);
   padding: 0.3rem 0.5rem;
   text-align: center;
+  background-color: var(--dark-clr);
+  min-height: 6.1vh;
 }
+
 .youtube-copyright img{
   width: 20%;
   margin: 0 auto;
@@ -675,7 +684,7 @@ img {
 }
 .form-wrapper {
   width: 100%;
-  height: 75vh;
+  height: 86vh;
   background: var(--dark-clr);
   padding: 5rem 0;
   color: var(--secondary-clr);
@@ -884,3 +893,4 @@ background-color: #bb2d3b;
   font-size: 20px;
   color: #6a2525;
 }
+
