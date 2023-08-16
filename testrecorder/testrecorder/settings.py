@@ -129,11 +129,11 @@ SOCIALACCOUNT_PROVIDERS = {
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
 ASGI_APPLICATION = 'testrecorder.asgi.application'
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
-}
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer"
+#     }
+# }
 
 CHANNEL_LAYERS = {
     "default": {
