@@ -66,7 +66,7 @@ flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
     # redirect_uri='http://automation.liveuxstoryboard.com:8000/callback'
-    redirect_uri='http://automation.liveuxstoryboard.com:5000/callback'
+    redirect_uri='http://automation.liveuxstoryboard.com:8081/callback'
 )
 
 
@@ -422,4 +422,4 @@ if __name__ == "__main__":
 #   app.run(host="127.0.0.1",port=8000)
     # The above code is running a Flask application with Socket.IO support on port 8000.
     # socketio.run(app, host='0.0.0.0',port=8000)
-    socketio.run(app, host='0.0.0.0')
+    socketio.run(app, host='0.0.0.0',port=8081)
