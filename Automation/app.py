@@ -66,7 +66,6 @@ flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
     redirect_uri='http://automation.liveuxstoryboard.com/callback'
-    
 )
 
 
