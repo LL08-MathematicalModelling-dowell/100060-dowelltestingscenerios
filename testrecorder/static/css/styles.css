@@ -130,15 +130,10 @@ img {
   /* gap: 1rem; */
 }
 
+
 .authenticated-user{
   display: grid;
-  grid-template-columns: repeat(4, 25%);
-  align-items: center;
-  /* place-items: center; */
-}
-.authenticated-user{
-  display: grid;
-  grid-template-columns: repeat(4, 25%);
+  grid-template-columns: repeat(3, 33.333%);
   align-items: center;
 
 }

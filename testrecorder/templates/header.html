@@ -33,6 +33,7 @@
           <!-- ai picture -->
           <img src="{% static 'images/Ai.jpeg' %}" alt="">
         </div></a> {% endcomment %}
+        {% load socialaccount %}
         {% if user.is_authenticated %}
         <div class="user-icon upper-nav-icon">
             <i class="fas fa-user-circle"></i>

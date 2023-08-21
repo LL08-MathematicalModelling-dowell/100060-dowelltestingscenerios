@@ -223,9 +223,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # STATIC_ROOT = '/home/100034/testrecorder/static'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staticfiles'),
+]
 
 
 # Temporary files directory
