@@ -1,3 +1,6 @@
+const controller = new AbortController();
+const signal = controller.signal;
+
 // Some app controls
 let video = document.getElementById('video')
 let cameraCheckbox = document.getElementById('webcam-recording')
@@ -1954,18 +1957,19 @@ async function playlistInsertVideoErrorModal() {
 
 // Creating youtube broadcast modal
 async function showCreatingBroadcastModal(showModal) {
+  const creatingBroadcastModal = new bootstrap.Modal(document.getElementById('creatingBroadcastModal'));
+  const btnCloseCreatingBroadcastModal = document.getElementById('btnCloseCreatingBroadcastModal');
   if (showModal) {
     // close modal if open
-    const btnCloseCreatingBroadcastModal = document.getElementById('btnCloseCreatingBroadcastModal');
     btnCloseCreatingBroadcastModal.click();
+    controller.abort();
 
     // Show modal
-    const creatingBroadcastModal = new bootstrap.Modal(document.getElementById('creatingBroadcastModal'));
     creatingBroadcastModal.show();
   } else {
     // close modal
-    const btnCloseCreatingBroadcastModal = document.getElementById('btnCloseCreatingBroadcastModal');
     btnCloseCreatingBroadcastModal.click();
+    controller.abort()
   }
 }
 
@@ -2874,3 +2878,4 @@ function deleteItem_delete() {
     });
   console.log('Item deleted');
 }
+
