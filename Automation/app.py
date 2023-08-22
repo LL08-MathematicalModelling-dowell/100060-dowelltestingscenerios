@@ -53,7 +53,7 @@ API_VERSION = "v3"
 
 # The above code is creating a SocketIO object and initializing it with the Flask app. This allows the
 # Flask app to handle real-time communication with clients using websockets.
-socketio = SocketIO(app)
+socketio = SocketIO(app,async_mode="asgi")
 
 
 # The above code is creating a flow object using the `Flow.from_client_secrets_file()` method. This
