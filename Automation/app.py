@@ -19,6 +19,7 @@ app = Flask(__name__)
 # cookie to 'google-login-session'. This allows the Flask application to identify and manage the
 # session cookie for the user's login session.
 app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
+app.config['GOOGLE_LOGIN_REDIRECT_SCHEME'] = "https"
 
 # `app.config.update(SECRET_KEY=os.urandom(24))` is setting the secret key for the Flask application.
 # The secret key is used to encrypt session cookies and other sensitive data. `os.urandom(24)`
