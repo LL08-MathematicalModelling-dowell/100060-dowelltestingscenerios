@@ -65,8 +65,8 @@ socketio = SocketIO(app,async_mode="gevent")
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    # redirect_uri='https://automation.liveuxstoryboard.com/callback'
-    redirect_uri='http://216.158.227.217:8000'
+    redirect_uri='https://automation.liveuxstoryboard.com/callback'
+    # redirect_uri='http://216.158.227.217:8000'
 )
 
 
