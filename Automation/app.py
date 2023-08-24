@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, request, redirect, session, Response, jsonify, render_template
 from google.oauth2 import credentials
 from google_auth_oauthlib.flow import Flow
@@ -9,22 +10,6 @@ from flask_socketio import SocketIO, emit
 
 # The above code is importing the `VideoStreamer` class from the `LiveStreamclass` module.
 from LiveStreamclass import VideoStreamer
-
-
-# `app = Flask(__name__)` creates a Flask application object. This object represents the Flask web
-# application and is used to handle incoming requests and route them to the appropriate functions.
-app = Flask(__name__)
-
-# `app.config['SESSION_COOKIE_NAME'] = 'google-login-session'` is setting the name of the session
-# cookie to 'google-login-session'. This allows the Flask application to identify and manage the
-# session cookie for the user's login session.
-app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
-app.config['GOOGLE_LOGIN_REDIRECT_SCHEME'] = "https"
-
-# `app.config.update(SECRET_KEY=os.urandom(24))` is setting the secret key for the Flask application.
-# The secret key is used to encrypt session cookies and other sensitive data. `os.urandom(24)`
-# generates a random string of 24 bytes, which is then used as the secret key.
-app.config.update(SECRET_KEY=os.urandom(24))
 
 # `CLIENT_SECRETS_FILE = "client_secrets.json"` is setting the value of the variable
 # `CLIENT_SECRETS_FILE` to the string "client_secrets.json". This variable is used to specify the file
@@ -47,6 +32,22 @@ SCOPES = ['https://www.googleapis.com/auth/youtube.readonly', "https://www.googl
 API_SERVICE_NAME = "youtube"
 API_VERSION = "v3"
 
+# `app = Flask(__name__)` creates a Flask application object. This object represents the Flask web
+# application and is used to handle incoming requests and route them to the appropriate functions.
+app = Flask(__name__)
+
+# `app.config['SESSION_COOKIE_NAME'] = 'google-login-session'` is setting the name of the session
+# cookie to 'google-login-session'. This allows the Flask application to identify and manage the
+# session cookie for the user's login session.
+app.config['SESSION_COOKIE_NAME'] = 'google-login-session'
+app.config['GOOGLE_LOGIN_REDIRECT_SCHEME'] = "https"
+# app.secret_key = '\xfd{H\xe5<\x95\xf9\xe3\x96.5\xd1\x01O<!\xd5\xa2\xa0\x9fR"\xa1\xa8'
+# `app.config.update(SECRET_KEY=os.urandom(24))` is setting the secret key for the Flask application.
+# The secret key is used to encrypt session cookies and other sensitive data. `os.urandom(24)`
+# generates a random string of 24 bytes, which is then used as the secret key.
+app.config.update(SECRET_KEY=os.urandom(24))
+
+
 # The above code is setting the value of the 'OAUTHLIB_INSECURE_TRANSPORT' environment variable to
 # '1'. This is typically done to allow insecure transport for OAuth authentication, which is useful
 # for testing or development purposes.
@@ -54,7 +55,7 @@ API_VERSION = "v3"
 
 # The above code is creating a SocketIO object and initializing it with the Flask app. This allows the
 # Flask app to handle real-time communication with clients using websockets.
-socketio = SocketIO(app,async_mode="gevent")
+socketio = SocketIO(app)
 
 
 # The above code is creating a flow object using the `Flow.from_client_secrets_file()` method. This
@@ -63,12 +64,12 @@ socketio = SocketIO(app,async_mode="gevent")
 # Google API. The scopes define the level of access the application will have to the user's Google
 # account. The redirect URI is the URL where the user will be redirected after completing the
 # authentication process.
-flow = Flow.from_client_secrets_file(
-    CLIENT_SECRETS_FILE,
-    scopes=SCOPES,
-    redirect_uri='https://automation.liveuxstoryboard.com/callback'
-    # redirect_uri='http://216.158.227.217:8000'
-)
+# flow = Flow.from_client_secrets_file(
+#     CLIENT_SECRETS_FILE,
+#     scopes=SCOPES,
+#     redirect_uri='https://automation.liveuxstoryboard.com/callback'
+#     # redirect_uri='http://216.158.227.217:8000'
+# )
 
 
 
@@ -82,8 +83,9 @@ the authorization URL. If the 'credentials' key is present in the session, the c
 @app.route('/')
 def index():
     if 'credentials' not in session:
-        authorization_url, _ = flow.authorization_url(prompt='consent')
-        return redirect(authorization_url)
+        return flask.redirect('authorize')
+        # authorization_url, _ = flow.authorization_url(prompt='consent')
+        # return redirect(authorization_url)
     else:
         # return "you are logged in",200
         return render_template('index.html') #need to create a template
@@ -93,11 +95,37 @@ def index():
     response.
     :return: a redirect to the root URL ("/").
  """
+
+@app.route('/authorize')
+def authorize():
+    flow = Flow.from_client_secrets_file(
+    CLIENT_SECRETS_FILE,
+    scopes=SCOPES,
+    # redirect_uri='https://automation.liveuxstoryboard.com/callback' )
+    )
+    flow.redirect_uri = flask.url_for('callback', _external=True)
+    authorization_url, state = flow.authorization_url(
+      # Enable offline access so that you can refresh an access token without
+      # re-prompting the user for permission. Recommended for web server apps.
+      access_type='offline',
+      # Enable incremental authorization. Recommended as a best practice.
+      include_granted_scopes='true')
+    
+    flask.session['state'] = state
+    return flask.redirect(authorization_url)
+
 @app.route('/callback')
 def callback():
-    https_authorization_url = request.url.replace('http://', 'https://')
+    state = flask.session['state']
+    flow = Flow.from_client_secrets_file(
+      CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+    
+    flow.redirect_uri = flask.url_for('callback', _external=True)
+    authorization_response = flask.request.url
+    flow.fetch_token(authorization_response=authorization_response)
+    # https_authorization_url = request.url.replace('http://', 'https://')
     # flow.fetch_token(authorization_response=request.url)
-    flow.fetch_token(authorization_response=https_authorization_url)
+    # flow.fetch_token(authorization_response=https_authorization_url)
     if not flow.credentials:
         return 'Failed to retrieve access token.'
 
