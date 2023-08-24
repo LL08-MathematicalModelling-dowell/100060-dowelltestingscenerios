@@ -95,7 +95,9 @@ def index():
  """
 @app.route('/callback')
 def callback():
-    flow.fetch_token(authorization_response=request.url)
+    https_authorization_url = request.url.replace('http://', 'https://')
+    # flow.fetch_token(authorization_response=request.url)
+    flow.fetch_token(authorization_response=https_authorization_url)
     if not flow.credentials:
         return 'Failed to retrieve access token.'
 
