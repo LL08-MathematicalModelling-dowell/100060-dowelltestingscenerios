@@ -46,6 +46,8 @@ app.config['GOOGLE_LOGIN_REDIRECT_SCHEME'] = "https"
 # The secret key is used to encrypt session cookies and other sensitive data. `os.urandom(24)`
 # generates a random string of 24 bytes, which is then used as the secret key.
 app.config.update(SECRET_KEY=os.urandom(24))
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=30)
+
 
 
 # The above code is setting the value of the 'OAUTHLIB_INSECURE_TRANSPORT' environment variable to
