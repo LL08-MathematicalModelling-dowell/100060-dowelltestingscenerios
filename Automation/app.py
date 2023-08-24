@@ -104,6 +104,8 @@ def authorize():
     # redirect_uri='https://automation.liveuxstoryboard.com/callback' )
     )
     flow.redirect_uri = flask.url_for('callback', _external=True)
+    # https_authorization_url = request.url.replace('http://', 'https://')
+    flow.redirect_uri = flow.redirect_uri.replace('http://', 'https://')
     authorization_url, state = flow.authorization_url(
       # Enable offline access so that you can refresh an access token without
       # re-prompting the user for permission. Recommended for web server apps.
