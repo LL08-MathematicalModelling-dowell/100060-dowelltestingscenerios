@@ -1,7 +1,10 @@
+"""
+Second views file for the YouTube app.
+"""
+
 import json
 import logging
 import requests
-from requests import HTTPError
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from rest_framework.views import APIView
@@ -15,22 +18,58 @@ logger = logging.getLogger(__name__)
 
 
 def create_user_youtube_object(request):
+    """
+    Create a YouTube object using the v3 version of the API and
+    the authenticated user's credentials.
+    """
+    print('Creating youtube object...')
     try:
         # Retrieve the YoutubeUserCredential object associated with the authenticated user
         youtube_user = YoutubeUserCredential.objects.get(user=request.user)
 
         # Retrieve the user's credentials associated with the YoutubeUserCredential object
-        credentials = Credentials.from_authorized_user_info(
-            info=youtube_user.credential)
+        credentials_data = youtube_user.credential
+        try:
+            # Convert the JSON string to a dictionary
+            credentials_data_dict = json.loads(credentials_data)
+            # Create credentials from the dictionary
+            credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
+            print('Credentials: xxxxxxxxxxx')
+        except Exception as e:
+            credentials = Credentials.from_authorized_user_info(info=credentials_data)
+            print('Credentials: xxxxxxxxxxx')
+        try:
+            print(f'Checking if access token has expired...{credentials.expired}')
+            # Check if the access token has expired
+            if credentials.expired:
+                print('Access token has expired!')
+
+                print('Refreshing access token...')
+                import google.auth.transport.requests
+
+                # Create a request object using the credentials
+                google_request = google.auth.transport.requests.Request()
+
+                # Refresh the access token using the refresh token
+                credentials.refresh(google_request)
+
+                # Update the stored credential data with the refreshed token
+                youtube_user.credential = credentials.to_json()
+                youtube_user.save()
+        except Exception as e:
+            # Handle any error that occurred while refreshing the access token
+            print(f'An error occurred: {e}')
+            return None
 
         # Create a YouTube object using the v3 version of the API and the retrieved credentials
-        youtube = build('youtube', 'v3',
-                        credentials=credentials, cache_discovery=False)
+        youtube = build('youtube', 'v3', credentials=credentials, cache_discovery=False)
+        
         return youtube, credentials
     except YoutubeUserCredential.DoesNotExist:
         # If the user doesn't have a YoutubeUserCredential object,
         # return an error response with 401 Unauthorized status code
         return None
+
 
 
 class UserChannelsView(APIView):
@@ -73,7 +112,6 @@ class UserChannelsView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Retrieve the authenticated user's YouTube channels.
-
         Returns a JSON array of dictionaries containing the channel id and title
         with a 200 OK status code. If the user doesn't have a YoutubeUserCredential
         object, returns a 401 Unauthorized status code. If unable to fetch the
@@ -102,17 +140,25 @@ class UserChannelsView(APIView):
             ]
 
             try:
-                # Save the first channel's details to a ChannelsRecord object
+                # Check if the first channel already exists in the database
+                first_channel = channels[0]
+
                 channel_record, created = ChannelsRecord.objects.get_or_create(
-                    channel_id=channels[0].get('channel_id'),
-                    channel_title=channels[0].get('channel_title'),
-                    channel_credentials=credential
+                    channel_id=first_channel.get('channel_id'),
+                    defaults={
+                        'channel_title': first_channel.get('channel_title'),
+                        'channel_credentials': credential
+                    }
                 )
-                if created:
+                # If the channel already exists, update the credential
+                if not created and channel_record.channel_credentials != credential:
+                    channel_record.channel_credentials = credential
+                    print("Channel credential updated!!!")
                     channel_record.save()
+
             except Exception as e:
                 logger.error(
-                    f'Error while saving user channel credential locally!: {e}  occured')
+                    f'Error while saving user channel credential locally!: {e} occurred')
 
             return Response(channels, status=status.HTTP_200_OK)
 

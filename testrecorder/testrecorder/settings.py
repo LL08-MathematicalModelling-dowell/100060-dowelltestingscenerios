@@ -120,9 +120,10 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'offline',
             'prompt': 'consent',
         },
-        'OAUTH_PKCE_ENABLED': True,
+        # 'OAUTH_PKCE_ENABLED': True,
     }
 }
+SOCIALACCOUNT_STORE_TOKENS = True
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 

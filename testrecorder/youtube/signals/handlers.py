@@ -6,6 +6,7 @@ from allauth.account.signals import user_logged_in
 from django.core.cache import cache
 import datetime
 
+from allauth.socialaccounts.providers.oauth2.views.OAuth2Adapter
 
 @receiver(user_logged_in)
 def get_user(sender, **kwargs):
