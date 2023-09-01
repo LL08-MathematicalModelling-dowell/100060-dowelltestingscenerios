@@ -1,3 +1,4 @@
+# import os
 import json
 from django.dispatch import receiver
 import requests
@@ -6,7 +7,6 @@ from allauth.account.signals import user_logged_in
 from django.core.cache import cache
 import datetime
 
-from allauth.socialaccounts.providers.oauth2.views.OAuth2Adapter
 
 @receiver(user_logged_in)
 def get_user(sender, **kwargs):
@@ -37,8 +37,8 @@ def get_user(sender, **kwargs):
         "token": token.token,
         "refresh_token": token.token_secret,
         "token_uri": "https://oauth2.googleapis.com/token",
-        "client_id": "1012189436187-nk0sqhbhfodo72v5qc037nngs3hh4ojm.apps.googleusercontent.com",
-        "client_secret": "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",
+        "client_id": "******************************************************",
+        "client_secret": "*************************************************",
         "scopes": [
             "https://www.googleapis.com/auth/youtube.force-ssl",
             "openid",
