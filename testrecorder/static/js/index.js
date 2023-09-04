@@ -598,7 +598,7 @@ async function newRecordWebcamAndScreen() {
   let webcamStreamWidth = 0;
   let webcamStreamHeight = 0;
 
-  console.log('Inside Camera and Screen merge recording function');
+  // console.log('Inside Camera and Screen merge recording function');
   try {
     // Request permission for showing notifications
     showNotificationPermission = await Notification.requestPermission();
@@ -608,7 +608,7 @@ async function newRecordWebcamAndScreen() {
 
     // Get supported media type options
     options = await getSupportedMediaType();
-    console.log('Video options:', options);
+    // console.log('Video options:', options);
 
     const screenWidth = screen.width;
     const screenHeight = screen.height;
@@ -625,8 +625,8 @@ async function newRecordWebcamAndScreen() {
     const videoTrack = screenStream.getVideoTracks()[0];
     const width = videoTrack.getSettings().width;
     const height = videoTrack.getSettings().height;
-    console.log('Width:', width);
-    console.log('Height:', height);
+    // console.log('Width:', width);
+    // console.log('Height:', height);
 
     const mergerOptions = {
       width: screenStream.width,
@@ -647,9 +647,10 @@ async function newRecordWebcamAndScreen() {
           x: 0, y: merger.height - webcamStreamHeight,
           width: webcamStreamWidth, height: webcamStreamHeight, mute: true
         });
-    } else {
-      console.log('Camera Stream not available or merger height not defined');
-    }
+    } 
+    // else {
+    //   console.log('Camera Stream not available or merger height not defined');
+    // }
 
     // Start the merger and set the video source to the merged stream
     await merger.start();
@@ -662,7 +663,7 @@ async function newRecordWebcamAndScreen() {
   } catch (err) {
     // Handle errors during recording
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream.";
-    console.log("Merged stream recording stoped with the following error >> ", err);
+    // console.log("Merged stream recording stoped with the following error >> ", err);
     await stopStreams();
     await resetStateOnError();
   }
@@ -792,7 +793,7 @@ async function startRecording() {
 
       streamRecorder.ondataavailable = (event) => {
         if ((recordinginProgress && event.data.size > 0) && appWebsocket.readyState === WebSocket.OPEN) {
-          console.log('================= message sent to server ===============')
+          // console.log('================= message sent to server ===============')
           socket.send(event.data);
         }
       };
@@ -839,7 +840,7 @@ async function validateAll() {
       // Use the selected audio device
       audioConstraints.deviceId = { exact: selectAudio.value };
     }
-    console.log(audioConstraints);
+    // console.log(audioConstraints);
   }
 
   // Check if webcam recording is enabled
@@ -1311,11 +1312,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
     socketType = 'webcamScreen';
   }
   socket.onopen = (event) => {
-    console.log('Socket is open');
+    // console.log('Socket is open');
     const mediaFileName = testNameValue + "_" + filesTimestamp + "_" + socketType + ".webm";
     const socketMsg = "FILENAME," + mediaFileName;
     socket.send(socketMsg);
-    console.log('socket Message sent to server');
+    // console.log('socket Message sent to server');
     document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
     websocketReconnect = false;
   };
@@ -1323,11 +1324,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
   socket.onmessage = function (event) {
     const receivedMsg = event.data;
     msgRcvdFlag = true;
-    console.log('socket on message >>>   ', receivedMsg);
+    // console.log('socket on message >>>   ', receivedMsg);
 
     if (receivedMsg.includes("RTMP url received: rtmp://")) {
       recordinginProgress = true;
-      console.log('RTMLP received');
+      // console.log('RTMLP received');
       document.getElementById("app-status").innerHTML = "STATUS: Recording in Progress.";
     }
   };
@@ -1391,7 +1392,7 @@ async function createBroadcast(socket) {
   url = "/youtube/createbroadcast/api/"
   let broadcast_data = new Object();
   broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
-  console.log(videoPrivacyStatus);
+  // console.log(videoPrivacyStatus);
   broadcast_data.testNameValue = testNameValue;
   broadcast_data.channel_title = currentChannelTitle;
 
@@ -1478,14 +1479,14 @@ async function endBroadcast() {
       // console.log("transition complete broadcast data: ", data);
     })
     .then(() => {
-      console.log("Broadcast Trasitioned to complete state!");
+      // console.log("Broadcast Trasitioned to complete state!");
       const previewButton = document.getElementById('playback-video-button');
       previewButton.style.display = 'block';
     }
     )
     .catch((err) => {
       console.error("Broadcast Trasitioning to complete state failed!");
-      console.log('transiton broadcast error >>> ', err);
+      // console.log('transiton broadcast error >>> ', err);
     });
 }
 
@@ -1849,15 +1850,16 @@ async function sendRTMPURL(socket) {
     if (recordAudio == true) {
       let msg = "browser_sound," + newRtmpUrl;
       await socket.send(msg)
-      console.log('<=== RTMP sent with audio ====>');
+      // console.log('<=== RTMP sent with audio ====>');
     } else {
       await socket.send(newRtmpUrl);
-      console.log('<=== RTMP sent ====>');
+      // console.log('<=== RTMP sent ====>');
     }
     displayUtilities();
-  } else {
-    console.log('Error: Unable. sent RTMP URL, websocket not connected');
-  }
+  } 
+  // else {
+  //   console.log('Error: Unable. sent RTMP URL, websocket not connected');
+  // }
 }
 
 // Shows youtube playlist insert video error modal
@@ -2592,7 +2594,7 @@ async function load_videos(playlist_id) {
       const selectedVideoId = this.value;
 
       selected_Video_Id = selectedVideoId;
-      console.log('selected video id > ', selected_Video_Id);
+      // console.log('selected video id > ', selected_Video_Id);
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
@@ -2708,7 +2710,7 @@ async function previewVideo() {
 async function deleteVideo(video_Id) {
 
   let csrftoken = await getCookie('csrftoken');
-  console.log('video id ', video_Id)
+  // console.log('video id ', video_Id)
   // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
@@ -2745,10 +2747,10 @@ async function deleteVideo(video_Id) {
   })
     .then(handleResponse)
     .then(data => {
-      // Success response
-      console.log('Delete response data >>> ', data);
-      console.log('Delete Response Message >> ', data.message);
-      console.log('Delete data.response >> ', data.response);
+      // // Success response
+      console.log('Video deleted succesfully');
+      // console.log('Delete Response Message >> ', data.message);
+      // console.log('Delete data.response >> ', data.response);
     })
     .catch(error => {
       // Error response
@@ -2761,7 +2763,7 @@ function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
   if (window.location.pathname === '/library/' && isAuthenticated) {
-    console.log('selected video id > ', selected_Video_Id);
+    // console.log('selected video id > ', selected_Video_Id);
   }
 }
 

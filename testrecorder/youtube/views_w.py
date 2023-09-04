@@ -34,10 +34,10 @@ def create_user_youtube_object(request):
             credentials_data_dict = json.loads(credentials_data)
             # Create credentials from the dictionary
             credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
-            print('Credentials: xxxxxxxxxxx')
+            # print('Credentials: xxxxxxxxxxx')
         except Exception as e:
             credentials = Credentials.from_authorized_user_info(info=credentials_data)
-            print('Credentials: xxxxxxxxxxx')
+            # print('Credentials: xxxxxxxxxxx')
         try:
             print(f'Checking if access token has expired...{credentials.expired}')
             # Check if the access token has expired
