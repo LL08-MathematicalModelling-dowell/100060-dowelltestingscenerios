@@ -790,6 +790,7 @@ async function startRecording() {
       await createRecordingTimestamp();
 
       console.log('Streaming has started');
+      // document.querySelector('.checkbox').disabled
 
       streamRecorder.ondataavailable = (event) => {
         if ((recordinginProgress && event.data.size > 0) && appWebsocket.readyState === WebSocket.OPEN) {
