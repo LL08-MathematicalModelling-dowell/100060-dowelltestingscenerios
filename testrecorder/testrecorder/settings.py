@@ -32,13 +32,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-# SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
 
-# SESSION_COOKIE_SECURE = True
-
-# CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
 
 # # Allow cors
 CORS_ALLOWED_ORIGIN = [
@@ -120,11 +118,11 @@ SOCIALACCOUNT_PROVIDERS = {
             'access_type': 'offline',
             'prompt': 'consent',
         },
-        # 'OAUTH_PKCE_ENABLED': True,
+        'OAUTH_PKCE_ENABLED': True,
     }
 }
 SOCIALACCOUNT_STORE_TOKENS = True
-# ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
