@@ -21,31 +21,6 @@
     </div>
 </div>
 
-<!-- User Settings Modal -->
-<div class="modal" id="user-settings-modal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">User Settings</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-user-settings-modal"></button>
-            </div>
-            <div class="modal-body">
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label required">User ClickUp Email address</label>
-                        <input type="email" class="form-control" id="userClickupEmail">
-                        <p style="color:red;" id="userEmailError"></p>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onClick="saveClickupUserEmail()">Save</button>
-                <button type="submit" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Test files upload in progress modal -->
 <div class="modal" id="uploadInProgress" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -92,30 +67,61 @@
     </div>
 </div>
 
+
 <!-- Select camera Modal -->
 <div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-content" id="select-camera-modal">
             <div class="modal-header">
                 <h5 class="modal-title">Select a Camera</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
             </div>
             <div class="modal-body">
-                <select name="" class="form-control" id="video-source">
-                    <option value="user">Front Camera</option>
-                    <option value="environment">Back Camera</option>
-                </select>
+                <select name="" class="form-control" id="video-source"></select>
                 <div style="color:red;" id="camera-error"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                    id="closecameraModal">Cancel</button>
-                <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                <button type="button" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
             </div>
-
         </div>
     </div>
 </div>
+
+<script>
+    // Get a reference to the select element
+    const videoSourceSelect = document.getElementById("video-source");
+
+    // Function to populate the select element with available camera devices
+    async function populateCameraOptions() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoSourceSelect.innerHTML = "";
+            
+            devices.forEach((device) => {
+                if (device.kind === "videoinput") {
+                    const option = document.createElement("option");
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${videoSourceSelect.length + 1}`;
+                    videoSourceSelect.appendChild(option);
+                }
+            });
+        } catch (error) {
+            console.error("Error enumerating devices:", error);
+        }
+    }
+
+    // Call the function to populate camera options when the modal is shown
+    document.getElementById("cameraModal").addEventListener("show.bs.modal", populateCameraOptions);
+
+    // Handle the selection of a camera when the "Select" button is clicked
+    document.getElementById("choose-camera").addEventListener("click", () => {
+        const selectedDeviceId = videoSourceSelect.value;
+        // You can use the selectedDeviceId as needed in your application
+    });
+</script>
+
+
 <!-- Creating broadcast in progress -->
 <div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
@@ -167,7 +173,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                <p style="font-size: 1rem;">
                     <i class="bi-x"></i>Check your internet connection, do a hard refresh (Ctrl + F5),
                     and try again.
                     If the issue persists please contact the admin.
@@ -192,7 +198,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p id="livestreamErrorOccurred" style="font-size: 1.15rem; color: rgb(255, 0, 0);">
+                <p id="livestreamErrorOccurred" style="font-size: 1rem;">
                     <i class="bi-x"></i>
                 </p>
                 <p>
@@ -219,7 +225,7 @@
                     id="close-network-error-occurred-modal"></button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                <p style="font-size: 1rem;">
                     <i class="bi-x"></i>Recording stopped due to network error, please do the following.
                 </p>
                 <p>1. Close this modal.</p>
@@ -235,35 +241,7 @@
     </div>
 </div>
 
-<!-- Beanote file upload modal -->
-<div class="modal" id="beanoteFileUploadModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header green-header">
-                <h5 class="modal-title">Beanote File Upload</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
-                    id="closeBeanoteFileModal" hidden></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    Please upload the file generated by beanote.
-                </p>
-                <div class="mt-2 mb-2">
-                    <input type="file" id="inpt-beanote-file-old" />
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="btnUploadBeanoteFile"
-                    onclick="getBeanoteFile()">Upload</button>
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="btnCloseBeanoteFileUploadModal"
-                    onclick="keyLogFileCheck()">Cancel</button>
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-
-<!-- Playlist insert video Error occurred modal -->
+<!-- Playlist insert video Error occurred modal
 <div class="modal" id="playlist-insert-video-error-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -294,7 +272,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- New Playlist Details Modal -->
 <div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -444,7 +422,7 @@
     </div>
 </div>
 
-<!-- Select camera Modal -->
+<!-- Select audio Modal -->
 <div class="modal" id="audioModal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -466,31 +444,6 @@
                     id="closeAudioModal">Cancel</button>
                 <button type="submit" class="btn btn-success" id="choose-audio" data-bs-dismiss="modal">Select</button>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Select camera Modal -->
-<div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Select a Camera</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
-            </div>
-            <div class="modal-body">
-                <select name="" class="form-control" id="video-source">
-                    <option value="user">Front Camera</option>
-                    <option value="environment">Back Camera</option>
-                </select>
-                <div style="color:red;" id="camera-error"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
-                    id="closecameraModal">Cancel</button>
-                <button type="submit" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
-            </div>
-
         </div>
     </div>
 </div>
@@ -556,10 +509,13 @@
 
 <div id="confirmationModal_delete" class="modal_delete">
     <div class="modal-content_delete">
-        <p style="color: indianred;">Are you sure you want to delete this video?</p>
+        <p id="video-delete-mesage" style="color: indianred;">
+            <i class="fa fa-exclamation-triangle" aria-hidden="true" style="width: 50px; height: 50px;"></i>
+            <b>DELETE VIDEO</b></p>
+        <p id="video-delete-warning" style="color: indianred;">This action canot be undone</p>
         <div class="modal-buttons_delete">
-            <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
-            <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
+            <button onclick="deleteItem_delete()" id="confirm-delete">CONFIRM</button>
+            <button onclick="closeModal_delete()" id="confirm-cancel">CANCEL</button>
         </div>
     </div>
 </div>

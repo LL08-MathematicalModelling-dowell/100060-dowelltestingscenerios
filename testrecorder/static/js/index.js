@@ -41,7 +41,6 @@ let screenStream = null;
 let audioStream = null;
 
 let currentCamera = "user";
-// let audioSource = selectAudio.value;
 let audioConstraints = {
   deviceId: { exact: "default" }
 };
@@ -229,7 +228,6 @@ async function showCameraModal() {
     const showCamera = new bootstrap.Modal(document.getElementById('cameraModal'));
     showCamera.hide();
   }
-
 }
 
 // show select audio modal
@@ -250,7 +248,6 @@ async function showAudioModal() {
   }
   await microphoneStatus()
 }
-
 document.getElementById('closeAudioModal').addEventListener('click', () => audioCheckbox.checked = false);
 document.getElementById('choose-audio').addEventListener('click', () => {
   const audioSourceSelect = document.getElementById('audio-source');
@@ -258,6 +255,16 @@ document.getElementById('choose-audio').addEventListener('click', () => {
 
   if (selectedValue !== '') {
     audioCheckbox.checked = true;
+  }
+});
+
+document.getElementById('closecameraModal').addEventListener('click', () => cameraCheckbox.checked = false);
+document.getElementById('choose-camera').addEventListener('click', () => {
+  const videoSourceSelect = document.getElementById('video-source');
+  const selectedValue = videoSourceSelect.value;
+
+  if (selectedValue !== '') {
+    cameraCheckbox.checked = true;
   }
 });
 /**
@@ -789,7 +796,7 @@ async function startRecording() {
           socket.send(event.data);
         }
       };
-  
+
       streamRecorder.onstop = () => {
         recordinginProgress = false;
         document.getElementById("app-status").innerHTML = "STATUS: Recording stopped.";
@@ -813,6 +820,13 @@ async function startRecording() {
  * Validates the selected options for webcam and audio.
  */
 async function validateAll() {
+ 
+  if (!cameraCheckbox.checked && !screenCheckbox.checked){
+    let statusBar = document.getElementById("app-status");
+    msg = "ERROR: No stream source selected, please choose either camera and or screen and try again";
+    statusBar.innerHTML = msg;
+    return;
+  }
   // Check if audio recording is enabled
   const audio = audioCheckbox.checked;
 
@@ -1289,7 +1303,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
   const endpoint = wsStart + window.location.host + "/ws/app/";
   socket = new WebSocket(endpoint);
 
-  if ((recordScreen && !recordWebcam) || (!recordScreen && recordWebcam)) { 
+  if ((recordScreen && !recordWebcam) || (!recordScreen && recordWebcam)) {
     appWebsocket = socket;
     socketType = recordScreen ? 'screen' : 'webcam';
   } else if (recordScreen && recordWebcam) {
@@ -1306,7 +1320,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
     websocketReconnect = false;
   };
 
-  socket.onmessage = function(event) {
+  socket.onmessage = function (event) {
     const receivedMsg = event.data;
     msgRcvdFlag = true;
     console.log('socket on message >>>   ', receivedMsg);
@@ -1325,7 +1339,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
         console.log('Reconnecting websocket...');
         let reconnectionAttempts = 0;
         const maxReconnectionAttempts = 3;
-  
+
         while (reconnectionAttempts < maxReconnectionAttempts) {
           try {
             [socket, socketType] = await createWebsocket(recordWebcam, recordScreen);
@@ -1335,11 +1349,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
           } catch (error) {
             console.error('WebSocket reconnection attempt failed:', error);
           }
-  
+
           reconnectionAttempts++;
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
-  
+
         if (reconnectionAttempts === maxReconnectionAttempts) {
           stopRecording();
           throw new Error('WebSocket reconnection failed after multiple attempts');
@@ -1760,7 +1774,7 @@ async function insertVideoIntoPlaylist(socket) {
         document.getElementById("app-status").innerHTML = msg;
 
         // Show error modal
-        playlistInsertVideoErrorModal();
+        // playlistInsertVideoErrorModal();
       }
     })
     .catch(error => {
@@ -1769,7 +1783,7 @@ async function insertVideoIntoPlaylist(socket) {
       document.getElementById("app-status").innerHTML = msg;
 
       // Show error modal
-      playlistInsertVideoErrorModal();
+      // playlistInsertVideoErrorModal();
     });
   // display some buttons and remove some
   displayUtilities()
@@ -2332,8 +2346,6 @@ function displayUtilities() {
   document.querySelector('.selectPlaylist').disabled = true;
   document.querySelector('#test-name').disabled = true;
   document.querySelector('.logout-disable').removeAttribute("href");
-  // document.querySelector('#webcam-recording').disabled = true;
-  // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
   document.querySelector('#public-videos').disabled = true;
   document.querySelector('#private-videos').disabled = true;
@@ -2449,9 +2461,7 @@ async function fetchUserPlaylists() {
       msg = "STATUS: Playlists Received."
       statusBar.innerHTML = msg;
       let userPlaylists = json.user_playlists;
-      // console.log("userPlaylists:", userPlaylists);
       for (const key in userPlaylists) {
-        // console.log(`${key}: ${userPlaylists[key]}`);
         let opt = document.createElement("option");
         opt.innerHTML = userPlaylists[key];
         opt.value = key;
@@ -2468,13 +2478,13 @@ async function fetchUserPlaylists() {
         msg = "ERROR: The channel does not have any playlists created.";
         statusBar.innerHTML = msg;
       } else {
+
         msg = "ERROR: Unable to fetch playlist please contact the admin";
         statusBar.innerHTML = msg;
       }
     });
 }
 
-// Muhammad Ahmed
 async function load_gallery() {
   // console.log('welcome Load Gallery Function');
   const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
@@ -2505,9 +2515,10 @@ async function load_gallery() {
       currentPlaylistId = playlist_id;
       await load_videos(playlist_id);
       await play_first_video();
+      document.querySelector('#lib-delete-button').style.display = 'block';
+
     });
 
-    // Trigger the change event to select the first playlist by default
     selectUserPlaylist.dispatchEvent(new Event('change'));
 
   } else {
@@ -2603,8 +2614,7 @@ async function play(videoId, playerElementID = 'player') {
     window.onYouTubeIframeAPIReady = createPlayer;
   } else {
     if (player) {
-      player.loadVideoById(videoId);
-      // console.log('Playing video:', title);
+      await player.loadVideoById(videoId);
     } else {
       createPlayer();
     }
@@ -2780,3 +2790,22 @@ function deleteItem_delete() {
   console.log('Item deleted');
 }
 
+
+// Function to check if the user's device is mobile
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+// Function to remove the "Screen" option if the device is mobile
+function removeScreenOption() {
+  var screenCheckbox = document.getElementById("screen-recording");
+  if (isMobileDevice()) {
+    var screenLabel = screenCheckbox.parentNode;
+    screenLabel.parentNode.removeChild(screenLabel);
+  }
+}
+
+// Call the function when the page loads
+window.onload = function () {
+  removeScreenOption();
+};
