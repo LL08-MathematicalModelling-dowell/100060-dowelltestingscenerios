@@ -415,7 +415,7 @@ async function recordWebcamStream(appWebsocket) {
     if (options === null) {
       // Alert the user if required codecs are not found
       alert("None of the required codecs was found!\n - Please update your browser and try again.");
-      document.location.reload(); // Reload the page
+      document.location.reload(); 
     }
 
     // Create a new MediaRecorder instance with the webcam stream and options
@@ -426,7 +426,7 @@ async function recordWebcamStream(appWebsocket) {
       if (recordingSynched && event.data.size > 0) {
         if (streamWebcamToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            appWebsocket.send(event.data); // Send the data to the appWebsocket
+            appWebsocket.send(event.data);
           }
         }
       }
@@ -632,10 +632,9 @@ async function recordScreenAndAudio(appWebsocket) {
     screenRecorder = new MediaRecorder(stream, options);
     // Handle the 'dataavailable' event of the MediaRecorder
     screenRecorder.ondataavailable = (event) => {
-      if (recordinginProgress && recordingSynched && event.data.size > 0) {
+      if (recordingSynched && event.data.size > 0) {
         if (streamScreenToYT) {
           if (appWebsocket.readyState === WebSocket.OPEN) {
-            // Send the recorded data to the appWebsocket
             appWebsocket.send(event.data);
           }
         }
@@ -686,7 +685,7 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
     // Get the screen recording stream
     screenStream = await screenAndAudioStream();
     // Get the webcam stream
-    webcamStream = await webcamStream();
+    webcamStream = await getwebcamStream();
 
     // Get supported media type options
     options = await getSupportedMediaType();
@@ -825,7 +824,7 @@ async function newRecordWebcamAndScreen(webcamScreenWebSocket) {
     return stream;
   }
 
-  async function webcamStream() {
+  async function getwebcamStream() {
     webcamMediaConstraints = {
       video: videoConstraints, audio: true
     };
@@ -1324,6 +1323,10 @@ async function resetStateOnError() {
       }
       if (mergedStreamRecorder && mergedStreamRecorder.stream) {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+
+        screenStream.getTracks().forEach((track) => track.stop());
+
+        webcamStream.getTracks().forEach((track) => track.stop())
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1444,30 +1447,45 @@ async function showUploadFailedModal() {
   }
 }
 
+/**
+ * Set video links based on provided data.
+ *
+ * @param {Object} linksData - An object containing the video link data.
+ * @param {string} linksData.webcam_file - The webcam video link.
+ * @param {string} linksData.screen_file - The screen video link.
+ * @param {string} linksData.merged_webcam_screen_file - The merged webcam and screen video link.
+ * @param {string} linksData.beanote_file - The beanote file link.
+ * @param {string} linksData.key_log_file - The key log file link.
+ */
 async function set_video_links(linksData) {
-  let webcamLink = document.getElementById('webcam_link');
-  let screenLink = document.getElementById('screen_link');
-  let mergedLink = document.getElementById('merged_link');
-  let beanoteFileLink = document.getElementById('beanote_file_link');
-  let keyLogFileLink = document.getElementById('key_log_file_link');
+  try {
+    let webcamLink = document.getElementById('webcam_link');
+    let screenLink = document.getElementById('screen_link');
+    let mergedLink = document.getElementById('merged_link');
+    let beanoteFileLink = document.getElementById('beanote_file_link');
+    let keyLogFileLink = document.getElementById('key_log_file_link');
 
-  // Set links value, check if data exists first
-  if ("webcam_file" in linksData) {
-    webcamLink.value = linksData.webcam_file;
-  }
-  if ("screen_file" in linksData) {
-    screenLink.value = linksData.screen_file;
-  }
-  if ("merged_webcam_screen_file" in linksData) {
-    mergedLink.value = linksData.merged_webcam_screen_file;
-  }
-  if ("beanote_file" in linksData) {
-    beanoteFileLink.value = linksData.beanote_file;
-  }
-  if ("key_log_file" in linksData) {
-    keyLogFileLink.value = linksData.key_log_file;
+    // Set links value, check if data exists first
+    if (linksData.hasOwnProperty("webcam_file") && webcamLink) {
+      webcamLink.value = linksData.webcam_file;
+    }
+    if (linksData.hasOwnProperty("screen_file") && screenLink) {
+      screenLink.value = linksData.screen_file;
+    }
+    if (linksData.hasOwnProperty("merged_webcam_screen_file") && mergedLink) {
+      mergedLink.value = linksData.merged_webcam_screen_file;
+    }
+    if (linksData.hasOwnProperty("beanote_file") && beanoteFileLink) {
+      beanoteFileLink.value = linksData.beanote_file;
+    }
+    if (linksData.hasOwnProperty("key_log_file") && keyLogFileLink) {
+      keyLogFileLink.value = linksData.key_log_file;
+    }
+  } catch (error) {
+    console.error("Error occurred while setting video links:", error.message);
   }
 }
+
 
 // ==========================================================================================
 // ==========================================================================================
@@ -1485,13 +1503,19 @@ async function createWebsocket(recordWebcam, recordScreen) {
   const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
   let socketType = '';
   socket = null;
-  if (recordScreen ? !recordWebcam : recordWebcam) {
-    const endpoint = wsStart + window.location.host + "/ws/app/";
-    socket = appWebsocket = new WebSocket(endpoint);
+  const endpoint = wsStart + window.location.host + "/ws/app/";
+  // console.log('websocket endpoint >> ', endpoint)
+  socket = new WebSocket(endpoint);
+  // console.log('socket created  >> ', socket)
+
+
+  if ((recordScreen && !recordWebcam) || (!recordScreen && recordWebcam)) { // (recordScreen ? !recordWebcam : recordWebcam) {
+    // const endpoint = wsStart + window.location.host + "/ws/app/";
+    appWebsocket = socket;
     socketType = recordScreen ? 'screen' : 'webcam';
   } else if (recordScreen && recordWebcam) {
-    const endpoint = wsStart + window.location.host + "/ws/app/";
-    socket = webcamScreenWebSocket = new WebSocket(endpoint);
+    // const endpoint = wsStart + window.location.host + "/ws/app/";
+    webcamScreenWebSocket = socket;
     socketType = 'webcamScreen';
   }
   return [socket, socketType]
@@ -1756,12 +1780,12 @@ async function stopStreams() {
   // Synchronized recording stop
   recordingSynched = false;
   //let logKeyboard = keyLogCheckbox.checked;
-  let logKeyboard = false;
+  logKeyboard = false;
   recordWebcam = cameraCheckbox.checked;
   recordScreen = screenCheckbox.checked;
 
   // Stop the webcam stream
-  if (recordWebcam) {
+  if (!recordScreen && recordWebcam) {
     try {
       if (webcamRecorder && webcamRecorder.stream) {
         webcamRecorder.stream.getTracks().forEach(track => track.stop());
@@ -1774,7 +1798,7 @@ async function stopStreams() {
   }
 
   // Stop the screen stream
-  if (recordScreen) {
+  if (recordScreen && !recordWebcam) {
     try {
       if (screenRecorder && screenRecorder.stream) {
         screenRecorder.stream.getTracks().forEach(track => track.stop());
@@ -1791,8 +1815,10 @@ async function stopStreams() {
     try {
       if (mergedStreamRecorder && mergedStreamRecorder.stream) {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
+        screenStream.getTracks().forEach((track) => track.stop());
+        webcamStream.getTracks().forEach((track) => track.stop())
       } else {
-        console.error("mergedStreamRecorder or mergedStreamRecorder.stream is not available.");
+        console.error("mergedStreamRecorder or mergedStreamRecorder.stream is not available."); 
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1867,10 +1893,7 @@ async function insertVideoIntoPlaylist() {
     }
   })
     .then(response => {
-      // console.log(response)
       responseStatus = response.status;
-      // console.log("Insert video into user playlist Response Status", responseStatus);
-      // Return json data
       return response.json();
     })
     .then((json) => {

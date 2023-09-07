@@ -4,7 +4,7 @@ import subprocess
 
 class VideoConsumer(AsyncConsumer):
     async def websocket_connect(self, event):
-        # when websocket connects
+        #  when websocket connects
         print("connected", event)
         print("self", self)
         

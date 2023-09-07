@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 from djongo.operations import DatabaseOperations
 import os
 from dotenv import load_dotenv
+
+
 load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -31,11 +33,11 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 # Allow cors
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 
 CSRF_COOKIE_SECURE = True
 
-SECURE_SSL_REDIRECT = True
+# SECURE_SSL_REDIRECT = True
 
 SESSION_COOKIE_SECURE = True
 

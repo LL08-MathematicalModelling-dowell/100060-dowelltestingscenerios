@@ -395,7 +395,7 @@ class TransitionBroadcastView(APIView):
             transition_response = transition_broadcast(
                 the_broadcast_id, request)
             # transition_response = {"Hello":"Testing for now!"}
-            print("transition_response: ", transition_response)
+            # print("transition_response: ", transition_response)
 
             return Response(transition_response, status=status.HTTP_200_OK)
         except Exception as e:
@@ -416,9 +416,9 @@ def transition_broadcast(the_broadcast_id, request):
     )
 
     broadcast_transition_response = request.execute()
-    print("broadcast_transition_response: ", broadcast_transition_response)
+    # print("broadcast_transition_response: ", broadcast_transition_response)
     video_id = broadcast_transition_response['id']
-    print('====== video ID => ', video_id)
+    # print('====== video ID => ', video_id)
 
     return broadcast_transition_response
 

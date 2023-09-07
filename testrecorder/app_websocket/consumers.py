@@ -1,154 +1,119 @@
-from ast import Pass
-import asyncio
 import json
-from blinker import receiver_connected
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
-from random import randint
-from time import sleep
 import subprocess
 from django.conf import settings
 import django
 import os
+
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
+
 
 from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
 from file_app.views import save_recording_metadata
 
-class VideoConsumer(AsyncConsumer):
 
+import subprocess
+
+class VideoConsumer(AsyncConsumer):
+    """
+    Socket Consumer that accept websocket connection and live stream
+     data from frontend and sends this stream to youtube
+    """
     def __init__(self):
-        self.process = ''
+        self.process = None
+        self.rtmpUrl = None
+        self.audio_enabled = False
 
     async def websocket_connect(self, event):
-        # when websocket connects
-        print("connected", event)
-        print("self", self)
-
-        await self.send({"type": "websocket.accept",
-                         })
+        print("WebSocket connected:", event)
+        await self.send({"type": "websocket.accept"})
 
     async def websocket_receive(self, event):
-        # when messages is received from websocket
-        # print("receive", event)
-        # print("receive", event['text'])
-        # print(event.keys())
-
-        # check for text key
+        # print('evant data: ', event)
         if 'text' in event.keys():
             data = event['text']
-            print("data: ", data)
+            print("Received data:", data)
 
-            # Check there is no audio from browser
             if 'browser_sound' in data:
-                new_data = data.split(",")
-                print("new_data: ", new_data)
-                self.rtmpUrl = new_data[1]
+                self.audio_enabled = True
+                self.rtmpUrl = self.extract_rtmp_url(data)
                 print("Received RTMP url: ", self.rtmpUrl)
-                # rtmp part
-                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
-                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
-                fps = 15
-                command = ['ffmpeg',
-                           # Facebook requires an audio track, so we create a silent one here.
-                           # Remove this line, as well as `-shortest`, if you send audio from the browser.
-                           # '-f', 'lavfi', '-i', 'anullsrc',
-
-                           # FFmpeg will read input video from STDIN
-                           '-i', '-',
-
-                           # Because we're using a generated audio source which never ends,
-                           # specify that we'll stop at end of other input.  Remove this line if you
-                           # send audio from the browser.
-                           # '-shortest',
-
-                           # If we're encoding H.264 in-browser, we can set the video codec to 'copy'
-                           # so that we don't waste any CPU and quality with unnecessary transcoding.
-                           # If the browser doesn't support H.264, set the video codec to 'libx264'
-                           # or similar to transcode it to H.264 here on the server.
-                           # '-vcodec', 'libx264',
-                           '-vcodec', 'copy',
-
-                           # AAC audio is required for Facebook Live.  No browser currently supports
-                           # encoding AAC, so we must transcode the audio to AAC here on the server.
-                           '-acodec', 'aac',
-
-                           # FLV is the container format used in conjunction with RTMP
-                           '-f', 'flv',
-
-                           # The output RTMP URL.
-                           # For debugging, you could set this to a filename like 'test.flv', and play
-                           # the resulting file with VLC.
-                           self.rtmpUrl
-                           ]
-
-                self.process = subprocess.Popen(
-                    command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-
-                # Send an acknowledgement for rtmp url received
-                msg = "RTMP url received: "+self.rtmpUrl
-                await self.send({"type": "websocket.send", "text": msg})
+                self.start_ffmpeg_process()
+                await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
             elif 'rtmp://a.rtmp.youtube.com' in data or 'rtmps://a.rtmps.youtube.com' in data:
-                # Case where no browser audio is enabled
+                self.audio_enabled = False
                 self.rtmpUrl = data
-                print("Received RTMP url: ", self.rtmpUrl)
-                # rtmp part
-                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/ep16-03gf-5t9d-f29s-767h'
-                # rtmpUrl = 'rtmp://a.rtmp.youtube.com/live2/gumk-x365-hq2z-mwxp-8dj2'
-                fps = 15
-                command = ['ffmpeg',
-                           # Facebook requires an audio track, so we create a silent one here.
-                           # Remove this line, as well as `-shortest`, if you send audio from the browser.
-                           '-f', 'lavfi', '-i', 'anullsrc',
+                print("Received RTMP url:", self.rtmpUrl)
+                self.start_ffmpeg_process()
+                await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
 
-                           # FFmpeg will read input video from STDIN
-                           '-i', '-',
-
-                           # Because we're using a generated audio source which never ends,
-                           # specify that we'll stop at end of other input.  Remove this line if you
-                           # send audio from the browser.
-                           '-shortest',
-
-                           # If we're encoding H.264 in-browser, we can set the video codec to 'copy'
-                           # so that we don't waste any CPU and quality with unnecessary transcoding.
-                           # If the browser doesn't support H.264, set the video codec to 'libx264'
-                           # or similar to transcode it to H.264 here on the server.
-                           # '-vcodec', 'libx264',
-                           '-vcodec', 'copy',
-
-                           # AAC audio is required for Facebook Live.  No browser currently supports
-                           # encoding AAC, so we must transcode the audio to AAC here on the server.
-                           '-acodec', 'aac',
-
-                           # FLV is the container format used in conjunction with RTMP
-                           '-f', 'flv',
-
-                           # The output RTMP URL.
-                           # For debugging, you could set this to a filename like 'test.flv', and play
-                           # the resulting file with VLC.
-                           self.rtmpUrl
-                           ]
-
-                self.process = subprocess.Popen(
-                    command, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-
-                # Send an acknowledgement for rtmp url received
-                msg = "RTMP url received: "+self.rtmpUrl
-                await self.send({"type": "websocket.send", "text": msg})
-
-        if 'bytes' in event.keys():
-            self.process.stdin.write(event['bytes'])
-
-            # Send an acknowledgement for bytes received
-            msg = "Bytes received"
-            await self.send({"type": "websocket.send", "text": msg})
+        if 'bytes' in event.keys() and self.process:
+            byte_data = event['bytes']
+            self.process.stdin.write(byte_data)
+            await self.send_ack_message("Bytes received")
 
     async def websocket_disconnect(self, event):
-        # when websocket disconnects
+        """when websocket disconnects"""
         print("disconnected", event)
         if self.process:
-            self.process.stdin.close()
+            try:
+                # Close the stdin of the subprocess to prevent BrokenPipeError
+                self.process.stdin.close()
+                # Wait for the subprocess to finish
+                self.process.wait()
+            except Exception as e:
+                print("Error while closing the subprocess: ", e)
+            finally:
+                # Set the process attribute to None to indicate no active process
+                self.process = None
+
+    def extract_rtmp_url(self, data):
+        """Extract RTMP URL from the data received"""
+        _, rtmp_url = data.split(",", 1)
+        return rtmp_url.strip()
+
+    def start_ffmpeg_process(self):
+        try:
+            command = self.generate_ffmpeg_command()
+            self.process = subprocess.Popen(
+                command, stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+        except Exception as e:
+            print("Error starting FFmpeg process: ", e)
+
+    def generate_ffmpeg_command(self):
+        """Common FFmpeg command generation based on audio_enabled flag"""
+        command = [
+            'ffmpeg',
+            '-i', '-',
+            '-vcodec', 'copy',
+            '-acodec', 'aac',
+            '-f', 'flv',
+            self.rtmpUrl
+        ]
+
+        if not self.audio_enabled:
+            # Add additional options if audio is not enabled
+            command = [
+                'ffmpeg',
+                '-f', 'lavfi', '-i', 'anullsrc',
+                '-i', '-',
+                '-shortest',
+                '-vcodec', 'copy',
+                '-acodec', 'aac',
+                '-f', 'flv',
+                self.rtmpUrl
+            ]
+
+        return command
+
+    async def send_ack_message(self, message):
+        await self.send({"type": "websocket.send", "text": message})
 
 
 class WebacamScreenVideoConsumer(AsyncConsumer):
