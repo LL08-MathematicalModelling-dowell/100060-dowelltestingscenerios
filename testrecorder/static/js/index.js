@@ -1053,6 +1053,26 @@ async function validateAll() {
  * Validates the modal inputs for test details.
 * If all inputs are valid, it disables the start recording button, sets the video privacy status, and starts the recording.
 */
+let timeout;
+function validateTextDisappear(){
+  timeout = setTimeout(validateModal, 2000)
+}
+
+// hide errors on typing
+let hideTestNameError = documents.querySelector("#test-name")
+hideTestNameError.addEventListener("onkeydown", function(){
+  documents.querySelector("#test-name-error").innerHTML = ""
+})
+
+let hideChannelError = documents.querySelector("#selectChannel")
+hideChannelError.addEventListener("onkeydown", function(){
+  documents.querySelector("#channelname-error").innerHTML = ""
+})
+let hidePlaylistError = documents.querySelector("#selectPlaylist")
+hidePlaylistError.addEventListener("onchange", function(){
+  documents.querySelector("#playlist-error").innerHTML = ""
+})
+
 async function validateModal() {
   // Get permission to show notifications in system tray
   const showNotificationPermission = await Notification.requestPermission();

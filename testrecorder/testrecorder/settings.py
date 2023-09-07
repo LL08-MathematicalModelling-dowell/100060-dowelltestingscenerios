@@ -156,6 +156,7 @@ CHANNEL_LAYERS = {
 #     }
 # }
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
@@ -166,7 +167,6 @@ DATABASES = {
         }
     }
 }
-
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
 This resulted in errors during google login through allauth
