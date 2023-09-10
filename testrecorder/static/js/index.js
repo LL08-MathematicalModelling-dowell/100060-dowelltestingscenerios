@@ -111,6 +111,8 @@ $(document).ready(() => {
       userDisplay.classList.toggle("show-user-bar");
     });
 
+    getAudioDevices();
+
     fetchUserChannel().then(status => {
       if (status === 'OK') {
         loadUserPlaylist();
@@ -332,14 +334,13 @@ async function getAudioDevices() {
       if (option.value === 'default') {
         option.selected = true;
       }
-      console.log(`XXXXXXXXXXXXX ${selectAudio}`);
     });
   } catch (err) {
     console.error('Error while retrieving audio devices:', err);
   }
 }
 // Call the function to populate the audio selection dropdown
-getAudioDevices();
+
 
 /**
  * Gets the screen recording stream.
@@ -405,6 +406,8 @@ async function stopRecording() {
   if (window.innerWidth < 768) {
     $(".main-content-check-boxes").fadeIn("slow");
   }
+  $('.lower-nav').fadeIn('slow');
+
   try {
     clearInterval(networkTimer);
   } catch (error) {
@@ -534,11 +537,16 @@ async function recordWebcamStream() {
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
+// Function to get the selected audio device
+function getSelectedAudioDevice() {
+  // const selectAudio = document.getElementById('select-audio');
+  if (selectAudio) {
+    const selectedDeviceId = selectAudio.value;
+    return selectedDeviceId === 'default' ? { deviceId: 'default' } : { deviceId: selectedDeviceId };
+  }
+}
 
-
-/**
- * Records the screen and audio.
- */
+// Records the screen and audio
 async function recordScreenAndAudio() {
   try {
     const screenStream = await getScreenStream();
@@ -546,37 +554,15 @@ async function recordScreenAndAudio() {
     let stream = null;
 
     if (recordAudio) {
-      const audioStream = await getWebcamStream(screenAudioConstraints);
+      const audioDevice = getSelectedAudioDevice(); // Get the selected audio device
+      const audioStream = await getAudioStream(audioDevice);
+
       try {
-        const mergeAudioStreams = (desktopStream, voiceStream) => {
-          const context = new AudioContext();
-          const source1 = context.createMediaStreamSource(desktopStream);
-          const source2 = context.createMediaStreamSource(voiceStream);
-          const destination = context.createMediaStreamDestination();
-          const desktopGain = context.createGain();
-          const voiceGain = context.createGain();
-
-          desktopGain.gain.value = 0.7;
-          voiceGain.gain.value = 0.7;
-
-          source1.connect(desktopGain).connect(destination);
-          source2.connect(voiceGain).connect(destination);
-
-          return destination.stream.getAudioTracks();
-        };
-
-        const tracks = [
-          ...screenStream.getVideoTracks(),
-          ...mergeAudioStreams(screenStream, audioStream)
-        ];
-
-        stream = new MediaStream(tracks);
+        // Merge screen and audio streams
+        const mergedAudioTracks = mergeAudioStreams(screenStream, audioStream);
+        stream = new MediaStream([...screenStream.getVideoTracks(), ...mergedAudioTracks]);
       } catch (error) {
-        console.error("Error while creating merged audio streams:", error);
-        stream = new MediaStream([
-          ...screenStream.getTracks(),
-          ...audioStream.getTracks()
-        ]);
+        stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
       }
     } else {
       stream = new MediaStream([...screenStream.getTracks()]);
@@ -604,6 +590,17 @@ async function recordScreenAndAudio() {
   }
 }
 
+// Function to get audio stream based on selected device
+async function getAudioStream(audioDevice) {
+  try {
+    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: audioDevice });
+    return audioStream;
+  } catch (err) {
+    console.error('Error while retrieving audio stream:', err);
+    return null;
+  }
+}
+
 // =========================================================================================
 // =========================================================================================
 // =========================================================================================
@@ -622,13 +619,13 @@ async function newRecordWebcamAndScreen() {
   let webcamStreamWidth = 0;
   let webcamStreamHeight = 0;
 
-  // console.log('Inside Camera and Screen merge recording function');
   try {
     // Request permission for showing notifications
     showNotificationPermission = await Notification.requestPermission();
 
-    screenStream = await screenAndAudioStream();
     webcamStream = await getwebcamStream();
+    screenStream = await screenAndAudioStream();
+
 
     // Get supported media type options
     options = await getSupportedMediaType();
@@ -690,73 +687,38 @@ async function newRecordWebcamAndScreen() {
     // console.log("Merged stream recording stoped with the following error >> ", err);
     await stopStreams();
     await resetStateOnError();
+
+    return null
   }
 
   async function screenAndAudioStream() {
-    // Get the screen recording stream
-    screenStream = getScreenStream();
+    try {
+      const screenStream = await getScreenStream();
+      const recordAudio = await microphoneStatus();
+      let stream = null;
 
-    // Check if we need to add the audio stream
-    recordAudio = await microphoneStatus();
+      if (recordAudio) {
+        const audioDevice = getSelectedAudioDevice();
+        const audioStream = await getAudioStream(audioDevice);
 
-    stream = null;
-    if (recordAudio) {
-      // Capture the audio stream
-      audioStream = await getWebcamStream(screenAudioConstraints);
-
-      try {
-        // Merge the audio streams from the screen and microphone
-        mergeAudioStreams = (desktopStream, voiceStream) => {
-          // Create an AudioContext
-          context = new AudioContext();
-
-          // Create MediaStreamAudioSourceNodes for the desktop and voice streams
-          const source1 = context.createMediaStreamSource(desktopStream);
-          const source2 = context.createMediaStreamSource(voiceStream);
-
-          // Create a MediaStreamDestination for merging the streams
-          const destination = context.createMediaStreamDestination();
-
-          // Create GainNodes for adjusting the volume
-          const desktopGain = context.createGain();
-          const voiceGain = context.createGain();
-
-          // Set the gain values
-          desktopGain.gain.value = 0.7;
-          voiceGain.gain.value = 0.7;
-
-          // Connect the desktop stream to the desktop gain and then to the destination
-          source1.connect(desktopGain).connect(destination);
-
-          // Connect the voice stream to the voice gain and then to the destination
-          source2.connect(voiceGain).connect(destination);
-
-          // Return the audio tracks from the merged stream
-          return destination.stream.getAudioTracks();
-        };
-
-        // Merge the video tracks from the screen stream and the audio tracks from the merged audio streams
-        tracks = [
-          ...screenStream.getVideoTracks(),
-          ...mergeAudioStreams(screenStream, audioStream)
-        ];
-
-        // Create a new MediaStream with the merged tracks
-        stream = new MediaStream(tracks);
-      } catch (error) {
-        console.error("Error while creating merged audio streams:", error);
-
-        // If an error occurs, create a new MediaStream with the video tracks from the screen stream
-        // and the audio tracks from the audio stream
-        stream = new MediaStream([
-          ...screenStream.getTracks(),
-          ...audioStream.getTracks()
-        ]);
+        try {
+          // Merge screen and audio streams
+          const mergedAudioTracks = mergeAudioStreams(screenStream, audioStream);
+          stream = new MediaStream([...screenStream.getVideoTracks(), ...mergedAudioTracks]);
+        } catch (error) {
+          stream = new MediaStream([...screenStream.getTracks(), ...audioStream.getTracks()]);
+        }
+      } else {
+        stream = new MediaStream([...screenStream.getTracks()]);
       }
-    } else {
-      stream = new MediaStream([...screenStream.getTracks()]);
+      return stream;
+    } catch (err) {
+      console.error("An error occurred while recording screen and audio:", err);
+      document.getElementById("app-status").innerHTML = "STATUS: Error while recording screen and audio.";
+      alert("Error while recording screen and audio.");
+
+      return null;
     }
-    return stream;
   }
 
   async function getwebcamStream() {
@@ -817,11 +779,13 @@ async function startRecording() {
       if (window.innerWidth < 768) {
         $(".main-content-check-boxes").fadeOut("slow");
       }
+
+      $('.lower-nav').fadeOut('slow');
+
       console.log('Streaming has started');
-      // document.querySelector('.checkbox').disabled
 
       streamRecorder.ondataavailable = (event) => {
-        if ((recordinginProgress && event.data.size > 0) && appWebsocket.readyState === WebSocket.OPEN) {
+        if ((recordinginProgress && event.data.size > 0) && (socket.readyState === WebSocket.OPEN)) {
           // console.log('================= message sent to server ===============')
           socket.send(event.data);
         }
@@ -1403,9 +1367,6 @@ async function createWebsocket(recordWebcam, recordScreen) {
   socket.onclose = function (evt) {
     recordinginProgress = false;
     stopRecording();
-    if (evt.code !== 1000 && !errorStop) {
-      errorStop = true;
-    }
   };
 
   return [socket, socketType]
@@ -1669,7 +1630,6 @@ async function stopStreams() {
   }
   // Synchronized recording stop
   recordingSynched = false;
-  //let logKeyboard = keyLogCheckbox.checked;
   logKeyboard = false;
   recordWebcam = cameraCheckbox.checked;
   recordScreen = screenCheckbox.checked;
@@ -1679,8 +1639,6 @@ async function stopStreams() {
     try {
       if (webcamRecorder && webcamRecorder.stream) {
         webcamRecorder.stream.getTracks().forEach(track => track.stop());
-      } else {
-        console.error("webcamRecorder or webcamRecorder.stream is not available.");
       }
     } catch (err) {
       console.error("Error while stopping webcam recorder: " + err.message);
@@ -1692,8 +1650,6 @@ async function stopStreams() {
     try {
       if (screenRecorder && screenRecorder.stream) {
         screenRecorder.stream.getTracks().forEach(track => track.stop());
-      } else {
-        console.error("screenRecorder or screenRecorder.stream is not available.");
       }
     } catch (err) {
       console.error("Error while stopping screen recorder: " + err.message);
@@ -1707,8 +1663,6 @@ async function stopStreams() {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
         screenStream.getTracks().forEach((track) => track.stop());
         webcamStream.getTracks().forEach((track) => track.stop())
-      } else {
-        console.error("mergedStreamRecorder or mergedStreamRecorder.stream is not available.");
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -2225,37 +2179,6 @@ async function showPlaylistAlreadyExistsModal() {
   playlistAlreadyExistsModal.show();
 }
 
-
-// show network error system tray notification
-// async function showNetworkErrorSystemTrayNotification() {
-//   // check for permission first
-//   if (showNotificationPermission === 'granted') {
-//     const errorNotification = new Notification('Recording stopped due to network error!', {
-//       body: '1. Check your internet connection.\n2. Start the recording process again.',
-//       icon: '/static/images/favicon.jpg'
-//     });
-//   }
-// }
-
-// Shows the network error occurred modal
-// async function showNetworkErrorOccurredModal() {
-//   // Show network error system tray notification
-//   showNetworkErrorSystemTrayNotification();
-//   // Show an alert instead of a modal, with small delay
-//   setTimeout(showNetworkErrorAlert, 50);
-// }
-
-// Shows a network error alert
-// function showNetworkErrorAlert() {
-//   let msg1 = "Recording stopped due to network error, please do the following.\n";
-//   let msg2 = " 1. Check your internet connection.\n";
-//   let msg3 = " 2. Refresh the page on your browser.\n";
-//   let msg4 = " 3. Start the recording process again.";
-//   let msg = msg1 + msg2 + msg3 + msg4;
-
-//   alert(msg);
-// }
-
 // Shows creating playlist modal
 async function showCreatingPlaylistModal(status) {
 
@@ -2390,10 +2313,9 @@ function displayUtilities() {
   }
 
   // Get name of the youtube video
-  let finalvideoTitle = testNameValue.replace(/_/ig, " ");
+  let finalvideoTitle = document.getElementById("test-name").value.trim().replace(/_/ig, " ");
   document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
 }
-
 
 /* Fetch channels for the user */
 async function fetchUserChannel() {
@@ -2830,3 +2752,5 @@ function removeScreenOption() {
 window.onload = function () {
   removeScreenOption();
 };
+
+
