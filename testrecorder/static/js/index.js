@@ -492,7 +492,7 @@ async function stopRecording() {
  */
 async function recordWebcamStream() {
   try {
-    console.log('============== inside record wbcam screen ==================');
+    // console.log('============== inside record wbcam screen ==================');
 
     webcamMediaConstraints = {
       video: videoConstraints,
@@ -500,7 +500,7 @@ async function recordWebcamStream() {
     };
     webcamStream = await navigator.mediaDevices.getUserMedia(webcamMediaConstraints);
 
-    console.log('=========== webcam strream gotten ===================');
+    // console.log('=========== webcam strream gotten ===================');
 
     video.srcObject = webcamStream;
     video.muted = true;
@@ -517,7 +517,7 @@ async function recordWebcamStream() {
     }
     webcamRecorder = new MediaRecorder(webcamStream, options);
 
-    console.log('========== webcam recorder ====================');
+    // console.log('========== webcam recorder ====================');
 
     return webcamRecorder;
   } catch (err) {
