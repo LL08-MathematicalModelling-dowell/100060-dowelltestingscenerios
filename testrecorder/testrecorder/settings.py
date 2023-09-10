@@ -152,19 +152,6 @@ CHANNEL_LAYERS = {
 #     }
 # }
 
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": os.getenv('DATABASE_NAME'),
-#         "USER": os.getenv('DATABASE_USER'),
-#         "PASSWORD": os.getenv('DATABASE_PASSWORD'),
-#         "HOST": os.getenv('DATABASE_HOSTNAME', 'localhost'),
-#         'PORT': '3306',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
