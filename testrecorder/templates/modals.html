@@ -81,7 +81,8 @@
                 <div style="color:red;" id="camera-error"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" id="closecameraModal">Cancel</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    id="closecameraModal">Cancel</button>
                 <button type="button" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
             </div>
         </div>
@@ -97,7 +98,7 @@
         try {
             const devices = await navigator.mediaDevices.enumerateDevices();
             videoSourceSelect.innerHTML = "";
-            
+
             devices.forEach((device) => {
                 if (device.kind === "videoinput") {
                     const option = document.createElement("option");
@@ -511,7 +512,8 @@
     <div class="modal-content_delete">
         <p id="video-delete-mesage" style="color: indianred;">
             <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
-            <b>DELETE VIDEO</b></p>
+            <b>DELETE VIDEO</b>
+        </p>
         <p id="video-delete-warning" style="color: indianred;">This action canot be undone</p>
         <div class="modal-buttons_delete">
             <button onclick="deleteItem_delete()" id="confirm-delete">CONFIRM</button>
@@ -519,3 +521,115 @@
         </div>
     </div>
 </div>
+
+
+<!-- Small Screen Start recording Modal -->
+<div class="modal" id="start-record-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Channel Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-start-record-modal"></button>
+            </div>
+            <div class="modal-body">
+                {% load socialaccount %}
+                {% if user.is_authenticated %}
+                <!-- <div class="authenticated-user"> -->
+                    <div class="mb-3">
+                        <div class="lower-nav-item">
+                            <label for="selectChannel" class="hide-desktop mobile">
+                                Channel
+                            </label>
+                            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                            <div style="color:red;" id="channelname-error"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="lower-nav-item">
+                            <div class="story-name lower-nav-item">
+                                <label for="test-name" class="hide-desktop mobile">
+                                    Title
+                                </label>
+                                <input type="text" name="" id="test-name" placeholder="Title">
+                                <div class="lower-nav-label"></div>
+                                <div style="color:red;" id="test-name-error"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="lower-nav-item">
+                            <!-- single select -->
+                            <label for="selectPlaylist" class="hide-desktop mobile">
+                                Select a playlist
+                            </label>
+                            <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist"
+                                style="width: 80%;">
+                                <option value=""></option>
+                            </select>
+                            <div class="lower-nav-label"></div>
+                            <div style="color:red;" id="playlist-error"></div>
+                            <!-- end single select -->
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
+                        <button type="submit" class="btn btn-success" id="add-channel-btn">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+
+                    {% else %}
+                    <div class="story-name lower-nav-item">
+                        <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with
+                            Google/Select
+                            Channel</a>
+                    </div>
+                    {% endif %}
+                <!-- </div> -->
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- lower nav Mobile-->
+    <div class="lower-nav small-screen-nav">
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <div class="authenticated-user">
+            <div class="lower-nav-item">
+                <label for="selectChannel" class="hide-desktop record-label">
+                    Channel
+                </label>
+                <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                <div style="color:red;" id="channelname-error"></div>
+            </div>
+            <!-- end single select -->
+            <div class="story-name lower-nav-item">
+                <label for="test-name" class="hide-desktop record-label">
+                    Title
+                </label>
+                <input type="text" name="" id="test-name" placeholder="Title">
+                <div class="lower-nav-label"></div>
+                <div style="color:red;" id="test-name-error"></div>
+            </div>
+            <div class="lower-nav-item">
+                <!-- single select -->
+                <label for="selectPlaylist" class="hide-desktop record-label">
+                    Select a playlist
+                </label>
+                <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist" style="width: 80%;">
+                    <option value=""></option>
+                </select>
+                <div class="lower-nav-label"></div>
+                <div style="color:red;" id="playlist-error"></div>
+                <!-- end single select -->
+            </div>
+            {% else %}
+            <div class="story-name lower-nav-item">
+                <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with
+                    Google/Select
+                    Channel</a>
+            </div>
+            {% endif %}
+        </div>
+        <!-- end lower nav -->

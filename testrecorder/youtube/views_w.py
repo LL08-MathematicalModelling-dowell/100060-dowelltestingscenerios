@@ -56,6 +56,7 @@ def create_user_youtube_object(request):
                 # Update the stored credential data with the refreshed token
                 youtube_user.credential = credentials.to_json()
                 youtube_user.save()
+                print('Access token refreshed!')
         except Exception as e:
             # Handle any error that occurred while refreshing the access token
             print(f'An error occurred: {e}')

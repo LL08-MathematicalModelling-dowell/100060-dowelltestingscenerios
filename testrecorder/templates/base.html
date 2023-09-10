@@ -24,6 +24,7 @@
 
     <!-- Custom css -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
     <link rel="stylesheet" href="{% static 'css/fontawesome-free-6.2.0-web/css/all.css' %}">
 
     {% block css %}
@@ -46,6 +47,8 @@
     {% endblock body %}
     {% comment %} {% include "footer.html" %} {% endcomment %}
     {% include "youtube_copyright.html" %}
+    {% include 'modals.html' %}
+
     <script>
         $(document).ready(function () {
             $('.search-playlist').select2({

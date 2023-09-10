@@ -1,62 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block css %}
+<link rel="stylesheet" href="{% static 'css/small-screen.css' %}">
 {% endblock css %}
 {% block title %}
 <title>Live UX Storyboard</title>
 {% endblock title %}
 {% block body %}
-<!-- lower nav -->
-<div class="lower-nav">
-    {% load socialaccount %}
-    {% if user.is_authenticated %}
-    <div class="authenticated-user">
-        <div class="lower-nav-item">
-            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
-            <!-- <div class="lower-nav-label">Channel</div> -->
-            <div style="color:red;" id="channelname-error"></div>
-        </div>
-        <!-- end single select -->
-        <div class="story-name lower-nav-item">
-            <input type="text" name="" id="test-name" placeholder="Title">
-            <div class="lower-nav-label"></div>
-            <div style="color:red;" id="test-name-error"></div>
-        </div>
-        <div class="lower-nav-item">
-            <!-- single select -->
-            <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist">
-                <option value=""></option>
-            </select>
-            <div class="lower-nav-label"></div>
-            <div style="color:red;" id="playlist-error"></div>
-            <!-- end single select -->
-        </div>
-        <!-- Story Name -->
-        <!-- Story Name -->
-        <div class="user-icon lower-nav-item">
-            <i class="fas fa-user-circle"></i>
-            <!-- <div class="lower-nav-label">User</div> -->
-        </div>
-    </div>
-    {% else %}
-    <div class="story-name lower-nav-item">
-        <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select
-            Channel</a>
-    </div>
-    {% endif %}
-</div>
-<!-- end lower nav -->
-{% comment %} <div class="user-display">
-    <div>
-        <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}"
-            disabled>
-        <div style="color:red;" id="username-error"></div>
-    </div>
-    <div>
-        <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
-        <div style="color:red;" id="username-error"></div>
-    </div>
-</div> {% endcomment %}
+{% load socialaccount %}
 <!-- Main container -->
 <div class="contain">
     <main class="main-contents">
@@ -129,6 +80,7 @@
                 </div>
                 <div class="record-btn tooltip-container">
                     <button id="start" onClick="validateAll()">
+                        
                         <i class="fas fa-record-vinyl"></i>
                     </button>
                     <span class="tooltip-text">Start Recording</span>
@@ -173,17 +125,15 @@
             </div>
         </div>
         {% endif %}
-    </div>
+</div>
 </main>
-Status bar
- <div class="status-bar">
+<div class="status-bar">
     {% if user.is_authenticated %}
     <div id="app-status">STATUS: Waiting to Record.</div>
     {% else %}
     <div id="app-status"></div>
     {% endif %}
 </div>
-{% include 'modals.html' %}
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"

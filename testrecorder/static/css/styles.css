@@ -35,6 +35,8 @@ body {
   display: flex;
   flex-direction: column;
   background-color: var(--dark-clr);
+  margin-bottom: 0;
+  justify-content: space-between;
 }
 
 a {
@@ -89,9 +91,10 @@ img {
 .upper-nav {
   background: var(--primary_clr);
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-around;
   align-items: center !important;
-  padding: 1rem 0;
+  padding: .5rem .5rem;
+  width: 100%;
 }
 
 .upper-nav-icon {
@@ -143,35 +146,31 @@ img {
 
 /* lower nav */
 .lower-nav {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
   background: var(--light-primary_clr);
   padding: 1rem;
   text-align: center;
-  /* gap: 1rem; */
 }
 
 .authenticated-user {
-  display: grid;
-  grid-template-columns: repeat(4, 25%);
+  display: flex;
   align-items: center;
-  /* place-items: center; */
-}
-
-.authenticated-user {
-  display: grid;
-  grid-template-columns: repeat(4, 25%);
-  align-items: center;
-
+  justify-content: space-evenly;
+  width: 100%;
 }
 
 .lower-nav-item {
   margin: 0.5rem 0.5rem;
+  width: inherit;
 }
 
 .lower-nav-item select,
 .lower-nav-item input,
 .lower-nav-item a {
   display: block;
-  width: 80%;
+  width: 100%;
   margin: 0 auto;
   background: var(--light-primary_clr);
   color: var(--white-clr);
@@ -214,8 +213,11 @@ img {
 
 @media screen and (min-width:768px) {
   .user-display {
-    top: 22%;
+    background-color: var(--primary_clr);
+    position: absolute;
+    top: 100px;
     right: 5%;
+    border-radius: 10px;
   }
 
   .user-icon i {
@@ -282,8 +284,7 @@ img {
 .main-content-btns {
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding-bottom: 50px;
+  width: auto;
 }
 
 .main-contents {
@@ -343,8 +344,8 @@ img {
 .input-start-record-btn {
   position: absolute;
   bottom: 5%;
-  left: 20%;
-  width: 80%;
+  left: 0;
+  width: 100%;
   background: border-box;
 }
 
@@ -546,29 +547,13 @@ img {
   background: rgba(0, 0, 0, 0.5);
 }
 
-
-@media screen and (min-width:500px) {
-  .main-content-btns {
-    left: 50%;
-  }
-}
-
-
-
-
-
 @media screen and (min-width:768px) {
   .input-start-record-btn {
     position: absolute;
     bottom: 5%;
-    left: 20%;
-    width: 60%;
+    left: 0;
+    width: 100%;
     background: border-box;
-    margin-bottom: -40px;
-  }
-
-  .main-content-btns {
-    left: 55%;
   }
 
   .video-component video {
@@ -581,18 +566,6 @@ img {
   .video-timer {
     bottom: 27%;
     right: 20%;
-  }
-}
-
-@media screen and (min-width:996px) {
-  .main-content-btns {
-    left: 60%;
-  }
-}
-
-@media screen and (min-width:1200px) {
-  .main-content-btns {
-    left: 70%;
   }
 }
 
@@ -984,6 +957,7 @@ iframe {
 .dropdown {
   position: relative;
   display: inline-block;
+  width: 100%;
 }
 
 .dropdown-indicator {
@@ -1051,4 +1025,27 @@ iframe {
   margin: 10px 0px 20px 0px;
   border-radius: 0;
   float: right;
+}
+
+/* =========================================================================== */
+.mobile {
+  display: none;
+}
+
+.input-start-record-btn {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: border-box;
+}
+
+.mobile-menu {
+  display: none;
+}
+
+#selectPlaylist {
+  padding: 5px;
+  width: 250px;
+  text-align: left;
 }
