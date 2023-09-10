@@ -332,7 +332,7 @@ async function getAudioDevices() {
       if (option.value === 'default') {
         option.selected = true;
       }
-      consle.log(`XXXXXXXXXXXXX ${selectAudio}`);
+      console.log(`XXXXXXXXXXXXX ${selectAudio}`);
     });
   } catch (err) {
     console.error('Error while retrieving audio devices:', err);
