@@ -1046,6 +1046,6 @@ iframe {
 
 #selectPlaylist {
   padding: 5px;
-  width: 250px;
+  min-width: 100px;
   text-align: left;
 }
