@@ -136,6 +136,12 @@ if (window.innerWidth < 768) {
   });
 }
 
+/* JavaScript to display the modal */
+const modal = document.getElementById('myModal');
+const startWebcamButton = document.getElementById('startWebcamButton');
+
+
+
 
 async function startRecordModal() {
   // close modal if open
@@ -765,7 +771,18 @@ async function startRecording() {
     if (recordScreen && recordWebcam) {
       streamRecorder = await newRecordWebcamAndScreen();
     } else if (!recordScreen && recordWebcam) {
-      streamRecorder = await recordWebcamStream();
+      if (isMobileDevice()) {
+        modal.style.display = 'block';
+
+        startWebcamButton.addEventListener('click', async () => {
+          modal.style.display = 'none'; // Hide the modal
+          const streamRecorder = await recordWebcamStream();
+          // Start recording with the obtained streamRecorder
+          // You can handle the recording logic here
+        });
+      } else {
+        streamRecorder = await recordWebcamStream();
+      }
     } else if (recordScreen && !recordWebcam) {
       streamRecorder = await recordScreenAndAudio();
     }
@@ -2752,5 +2769,7 @@ function removeScreenOption() {
 window.onload = function () {
   removeScreenOption();
 };
+
+
 
 
