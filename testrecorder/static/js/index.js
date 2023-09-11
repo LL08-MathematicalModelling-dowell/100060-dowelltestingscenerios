@@ -776,7 +776,7 @@ async function startRecording() {
 
         startWebcamButton.addEventListener('click', async () => {
           modal.style.display = 'none'; // Hide the modal
-          const streamRecorder = await recordWebcamStream();
+          streamRecorder = await recordWebcamStream();
           // Start recording with the obtained streamRecorder
           // You can handle the recording logic here
         });
