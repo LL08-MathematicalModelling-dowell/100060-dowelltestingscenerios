@@ -32,11 +32,9 @@ class VideoConsumer(AsyncConsumer):
         await self.send({"type": "websocket.accept"})
 
     async def websocket_receive(self, event):
-        # print('evant data: ', event)
+        # print('=============================== sockect message recieve ===============================')
         if 'text' in event.keys():
             data = event['text']
-            print("Received data:", data)
-
             if 'browser_sound' in data:
                 self.audio_enabled = True
                 self.rtmpUrl = self.extract_rtmp_url(data)
@@ -49,12 +47,15 @@ class VideoConsumer(AsyncConsumer):
                 print("Received RTMP url:", self.rtmpUrl)
                 self.start_ffmpeg_process()
                 await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
+            # print('=============================== sockect message sent  ===============================')
+
 
         if 'bytes' in event.keys() and self.process:
             byte_data = event['bytes']
             self.process.stdin.write(byte_data)
+            # print(f'Byte sent')
             await self.send_ack_message("Bytes received")
-
+            
     async def websocket_disconnect(self, event):
         """when websocket disconnects"""
         print("disconnected", event)

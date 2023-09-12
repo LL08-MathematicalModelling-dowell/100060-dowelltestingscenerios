@@ -140,16 +140,19 @@ def create_broadcast(request):
     """
         Creates a broadcast, it is view based.
     """
-    youtube = create_user_youtube_object(request)
+    youtube, credential = create_user_youtube_object(request)
     if youtube is None:
-        return None
+        print('youtube object creation failed!!')
+        return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+
     # create broadcast time
     time_delt1 = timedelta(days=0, hours=0, minutes=5)
     # time_now = datetime.now()
     time_now = datetime.utcnow()
     future_date1 = time_now + time_delt1
     future_date_iso = future_date1.isoformat()
-    print(future_date_iso)
+
+    print(f" <=== Brodcast time {future_date_iso} ====> ")
 
     # Create broadcast
     new_broadcast_id = insert_broadcast(youtube)
@@ -339,9 +342,10 @@ class CreateBroadcastView(APIView):
         """
         print('Creating broadcast... ')
 
-        youtube = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
+            print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if the user's account has live streaming enabled
         list_response = youtube.liveBroadcasts().list(
@@ -405,9 +409,10 @@ class TransitionBroadcastView(APIView):
 
 def transition_broadcast(the_broadcast_id, request):
 
-    youtube = create_user_youtube_object(request)
+    youtube, credential = create_user_youtube_object(request)
     if youtube is None:
-        raise AttributeError('youtube object creation failed!!')
+        print('youtube object creation failed!!')
+        return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
     request = youtube.liveBroadcasts().transition(
         broadcastStatus="complete",
@@ -441,9 +446,10 @@ class PlaylistItemsInsertView(APIView):
             print("the_video_id: ", the_video_id)
             print("the_playlist_id: ", the_playlist_id)
 
-            youtube = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Make the insert request
             request = youtube.playlistItems().insert(
@@ -548,15 +554,14 @@ class FetchPlaylistsView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            youtube = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
             print('fetching playlist with pagination...')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
-
-            # print('===== playlist count ===> ', len(playlists))
 
             # Check if the playlist is empty
             if len(playlists) == 0:
@@ -609,9 +614,10 @@ def insert_video_into_playlist(request, the_video_id, the_playlist_id):
         print("the_video_id: ", the_video_id)
         print("the_playlist_id: ", the_playlist_id)
 
-        youtube = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
+            print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Make the insert request
         request = youtube.playlistItems().insert(
@@ -642,9 +648,10 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
     Handles requests to create a playlist
     """
     try:
-        youtube = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
+            print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if a playlist with provided title exists
         playlists = fetch_playlists_with_pagination(youtube)

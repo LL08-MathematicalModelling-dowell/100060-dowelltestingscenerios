@@ -1,7 +1,10 @@
+"""
+Second views file for the YouTube app.
+"""
+
 import json
 import logging
 import requests
-from requests import HTTPError
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 from rest_framework.views import APIView
@@ -12,6 +15,62 @@ from .models import YoutubeUserCredential, ChannelsRecord
 
 
 logger = logging.getLogger(__name__)
+
+
+def create_user_youtube_object(request):
+    """
+    Create a YouTube object using the v3 version of the API and
+    the authenticated user's credentials.
+    """
+    print('Creating youtube object...')
+    try:
+        # Retrieve the YoutubeUserCredential object associated with the authenticated user
+        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+
+        # Retrieve the user's credentials associated with the YoutubeUserCredential object
+        credentials_data = youtube_user.credential
+        try:
+            # Convert the JSON string to a dictionary
+            credentials_data_dict = json.loads(credentials_data)
+            # Create credentials from the dictionary
+            credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
+            # print('Credentials: xxxxxxxxxxx')
+        except Exception as e:
+            credentials = Credentials.from_authorized_user_info(info=credentials_data)
+            # print('Credentials: xxxxxxxxxxx')
+        try:
+            print(f'Checking if access token has expired...{credentials.expired}')
+            # Check if the access token has expired
+            if credentials.expired:
+                print('Access token has expired!')
+
+                print('Refreshing access token...')
+                import google.auth.transport.requests
+
+                # Create a request object using the credentials
+                google_request = google.auth.transport.requests.Request()
+
+                # Refresh the access token using the refresh token
+                credentials.refresh(google_request)
+
+                # Update the stored credential data with the refreshed token
+                youtube_user.credential = credentials.to_json()
+                youtube_user.save()
+                print('Access token refreshed!')
+        except Exception as e:
+            # Handle any error that occurred while refreshing the access token
+            print(f'An error occurred: {e}')
+            return None
+
+        # Create a YouTube object using the v3 version of the API and the retrieved credentials
+        youtube = build('youtube', 'v3', credentials=credentials, cache_discovery=False)
+        
+        return youtube, credentials
+    except YoutubeUserCredential.DoesNotExist:
+        # If the user doesn't have a YoutubeUserCredential object,
+        # return an error response with 401 Unauthorized status code
+        return None
+
 
 
 class UserChannelsView(APIView):
@@ -54,43 +113,24 @@ class UserChannelsView(APIView):
     def get(self, request, *args, **kwargs):
         """
         Retrieve the authenticated user's YouTube channels.
-
         Returns a JSON array of dictionaries containing the channel id and title
         with a 200 OK status code. If the user doesn't have a YoutubeUserCredential
         object, returns a 401 Unauthorized status code. If unable to fetch the
         YouTube channels, returns a 404 Not Found status code.
         """
-
         try:
-            # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-            credential = youtube_user.credential
-        except YoutubeUserCredential.DoesNotExist:
-            # If the user doesn't have a YoutubeUserCredential object,
-            # return an error response with 401 Unauthorized status code
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            credentials = Credentials.from_authorized_user_info(
-                info=credential)
-
-            # Construct a Resource for interacting with an API.
-            # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            youtube = build('youtube', 'v3',
-                            credentials=credentials, cache_discovery=False)
-
-            youtube = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
             
             print('Getting user youtube channel...')
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
-            # print('channel Response ===> ', channels_response)
             if 'items' not in channels_response:
                 return Response({'Error': 'There is no youtube channel associated with this account!'},
                                 status=status.HTTP_404_NOT_FOUND)
+
             # Process the channels into a list of dictionaries containing the channel id and title
             channels = [
                 {
@@ -101,28 +141,33 @@ class UserChannelsView(APIView):
             ]
 
             try:
-                # Save the first channel's details to a ChannelsRecord object
+                # Check if the first channel already exists in the database
+                first_channel = channels[0]
+
                 channel_record, created = ChannelsRecord.objects.get_or_create(
-                    channel_id=channels[0].get('channel_id'),
-                    channel_title=channels[0].get('channel_title'),
-                    channel_credentials=credential
+                    channel_id=first_channel.get('channel_id'),
+                    defaults={
+                        'channel_title': first_channel.get('channel_title'),
+                        'channel_credentials': credential
+                    }
                 )
-                if created:
+                # If the channel already exists, update the credential
+                if not created and channel_record.channel_credentials != credential:
+                    channel_record.channel_credentials = credential
+                    print("Channel credential updated!!!")
                     channel_record.save()
+
             except Exception as e:
                 logger.error(
-                    f'Error while saving user channel credential locally!: {e}  occured')
+                    f'Error while saving user channel credential locally!: {e} occurred')
 
-            # Return the channels in the response body with 200 OK status code
             return Response(channels, status=status.HTTP_200_OK)
 
-        except HTTPError as e:
-            status_code = e.resp.status
-            error_message = e._get_reason()
-            # If unable to fetch the YouTube channels, return an error response with 404 Not Found status code
+        except Exception as e:
+            error_message = str(e)
             return Response(
                 {'Error': error_message},
-                status=status_code
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def is_available_in_db(self, email) -> bool:
@@ -239,24 +284,13 @@ class DeleteVideoView(APIView):
         }
         ```
         """
-
-        # Load credentials from the JSON key file obtained from the Google API Console
         try:
-            # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-        except YoutubeUserCredential.DoesNotExist:
-            # If the user doesn't have a YoutubeUserCredential object,
-            # return an error response with 401 Unauthorized status code
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            youtube, credential = create_user_youtube_object(request)
+            if youtube is None:
+                print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            
 
-        try:
-            # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            credentials = Credentials.from_authorized_user_info(
-                info=youtube_user.credential)
-
-            # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            youtube = build('youtube', 'v3',
-                            credentials=credentials, cache_discovery=False)
             video_id = request.data.get('video_id')
 
             # Delete the video using the video ID
@@ -264,7 +298,6 @@ class DeleteVideoView(APIView):
             response = youtube.videos().delete(id=video_id).execute()
             return Response({'message': "Video deleted successfully", 'response': response}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            # Return an error Response message
             return Response({'Error': str(e)})
 
 
@@ -297,9 +330,11 @@ class LoadVideoView(APIView):
             Exception: If an error occurs during the loading process.
         """
         try:
-            youtube = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+        
             # Perform the YouTube Channels API call
             channels_response = youtube.channels().list(
                 part='contentDetails',
@@ -356,29 +391,7 @@ class LoadVideoView(APIView):
 
             return Response(videos, status=status.HTTP_200_OK)
         except Exception as e:
-            # Return an error message
-            print('videos error  >> ', e)
-            # raise Exception('load video error >>>> ', e)
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
-
-
-def create_user_youtube_object(request):
-    try:
-        # Retrieve the YoutubeUserCredential object associated with the authenticated user
-        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-
-        # Retrieve the user's credentials associated with the YoutubeUserCredential object
-        credentials = Credentials.from_authorized_user_info(
-            info=youtube_user.credential)
-
-        # Create a YouTube object using the v3 version of the API and the retrieved credentials
-        youtube = build('youtube', 'v3',
-                        credentials=credentials, cache_discovery=False)
-        return youtube
-    except YoutubeUserCredential.DoesNotExist:
-        # If the user doesn't have a YoutubeUserCredential object,
-        # return an error response with 401 Unauthorized status code
-        return None
 
 
 class YouTubeVideoAPIView(APIView):
@@ -393,7 +406,10 @@ class YouTubeVideoAPIView(APIView):
 
     def get_video_data(self, request, broadcast_id):
         # Set up the YouTube API client
-        youtube = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request)
+        if youtube is None:
+            print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
             # Make a request to the YouTube API to retrieve video details

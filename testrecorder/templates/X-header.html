@@ -1,6 +1,6 @@
 {% load static %}
 <header>
-  <nav id="navigation-bar" class="upper-nav">
+  <nav id="navigation-bar">
     <div class="upper-nav">
       <a href="https://uxlive.org">
         <div class="upper-nav-icon active">
@@ -22,45 +22,20 @@
           <img src="{% static 'images/favicon.jpg' %}" alt="">
         </div>
       </a>
-      {% if user.is_authenticated %}
-      <div class="user-icon">
-        <i class="fas fa-user-circle" style="font-size: 50px;"></i>
-      </div>
-      {% endif %}
-    </div>
-    <a href="https://uxlive.org" class="mobile">
-      <div class="upper-nav-icon active">
-        <i class="fas fa-home" style="font-size:35px; color: #ecb5b5;"></i>
-      </div>
-    </a>
-    <div id="menu-icon" class="hide-desktop mobile">
-      <i class="fas fa-bars menu-icon"></i>
     </div>
   </nav>
-
-  <!-- ========================== -->
-  <div class="mobile-menu">
-    <a href="https://uxlive.org/privacy-policy" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
-        class='fas'>&#xf3ed;</i> Privacy Policy</a>
-    <a href="#" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
-        class="fa">&#xf013;</i>Settings</a>
-    <a href="{% url 'about' %}" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
-        class="fa">&#xf05a;</i>About</a>
-    <hr>
-    {% load socialaccount %}
-    {% if user.is_authenticated %}
-    <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:30px; margin-right: 50px;"></i>{{ user.username }}</p>
-    {% endif %}
-    {% if user.is_authenticated %}
-    <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-in-out" style="font-size:20px;">Logout</a>
-    {% else %}
-    <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Login with Google/Select
-      Channel</a>
+  <div class="user-display">
+    <div>
+      <input type="text" name="{{ user.username }}" id="username" placeholder="User" value="{{ user.username }}"
+        disabled>
+      <div style="color:red;" id="username-error"></div>
+    </div>
+    <div>
+      <a style="text-decoration: none;" href="{% url 'logout' %}" class="logout-disable" disabled>Logout</a>
       <div style="color:red;" id="logout-error"></div>
-    {% endif %}
+    </div>
   </div>
 
-  
   <!-- lower nav -->
   <div class="lower-nav">
     {% load socialaccount %}
@@ -86,8 +61,13 @@
         <div style="color:red;" id="playlist-error"></div>
         <!-- end single select -->
       </div>
+      <!-- Story Name -->
+      <!-- Story Name -->
+      <div class="user-icon lower-nav-item">
+        <i class="fas fa-user-circle"></i>
+        <!-- <div class="lower-nav-label">User</div> -->
+      </div>
     </div>
-    
     {% else %}
     <div class="story-name lower-nav-item">
       <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select
@@ -95,4 +75,30 @@
     </div>
     {% endif %}
   </div>
+  <!-- end lower nav -->
+
+
+
+  <!-- ========================== -->
+  <div class="mobile-menu">
+    <a href="https://uxlive.org/privacy-policy" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
+        class='fas'>&#xf3ed;</i> Privacy Policy</a>
+    <a href="#" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
+        class="fa">&#xf013;</i>Settings</a>
+    <a href="{% url 'about' %}" class="mobile-menu-item"><i style="font-size:30px; margin-right: 50px;"
+        class="fa">&#xf05a;</i>About</a>
+    <hr>
+    {% load socialaccount %}
+    {% if user.is_authenticated %}
+    <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:30px; margin-right: 50px;"></i>{{ user.username }}</p>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <a href="{% url 'logout' %}" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Logout</a>
+    {% else %}
+    <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Login with Google/Select
+      Channel</a>
+    {% endif %}
+  </div>
+  <!-- ========================================= -->
+
 </header>

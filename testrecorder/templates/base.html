@@ -24,18 +24,19 @@
 
     <!-- Custom css -->
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/small-screen.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome-free-6.2.0-web/css/all.css' %}">
 
     {% block css %}
     {% endblock css %}
     {% if user.is_authenticated %}
-        <script>
-            var isAuthenticated = true;
-        </script>
+    <script>
+        var isAuthenticated = true;
+    </script>
     {% else %}
-        <script>
-            var isAuthenticated = false;
-        </script>
+    <script>
+        var isAuthenticated = false;
+    </script>
     {% endif %}
 
 </head>
@@ -45,10 +46,9 @@
     {% block body %}
     {% endblock body %}
     {% comment %} {% include "footer.html" %} {% endcomment %}
-    {% include "youtube_copyright.html" %}
     <script>
         $(document).ready(function () {
-            $('.search-playlist').select2({
+            $('#search-playlist').select2({
                 placeholder: "Playlist",
                 allowClear: true
             });
@@ -57,5 +57,4 @@
     {% block index_js %}
     {% endblock %}
 </body>
-
 </html>
