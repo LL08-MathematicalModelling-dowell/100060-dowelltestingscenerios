@@ -1,7 +1,6 @@
 """
 Second views file for the YouTube app.
 """
-
 import json
 import logging
 import requests
