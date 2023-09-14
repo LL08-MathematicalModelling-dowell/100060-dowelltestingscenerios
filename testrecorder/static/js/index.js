@@ -885,18 +885,18 @@ function validateTextDisappear(){
 }
 
 // hide errors on typing
-let hideTestNameError = documents.querySelector("#test-name")
+let hideTestNameError = document.querySelector("#test-name")
 hideTestNameError.addEventListener("onkeydown", function(){
-  documents.querySelector("#test-name-error").innerHTML = ""
+  document.querySelector("#test-name-error").innerHTML = ""
 })
 
-let hideChannelError = documents.querySelector("#selectChannel")
+let hideChannelError = document.querySelector("#selectChannel")
 hideChannelError.addEventListener("onkeydown", function(){
-  documents.querySelector("#channelname-error").innerHTML = ""
+  document.querySelector("#channelname-error").innerHTML = ""
 })
-let hidePlaylistError = documents.querySelector("#selectPlaylist")
+let hidePlaylistError = document.querySelector("#selectPlaylist")
 hidePlaylistError.addEventListener("onchange", function(){
-  documents.querySelector("#playlist-error").innerHTML = ""
+  document.querySelector("#playlist-error").innerHTML = ""
 })
 
 async function validateModal() {
