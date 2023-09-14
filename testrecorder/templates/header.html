@@ -12,11 +12,11 @@
           <i class="fa-solid fa-shield-alt"></i>
         </div>
       </a>
-      <a href="#">
+      <!--<a href="#">
         <div class="upper-nav-icon">
           <i class="fas fa-cog"></i>
         </div>
-      </a>
+      </a>-->
       <a href="{% url 'about' %}">
         <div class="upper-nav-icon dowell-logo">
           <img src="{% static 'images/favicon.jpg' %}" alt="">
@@ -36,6 +36,12 @@
     <div id="menu-icon" class="hide-desktop mobile">
       <i class="fas fa-bars menu-icon"></i>
     </div>
+    {% if user.is_authenticated %}
+    <div class="user-display">
+      <p class="" id="username">{{ user.username }}</p>
+      <a href="{% url 'logout' %}" class="">Logout</a>
+    </div>
+    {% endif %}
   </nav>
 
   <!-- ========================== -->
@@ -52,14 +58,14 @@
     <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:30px; margin-right: 50px;"></i>{{ user.username }}</p>
     {% endif %}
     {% if user.is_authenticated %}
-    <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-in-out" style="font-size:20px;">Logout</a>
+    <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-in-out" style="font-size:20px;"><i class="fas fa-sign-out" style="font-size:30px; margin-right: 50px;"></i>Logout</a>
     {% else %}
     <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Login with Google/Select
       Channel</a>
       <div style="color:red;" id="logout-error"></div>
     {% endif %}
   </div>
-
+  
   
   <!-- lower nav -->
   <div class="lower-nav">

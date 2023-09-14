@@ -229,7 +229,8 @@ img {
   padding: 0.5rem;
 }
 
-.user-display a {
+.user-display a,
+.user-display p {
   color: var(--white-clr);
   padding-left: 0.5rem;
 }
