@@ -38,8 +38,12 @@
     </div>
     {% if user.is_authenticated %}
     <div class="user-display">
-      <p class="" id="username">{{ user.username }}</p>
-      <a href="{% url 'logout' %}" class="">Logout</a>
+      <div class="">
+        <p class="" id="username">{{ user.username }}</p>
+      </div>
+      <div class="">
+        <a href="{% url 'logout' %}" class="">Logout</a>
+      </div>
     </div>
     {% endif %}
   </nav>

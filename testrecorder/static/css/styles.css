@@ -198,9 +198,9 @@ img {
   background: var(--light-primary_clr);
   color: var(--white-clr);
   position: absolute;
-  top: 18%;
-  text-align: left;
-  right: 0;
+  top: 0;
+  text-align: center;
+  right: 10%;
   height: 0;
   transition: var(--transition);
   z-index: 3;
@@ -216,7 +216,7 @@ img {
     background-color: var(--primary_clr);
     position: absolute;
     top: 100px;
-    right: 5%;
+    right: 10%;
     border-radius: 10px;
   }
 
