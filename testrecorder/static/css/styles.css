@@ -150,7 +150,7 @@ img {
   justify-content: space-around;
   align-items: center;
   background: var(--light-primary_clr);
-  padding: 0px 10em;
+  padding: 0 5em;
   margin: 5px;
   text-align: center;
 }
@@ -297,7 +297,6 @@ img {
 
 #test-name {
   outline: 1px solid #fa3d4a;
-  border-radius: 0.5rem;
 }
 
 .login-btn {
