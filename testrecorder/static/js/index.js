@@ -400,9 +400,18 @@ const cancelVideoFrame = function (id) {
   clearTimeout(id);
 };
 
-// Stops webcam and screen recording
+/**
+ * Stop all active streams and recording processes.
+ * Resets the app state to the initial state.
+ * Clears the progress bar.
+ * Clears the recording timer.
+ * Clears the recording timestamp.
+ * Clears the recording data.
+ * Clears the recording chunks.
+*/
 async function stopRecording() {
   recordingStoped = true;
+
   if (window.innerWidth < 768) {
     $(".main-content-check-boxes").fadeIn("slow");
   }
@@ -413,69 +422,74 @@ async function stopRecording() {
   } catch (error) {
     console.error("Error while stopping network timer!");
   }
-  // Close the websocket and stop streaming
-  await stopStreams();
 
-  // Transition the broadcast to complete state
-  await endBroadcast();
-  await clearTimer()
-  // Enable start recording button
-  document.getElementById("start").disabled = false;
-  resetonStartRecording()
-  // Show upload in progress modal
-  let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
-  uploadModal.show();
+  try {
+    // Close the websocket and stop streaming
+    await stopStreams();
 
-  // Clear the progress bar
-  globalProgress = 0;
-  await setProgressBarValue(globalProgress);
+    // Transition the broadcast to complete state
+    await endBroadcast();
+    await clearTimer();
 
-  // Check the settings
-  recordWebcam = cameraCheckbox.checked;
-  ecordScreen = screenCheckbox.checked;
+    // Enable the start recording button
+    document.getElementById("start").disabled = false;
+    resetonStartRecording();
 
-  // Initialize upload data object if null
-  if (testRecordingData == null) {
-    testRecordingData = new FormData();
-  }
+    // Show the upload in progress modal
+    // let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
+    // uploadModal.show();
 
-  // add the selected playlist information as an object
-  if (userPlaylistSelection != null) {
-    try {
-      let Account_info = {
-        'Channeltitle': channelTitle,
-        'Playlist_title': userPlaylistSelection[currentRadioButtonID]
-      }
-      testRecordingData.set('Account_info', JSON.stringify(Account_info));
-    } catch (error) {
-      console.error("Error while adding Account_info to upload data.", error)
+    // Clear the progress bar
+    globalProgress = 0;
+    // await setProgressBarValue(globalProgress);
+
+    // Check the settings
+    const recordWebcam = cameraCheckbox.checked;
+    const recordScreen = screenCheckbox.checked;
+
+    // Initialize upload data object if null
+    if (testRecordingData === null) {
+      testRecordingData = new FormData();
     }
+
+    // Add the selected playlist information as an object
+    if (userPlaylistSelection !== null) {
+      try {
+        const Account_info = {
+          'Channeltitle': channelTitle,
+          'Playlist_title': userPlaylistSelection[currentRadioButtonID]
+        };
+        testRecordingData.set('Account_info', JSON.stringify(Account_info));
+      } catch (error) {
+        console.error("Error while adding Account_info to upload data.", error);
+      }
+    }
+
+    // Set video YouTube links or file names
+    const youtubeLink = "https://youtu.be/" + newBroadcastID;
+
+    if (recordScreen && recordWebcam) {
+      testRecordingData.set('merged_webcam_screen_file', youtubeLink);
+      testRecordingData.set('screen_file', screenFileName);
+      testRecordingData.set('webcam_file', webcamFileName);
+    } else if (recordScreen) {
+      testRecordingData.set('screen_file', youtubeLink);
+    } else if (recordWebcam) {
+      testRecordingData.set('webcam_file', youtubeLink);
+    }
+
+    // Append test details data
+    testRecordingData.set('user_name', usernameValue);
+    testRecordingData.set('test_description', testDescriptionValue);
+    testRecordingData.set('test_name', testNameValue);
+    testRecordingData.set('user_files_timestamp', filesTimestamp);
+
+    // Send data to the server for storage
+    sendAvailableData();
+  } catch (error) {
+    console.error("Error while stopping recording:", error);
   }
-
-  // Set videos youtube links, or file names
-  if ((recordScreen === true) && (recordWebcam === true)) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('merged_webcam_screen_file', youtubeLink);
-    testRecordingData.set('screen_file', screenFileName);
-    testRecordingData.set('webcam_file', webcamFileName);
-  } else if (recordScreen === true) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('screen_file', youtubeLink);
-  } else if (recordWebcam === true) {
-    let youtubeLink = "https://youtu.be/" + newBroadcastID;
-    testRecordingData.set('webcam_file', youtubeLink);
-  }
-
-  // Append test details data
-  testRecordingData.set('user_name', usernameValue);
-  testRecordingData.set('test_description', testDescriptionValue);
-  testRecordingData.set('test_name', testNameValue);
-  testRecordingData.set('user_files_timestamp', filesTimestamp);
-
-  // Send data to server for storage
-  sendAvailableData();
 }
-
 
 
 // ==========================================================================================
@@ -980,105 +994,99 @@ async function validateModal() {
   }
 }
 
-// Sends recorded test data using axios
+/**
+ * Send the available data to the server for storage.
+ * This function sends the available data to the server for storage.
+ * It sends the webcam stream, screen stream, and merged stream (if available).
+ */
 async function sendAvailableData() {
-  document.querySelector('.record-btn').style.display = 'block';
-  document.querySelector('.stop-btn').style.display = 'none';
-  document.querySelector(".video-title").innerHTML = ""
-  let csrftoken = await getCookie('csrftoken');
+  try {
+    let status = document.getElementById("app-status");
+    document.querySelector('.record-btn').style.display = 'block';
+    document.querySelector('.stop-btn').style.display = 'none';
+    document.querySelector(".video-title").innerHTML = "";
 
-  if ((usernameValue != null) && (testRecordingData != null)) {
-    setProgressBarValue(50);
-    let fileUploadUrl = '/file/upload/';
-    let responseStatus = null;
-    await fetch(fileUploadUrl, {
-      method: 'POST',
-      headers: { 'X-CSRFToken': csrftoken },
-      body: testRecordingData
-    })
-      .then(response => {
-        responseStatus = response.status;
-        return response.json();
-      })
-      .then((json) => {
-        if (responseStatus == 201) {
-          msg = "STATUS: Files Uploaded."
-          document.getElementById("app-status").innerHTML = msg;
-          setProgressBarValue(100);
+    const csrftoken = await getCookie('csrftoken');
 
-          testNameValue = null;
-          testRecordingData = null;
+    status.innerText = "STATUS: Uploading files to server...";
+    console.log('Uploading files to server...')
 
-          webcamChunks = [];
-          screenRecorderChunks = [];
-          mergedStreamChunks = [];
-          receivedTaskID = [];
-          taskIDwasRreceived = false;
-          userPlaylistSelection = null;
-          channelTitle = null;
+    if (testRecordingData !== null) {
+      const fileUploadUrl = '/file/upload/';
+      const response = await fetch(fileUploadUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: testRecordingData
+      });
 
-          const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-          btnCloseUploadigModal.click();
+      const responseJson = await response.json();
+      const responseStatus = response.status;
+      if (responseStatus === 201) {
+        status.innerHTML = "STATUS: Record data uploaded succesfully!";
 
-          // Show upload complete modal
-          let uploadCompleteModal = new bootstrap.Modal(document.getElementById('uploadComplete'));
-          uploadCompleteModal.show();
-          try {
-            let newFileLinks = json;
-            set_video_links(newFileLinks)
-          } catch (error) {
-            console.error("Error while setting video links: ", error)
-          }
-        } else {
-          // Server error message
-          // // console.log("Server Error Message: ", json)
-          msg = "STATUS: Files Upload Failed."
-          document.getElementById("app-status").innerHTML = msg;
+        testNameValue = null;
+        testRecordingData = null;
 
-          // Hide upload in progress modal
-          const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-          btnCloseUploadigModal.click();
+        webcamChunks = [];
+        screenRecorderChunks = [];
+        mergedStreamChunks = [];
+        receivedTaskID = [];
+        taskIDwasRreceived = false;
+        userPlaylistSelection = null;
+        channelTitle = null;
 
-          // Check which error modal to show
-          let errorMessage = null;
-          if ("error_msg" in json) {
-            errorMessage = json.error_msg;
-          }
+        // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+        // btnCloseUploadigModal.click();
 
-          //if (errorMessage.includes("Error while handling Clickup Task")) {
-          if (errorMessage.includes("Failed to get")) {
-            // Get task id that has error
-            const faultyTaskIDArray = errorMessage.split(";");
-            faultyTaskID = faultyTaskIDArray[1];
-            faultyTaskID = faultyTaskID.trim();
-            // // console.log("faultyTaskIDArray: ", faultyTaskIDArray)
-            // // console.log("faultyTaskID: ", faultyTaskID)
+        // Show upload complete modal
+        // const uploadCompleteModal = new bootstrap.Modal(document.getElementById('uploadComplete'));
+        // uploadCompleteModal.show();
 
-            // Set the value of the task id input
-            clickupTaskIdRetryInput = document.getElementById('clickup-task-id-retry');
-            clickupTaskIdRetryInput.value = faultyTaskID;
-            // Show clickup task error modal
-            taskErrorModal.show();
-          } else {
-            // Show upload failed modal
-            let uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
-            uploadFailedModal.show();
-          }
+        try {
+          const newFileLinks = responseJson;
+          set_video_links(newFileLinks);
+        } catch (error) {
+          console.error("Error while setting video links: ", error);
         }
-      })
-      .catch(error => {
-        console.error(error);
-        msg = "STATUS: Files Upload Failed."
-        document.getElementById("app-status").innerHTML = msg;
+      } else {
+        status.innerHTML = "STATUS: Files Upload Failed.";
 
         // Hide upload in progress modal
-        const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-        btnCloseUploadigModal.click();
+        // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+        // btnCloseUploadigModal.click();
 
-        // Show upload failed modal
-        let uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
-        uploadFailedModal.show();
-      });
+        // Check which error modal to show
+        let errorMessage = null;
+        if ("error_msg" in responseJson) {
+          errorMessage = responseJson.error_msg;
+        }
+
+        if (errorMessage && errorMessage.includes("Failed to get")) {
+          // Get task id that has error
+          const faultyTaskIDArray = errorMessage.split(";");
+          const faultyTaskID = faultyTaskIDArray[1]?.trim();
+          cosole.log('');
+          // 
+        } else {
+          console.error('Upload failed!!');
+          // Show upload failed modal
+          // const uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
+          // uploadFailedModal.show();
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Error while sending data:", error);
+    msg = "STATUS: Files Upload Failed.";
+    document.getElementById("app-status").innerHTML = msg;
+
+    // Hide upload in progress modal
+    // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
+    // btnCloseUploadigModal.click();
+
+    // Show upload failed modal
+    // const uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
+    // uploadFailedModal.show();
   }
 }
 
@@ -1093,7 +1101,7 @@ async function resetStateOnError() {
   const recordScreen = screenCheckbox.checked;
 
   // Update application status
-  const msg = "STATUS: Recording stopped due to error.";
+  msg = "STATUS: Recording stopped due to error.";
   document.getElementById("app-status").innerHTML = msg;
 
   // Stop video display tracks

@@ -6,16 +6,16 @@
     justify-content: space-evenly;
     width: 100%;
   }
-    /* #test-name { */
-    /* outline: 1px solid #fa3d4a;
+
+  #test-name {
+    outline: 1px solid #fa3d4a;
     width: 99%;
   }
 
   .lower-nav-item {
     margin: 0.5rem 0.5rem;
     width: 95%;
-  } 
- 
+  }
 }
 
 /* Show the menu icon on small screens */
@@ -157,7 +157,7 @@
   } */
 
   /* #test-name { */
-    /* outline: 1px solid #fa3d4a;
+  /* outline: 1px solid #fa3d4a;
     width: 99%;
   }
 

@@ -31,7 +31,6 @@ permanent_files_dir = settings.PERMANENT_FILES_ROOT
 
 class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
-
     def create_recording_folder(self, user_name, user_time_stamp):
         """Creates a folder for storing user files"""
 

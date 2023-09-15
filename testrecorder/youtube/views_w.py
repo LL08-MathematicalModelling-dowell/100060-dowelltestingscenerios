@@ -38,7 +38,7 @@ def create_user_youtube_object(request):
             credentials = Credentials.from_authorized_user_info(info=credentials_data)
             # print('Credentials: xxxxxxxxxxx')
         try:
-            print(f'Checking if access token has expired...{credentials.expired}')
+            # print(f'Checking if access token has expired...{credentials.expired}')
             # Check if the access token has expired
             if credentials.expired:
                 print('Access token has expired!')
