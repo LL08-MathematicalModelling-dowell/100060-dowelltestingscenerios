@@ -194,12 +194,15 @@ img {
   color: var(--white-clr);
   font-size: 1.2rem;
 }
-
+.upper-nav{
+  position: relative;
+}
 .user-display {
-  background: var(--light-primary_clr);
+  /* background: var(--light-primary_clr); */
+  background-color: var(--primary_clr);
   color: var(--white-clr);
   position: absolute;
-  top: 0;
+  top: 100%;
   text-align: center;
   right: 10%;
   height: 0;
@@ -213,13 +216,12 @@ img {
 }
 
 @media screen and (min-width:768px) {
-  .user-display {
-    background-color: var(--primary_clr);
+  /* .user-display {
     position: absolute;
     top: 100px;
     right: 10%;
     border-radius: 10px;
-  }
+  } */
 
   .user-icon i {
     font-size: 1.5rem;
@@ -233,18 +235,14 @@ img {
 .user-display a,
 .user-display p {
   color: var(--white-clr);
-  padding-left: 0.5rem;
+
 }
 
-.user-display input {
-  outline: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-}
+
 
 .lower-nav-label {
   color: var(--dark-clr);
+  padding-top: 5px;
 }
 
 .show-user-bar {
