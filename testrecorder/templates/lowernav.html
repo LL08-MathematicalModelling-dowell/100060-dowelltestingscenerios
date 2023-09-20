@@ -1,0 +1,36 @@
+{% load static %}
+
+<!-- lower nav -->
+  <div class="lower-nav">
+    {% load socialaccount %}
+    {% if user.is_authenticated %}
+    <div class="authenticated-user">
+      <div class="lower-nav-item">
+        <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+        <div class="lower-nav-label">Channel</div>
+        <div style="color:red;" id="channelname-error"></div>
+      </div>
+      <!-- end single select -->
+      <div class="story-name lower-nav-item">
+        <input type="text" name="" id="test-name" placeholder="Title" onkeydown="hideTestNameError()">
+        <div class="lower-nav-label">Enter Video Title</div>
+        <div style="color:red;" id="test-name-error"></div>
+      </div>
+      <div class="lower-nav-item">
+        <!-- single select -->
+        <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist" style="width: 100%" onchange="hidePlaylistError()">
+          <option value=""></option>
+        </select>
+        <div class="lower-nav-label">Select a Playlist</div>
+        <div style="color:red;" id="playlist-error"></div>
+        <!-- end single select -->
+      </div>
+    </div>
+    
+    {% else %}
+    <div class="story-name lower-nav-item">
+      <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with Google/Select
+        Channel</a>
+    </div>
+    {% endif %}
+  </div>
