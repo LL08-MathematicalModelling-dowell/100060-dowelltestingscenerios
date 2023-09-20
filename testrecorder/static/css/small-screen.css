@@ -70,7 +70,7 @@
     width: 100%;
     height: 100%;
     color: #eeebeb;
-    font-size: 1.5em;
+    font-size: 1.2em;
     font-style: normal;
     font-weight: 500;
     font-family: system-ui;
@@ -123,9 +123,10 @@
     justify-content: center;
     margin: 10px 0px 0px 0px;
     height: auto;
+    text-transform: capitalize;
   }
 
-  .miniscreen-log-in-out {
+  .miniscreen-log-in {
     width: 100%;
     align-items: center;
     justify-content: center;
