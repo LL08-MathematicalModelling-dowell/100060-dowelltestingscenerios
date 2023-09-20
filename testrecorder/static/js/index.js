@@ -2015,7 +2015,6 @@ async function showCreatingNewPlaylistModal() {
   // Show modal
   const creatingNewPlaylistModal = new bootstrap.Modal(document.getElementById('new-playlist-details-modal'));
   creatingNewPlaylistModal.show();
-
 }
 
 // On press handler for the create playlist button
@@ -2060,91 +2059,86 @@ async function handleCreatePlaylistRequest() {
 
 }
 
-
-// Makes api request to create playlist
 async function createNewPlaylist() {
-  // async function createNewPlaylist(title, description, privacyStatus) {
-  let createPlaylistURL = '/youtube/createplaylist/api/';
-  let responseStatus = null;
-  // const form = document.getElementById("create-playlist");
-  const form = document.getElementById("create-playlist");
-  const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
-  // const csrf_token = form.querySelector('input[name="csrfmiddlewaretoken"]').value;
-  const channel = document.getElementById("selectChannel_1").value;
-  // const description = document.getElementById("playlist_description_modal").value;
-  const title = document.getElementById("playlist_title_modal").value;
-  let privacy = document.querySelector('input[name="privacy_status"]:checked').value;
-  // const privacy = document.getElementById("playlist_privacy_status_modal").value;
-  // const data = new FormData(form);
-  await fetch(createPlaylistURL, {
-    method: 'POST',
-    body: JSON.stringify({
-      new_playlist_title: title,
-      new_playlist_description: "",
-      new_playlist_privacy: privacy,
-      channel_title: channel
-    }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-      "X-CSRFToken": csrf_token
+  try {
+    const createPlaylistURL = '/youtube/createplaylist/api/';
+    let responseStatus = null;
+    
+    const form = document.getElementById("create-playlist");
+    const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+    const channel = document.getElementById("selectChannel").value;
+    const title = document.getElementById("playlist_title_modal").value;
+    const privacy = document.querySelector('input[name="privacy_status"]:checked').value;
+    
+    if (channel === 'Channel Loading...') {
+      const msg = "STATUS: Failed to create playlist because channel is not loaded yet.";
+      document.getElementById("app-status").innerHTML = msg;
+      return;
     }
-  })
-    .then(response => {
-      // console.log(response)
-      responseStatus = response.status;
-      // console.log("Create playlist Response Status", responseStatus);
-      // Return json data
-      return response.json();
-    })
-    .then((json) => {
-      if (responseStatus == 200) {
-        msg = "STATUS: Playlist Created"
-        document.getElementById("app-status").innerHTML = msg;
 
-        // Hide creating playlist spinner
-        showCreatingPlaylistModal(false);
-
-        // Show playlist created modal
-        showPlaylistCreatedModal();
-
-        // clear modal input fields
-        document.getElementById("selectChannel_1").value = "";
-        document.getElementById("playlist_title_modal").value = "";
-        document.querySelector('input[name="privacy_status"]:checked').value = "";
-        // document.getElementById("playlist_description_modal").value = "";
-      } else if (responseStatus == 409) {
-        // Server error message
-        // console.log("Server Error Message: ", json)
-        msg = "STATUS: Playlist Already Exists."
-        document.getElementById("app-status").innerHTML = msg;
-
-        // Hide creating playlist spinner
-        showCreatingPlaylistModal(false);
-
-        // Show error modal
-        showPlaylistAlreadyExistsModal();
-      } else {
-        // Server error message
-        // console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to create playlist."
-        document.getElementById("app-status").innerHTML = msg;
-
-        // Hide creating playlist spinner
-        showCreatingPlaylistModal(false);
-        // Show error modal
-        showPlaylistCreationErrorModal();
+    const response = await fetch(createPlaylistURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        new_playlist_title: title,
+        new_playlist_description: "",
+        new_playlist_privacy: privacy,
+        channel_title: channel
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        "X-CSRFToken": csrf_token
       }
-    })
-    .catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to create playlist."
+    });
+
+    responseStatus = response.status;
+    const json = await response.json();
+
+    if (responseStatus === 200) {
+      const msg = "STATUS: Playlist Created";
       document.getElementById("app-status").innerHTML = msg;
 
       // Hide creating playlist spinner
       showCreatingPlaylistModal(false);
+
+      // Show playlist created modal
+      showPlaylistCreatedModal();
+
+      // Clear modal input fields
+      document.getElementById("selectChannel_1").value = "";
+      document.getElementById("playlist_title_modal").value = "";
+      document.querySelector('input[name="privacy_status"]:checked').value = "";
+    } else if (responseStatus === 409) {
+      // Server error message
+      const msg = "STATUS: Playlist Already Exists.";
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Hide creating playlist spinner
+      showCreatingPlaylistModal(false);
+
+      // Show error modal
+      showPlaylistAlreadyExistsModal();
+    } else {
+      // Server error message
+      const msg = "STATUS: Failed to create playlist.";
+      document.getElementById("app-status").innerHTML = msg;
+
+      // Hide creating playlist spinner
+      showCreatingPlaylistModal(false);
+
       // Show error modal
       showPlaylistCreationErrorModal();
-    });
+    }
+  } catch (error) {
+    console.error(error);
+    const msg = "STATUS: Failed to create playlist.";
+    document.getElementById("app-status").innerHTML = msg;
+
+    // Hide creating playlist spinner
+    showCreatingPlaylistModal(false);
+
+    // Show error modal
+    showPlaylistCreationErrorModal();
+  }
 }
 
 // Shows Playlist was created modal
