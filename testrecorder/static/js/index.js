@@ -893,25 +893,15 @@ async function validateAll() {
  * Validates the modal inputs for test details.
 * If all inputs are valid, it disables the start recording button, sets the video privacy status, and starts the recording.
 */
-let timeout;
-function validateTextDisappear(){
-  timeout = setTimeout(validateModal, 2000)
-}
 
 // hide errors on typing
-let hideTestNameError = document.querySelector("#test-name")
-hideTestNameError.addEventListener("onkeydown", function(){
+function hideTestNameError(){
   document.querySelector("#test-name-error").innerHTML = ""
-})
-
-let hideChannelError = document.querySelector("#selectChannel")
-hideChannelError.addEventListener("onkeydown", function(){
-  document.querySelector("#channelname-error").innerHTML = ""
-})
-let hidePlaylistError = document.querySelector("#selectPlaylist")
-hidePlaylistError.addEventListener("onchange", function(){
+}
+function hidePlaylistError(){
   document.querySelector("#playlist-error").innerHTML = ""
-})
+}
+
 
 async function validateModal() {
   // Get permission to show notifications in system tray
@@ -2331,6 +2321,9 @@ function displayUtilities() {
   document.querySelector('#public-videos').disabled = true;
   document.querySelector('#private-videos').disabled = true;
   document.querySelector('#unlisted-videos').disabled = true;
+  document.querySelector('#audio-settings').disabled = true;
+  document.querySelector('#screen-recording').disabled = true;
+  document.querySelector('#webcam-recording').disabled = true;
 
   // clear navbar forms
   // Enable share records button
