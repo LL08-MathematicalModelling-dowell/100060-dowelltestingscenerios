@@ -1337,8 +1337,8 @@ async function createWebsocket(recordWebcam, recordScreen) {
     const socketMsg = "FILENAME," + mediaFileName;
     socket.send(socketMsg);
     // console.log('socket Message sent to server');
-    document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
-    websocketReconnect = false;
+    // document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
+    // websocketReconnect = false;
   };
 
   socket.onmessage = function (event) {
@@ -1577,7 +1577,6 @@ async function showErrorModal(liveStreamError = null, message = null) {
   let messageDisplay = document.getElementById('errorMessage');
   if (liveStreamError != null) {
     let errorModal = new bootstrap.Modal(document.getElementById('livestreamErrorModal'));
-    // let msg_p = errorModal.querySelector('#livestreamErrorOccurred');
     document.querySelector('#livestreamErrorOccurred').innerHTML = liveStreamError;
     errorModal.show();
   } else {
@@ -1605,19 +1604,6 @@ async function checkNetworkStatus() {
   } else {
     if (recordinginProgress === false) {
       lastMsgRcvTime = timeNow;
-    } else if ((timeNow - lastMsgRcvTime) > 25) { // More than 25 secs
-      msgRcvdFlag = false;
-      lastMsgRcvTime = timeNow;
-      // Stop recording due to network problem
-      //clearInterval(networkTimer);
-      // stopStreams();
-      // resetStateOnError();
-      //alert("Recording stopped due to network problem");
-      //let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-      //errorModal.show();
-
-      // Show system tray notification and alert
-      // showNetworkErrorOccurredModal();
     }
   }
 }
