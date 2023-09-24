@@ -20,7 +20,7 @@ def get_user(sender, **kwargs):
     user = kwargs['user']
 
     user_email = user.email
-    print('==== user Email =====> ', user.email)
+    # print('==== user Email =====> ', user.email)
     # retrieve the 'oauth_data' token from the cache
     token = cache.get('oauth_data')
 
@@ -63,7 +63,7 @@ def get_user(sender, **kwargs):
         youtube_user.save()
 
     db_status = is_available_in_db(user_email)
-    print('Check response ==> ', db_status)
+    # print('Check response ==> ', db_status)
 
     if db_status is False:
         print('inserting user credential into dowell database...')
