@@ -101,6 +101,13 @@ let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
+// navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+//   .then(function (stream) {
+//     console.log('Got stream, time diff :', Date.now() - now);
+//   })
+//   .catch(function (err) {
+//     console.log('GUM failed with error, time diff: ', Date.now() - now);
+//   });
 
 $(document).ready(() => {
   if ((window.location.pathname === '/') && isAuthenticated) {
@@ -119,7 +126,6 @@ $(document).ready(() => {
       }
     });
   }
-
   if ((window.location.pathname === '/library/') && isAuthenticated) {
     let selected_Video_Id = null; // DONT DELETE!!!, this variable is used to declare selected_Video -id
     load_gallery();
@@ -272,25 +278,24 @@ async function showAudioModal() {
   }
   await microphoneStatus()
 }
-document.getElementById('closeAudioModal').addEventListener('click', () => audioCheckbox.checked = false);
-document.getElementById('choose-audio').addEventListener('click', () => {
-  const audioSourceSelect = document.getElementById('audio-source');
-  const selectedValue = audioSourceSelect.value;
+// document.getElementById('closeAudioModal').addEventListener('click', () => audioCheckbox.checked = false);
+// document.getElementById('choose-audio').addEventListener('click', () => {
+//   const audioSourceSelect = document.getElementById('audio-source');
+//   const selectedValue = audioSourceSelect.value;
 
-  if (selectedValue !== '') {
-    audioCheckbox.checked = true;
-  }
-});
+//   if (selectedValue) {
+//     audioCheckbox.checked = true;
+//   }
+// });
 
-document.getElementById('closecameraModal').addEventListener('click', () => cameraCheckbox.checked = false);
-document.getElementById('choose-camera').addEventListener('click', () => {
-  const videoSourceSelect = document.getElementById('video-source');
-  const selectedValue = videoSourceSelect.value;
-
-  if (selectedValue !== '') {
-    cameraCheckbox.checked = true;
-  }
-});
+// document.getElementById('closecameraModal').addEventListener('click', () => cameraCheckbox.checked = false);
+// document.getElementById('choose-camera').addEventListener('click', () => {
+//   const videoSourceSelect = document.getElementById('video-source');
+//   const selectedValue = videoSourceSelect.value;
+//   if (selectedValue) {
+//     cameraCheckbox.checked = true;
+//   }
+// });
 /**
  * Gets the webcam stream based on the provided media constraints.
  * Sets the stream as the source for the HTML video element.
@@ -2302,7 +2307,7 @@ function displayUtilities() {
   document.querySelector('#private-videos').disabled = true;
   document.querySelector('#unlisted-videos').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
-  document.querySelector('#screen-recording').disabled = true;
+  // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#webcam-recording').disabled = true;
 
   // clear navbar forms
