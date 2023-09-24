@@ -17,7 +17,7 @@ from rest_framework import status
 
 from youtube.forms import AddChannelRecord, CreatePlaylist
 
-load_dotenv()
+# load_dotenv()
 
 
 def validate_youtube_channel(channel_credentials, channel_id):

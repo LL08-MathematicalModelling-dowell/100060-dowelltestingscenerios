@@ -1,6 +1,6 @@
+from django.contrib import admin
 from django.db import models
 from django.contrib.auth.models import User
-from allauth.socialaccount.models import SocialAccount
 
 
 class UserYoutubePlaylists(models.Model):
@@ -25,7 +25,6 @@ class ChannelsRecord(models.Model):
     channel_title = models.CharField(max_length=50, blank=False, unique=True)
     channel_credentials = models.TextField(default="")
     timestamp = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         db_table = 'channels_records'
 
@@ -48,6 +47,10 @@ class PlaylistsRecord(models.Model):
 class YoutubeUserCredential(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     credential = models.JSONField()
+
+    @admin.display(description='User')
+    def user__username(self):
+        return self.user.username
 
     def __str__(self):
         return f'{self.user.username} {self.user.first_name}'

@@ -1,19 +1,20 @@
-from django.http import HttpResponse
 import os
 import json
-import pymongo
-from googleapiclient.errors import HttpError
-from datetime import datetime
-from datetime import timedelta
+import logging
+from datetime import datetime, timedelta
+from django.core.cache import cache
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
+from googleapiclient.errors import HttpError
 from django.contrib.auth import logout
-import logging
+import pymongo
 
-from .views_w import create_user_youtube_object
+from .utils import create_user_youtube_object, get_user_cache_key
+
 
 logger = logging.getLogger(__name__)
 
@@ -554,6 +555,16 @@ class FetchPlaylistsView(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
+            user = request.user
+            # Generate a user-specific cache key
+            cache_key = get_user_cache_key(user.id, '/fetchplaylists/api/')
+
+            # Attempt to retrieve the response from the cache
+            cached_response = cache.get(cache_key, None)
+
+            if cached_response is not None:
+                return Response(cached_response, status=status.HTTP_200_OK)
+
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
                 print('youtube object creation failed!!')
@@ -595,7 +606,10 @@ class FetchPlaylistsView(APIView):
                 # Dictionary with all necessary data
                 youtube_details = {'channel_title': channel_title,
                                    'user_playlists': user_playlists,
-                                   'todays_playlist_dict': todays_playlist_dict}
+                                   'todays_playlist_dict': todays_playlist_dict
+                                   }
+
+                cache.set(cache_key, youtube_details, 12 * 60 * 60)
 
                 return Response(youtube_details, status=status.HTTP_200_OK)
 

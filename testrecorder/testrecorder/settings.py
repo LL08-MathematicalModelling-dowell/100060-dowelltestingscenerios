@@ -36,7 +36,8 @@ CSRF_COOKIE_SECURE = True
 
 SESSION_COOKIE_SECURE = True
 
-CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.liveuxstoryboard.com', 'https://*.127.0.0.1']
 
 # # Allow cors
 CORS_ALLOWED_ORIGIN = [
@@ -162,6 +163,7 @@ DATABASES = {
         }
     }
 }
+
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
 This resulted in errors during google login through allauth
@@ -257,3 +259,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
