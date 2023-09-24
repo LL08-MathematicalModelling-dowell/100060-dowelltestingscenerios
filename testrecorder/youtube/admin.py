@@ -4,8 +4,11 @@ from youtube.models import (
 )
 
 
-admin.site.register(YoutubeUserCredential)
-
+#admin.site.register(YoutubeUserCredential)
+@admin.register(YoutubeUserCredential)
+class YoutubeUserCredentialAdmin(admin.ModelAdmin):
+    list_display = ['user__username', 'credential']
+    search_fields = ['user__username']
 
 # @admin.register(UserYoutubePlaylists)
 # class UserYoutubePlaylistsAdmin(admin.ModelAdmin):
