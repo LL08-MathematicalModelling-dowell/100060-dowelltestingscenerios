@@ -2357,7 +2357,7 @@ async function fetchUserChannel() {
       channelSelect.append(opt);
     });
 
-    // Set the initial value for channelSelect
+    // Set the initial value for channelSelect.
     if (userChannels.length > 0) {
       channelSelect.value = userChannels[0].channel_title;
       channelSelect.name = userChannels[0].channel_title;
