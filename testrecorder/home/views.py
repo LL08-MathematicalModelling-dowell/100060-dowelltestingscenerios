@@ -58,7 +58,6 @@ class HomePageView(TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Handles get requests to '/'"""
-        print('client_id ======== ', os.environ.get('CLIENT_ID'))
         # create he form object to render
         form = AddChannelRecord()
         add_playlist = CreatePlaylist()

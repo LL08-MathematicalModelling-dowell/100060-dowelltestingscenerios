@@ -28,21 +28,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-# CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-# SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
-# CSRF_TRUSTED_ORIGINS = ['https://*.liveuxstoryboard.com','https://*.127.0.0.1']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.liveuxstoryboard.com', 'https://*.127.0.0.1']
 
 # # Allow cors
-# CORS_ALLOWED_ORIGIN = [
-#     'http://localhost:8080',
-#     'https://liveuxstoryboard.com',
-# ]
+CORS_ALLOWED_ORIGIN = [
+    'http://localhost:8080',
+    'https://liveuxstoryboard.com',
+]
 
 # Application definition
 
@@ -122,7 +123,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 SOCIALACCOUNT_STORE_TOKENS = True
-# ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
@@ -145,23 +146,23 @@ CHANNEL_LAYERS = {
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'djongo',
-#         'NAME': os.getenv("DATABASE_NAME"),
-#         'ENFORCE_SCHEMA': False,
-#         'CLIENT': {
-#             'host': os.getenv("DATABASE_HOST")
-#         }
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'djongo',
+        'NAME': os.getenv("DATABASE_NAME"),
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': os.getenv("DATABASE_HOST")
+        }
+    }
+}
 
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
@@ -220,10 +221,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # STATIC_ROOT = ''
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 
 
 # Temporary files directory
