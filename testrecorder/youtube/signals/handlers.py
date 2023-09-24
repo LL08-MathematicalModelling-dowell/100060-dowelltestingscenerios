@@ -1,5 +1,6 @@
 # import os
 import json
+import os
 from django.dispatch import receiver
 import requests
 from ..models import YoutubeUserCredential
@@ -19,7 +20,7 @@ def get_user(sender, **kwargs):
     user = kwargs['user']
 
     user_email = user.email
-    print('== user Email ==========> ', user.email)
+    print('==== user Email =====> ', user.email)
     # retrieve the 'oauth_data' token from the cache
     token = cache.get('oauth_data')
 
@@ -37,8 +38,8 @@ def get_user(sender, **kwargs):
         "token": token.token,
         "refresh_token": token.token_secret,
         "token_uri": "https://oauth2.googleapis.com/token",
-        "client_id": "******************************************************",
-        "client_secret": "*************************************************",
+        "client_id": os.environ.get('CLIENT_ID'),
+        "client_secret": os.environ.get('CLIENT_SECRET'),
         "scopes": [
             "https://www.googleapis.com/auth/youtube.force-ssl",
             "openid",
