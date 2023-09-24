@@ -23,5 +23,5 @@ class YoutubeUserCredentialAdmin(admin.ModelAdmin):
 
 @admin.register(ChannelsRecord)
 class ChannelsRecordAdmin(admin.ModelAdmin):
-    list_display = ('channel_id', 'channel_title',
+    list_display = ('channel_id', 'channel_title'
                     'channel_credentials', 'timestamp')

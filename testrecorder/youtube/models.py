@@ -25,7 +25,6 @@ class ChannelsRecord(models.Model):
     channel_title = models.CharField(max_length=50, blank=False, unique=True)
     channel_credentials = models.TextField(default="")
     timestamp = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         db_table = 'channels_records'
 
