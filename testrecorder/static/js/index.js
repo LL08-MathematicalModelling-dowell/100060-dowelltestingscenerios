@@ -2367,7 +2367,6 @@ async function fetchUserChannel() {
   } catch (error) {
     console.error(error);
     const statusBar = document.getElementById("app-status");
-    const channelSelect = document.getElementById("your-channel-select");
 
     if (error.message === 'Unauthorized') {
       statusBar.innerHTML = 'ERROR: Account is not a Google account';

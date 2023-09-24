@@ -5,3 +5,4 @@ db.sqlite3
 testrecorder/staticfiles
 test.js
 utils.js
+set_env.sh
