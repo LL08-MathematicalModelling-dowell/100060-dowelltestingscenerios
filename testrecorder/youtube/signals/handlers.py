@@ -7,7 +7,10 @@ from ..models import YoutubeUserCredential
 from allauth.account.signals import user_logged_in
 from django.core.cache import cache
 import datetime
+from dotenv import load_dotenv
 
+
+load_dotenv()
 
 @receiver(user_logged_in)
 def get_user(sender, **kwargs):
