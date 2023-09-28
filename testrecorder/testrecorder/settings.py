@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
-from djongo.operations import DatabaseOperations
 import os
+from djongo.operations import DatabaseOperations
 from dotenv import load_dotenv
 
 
