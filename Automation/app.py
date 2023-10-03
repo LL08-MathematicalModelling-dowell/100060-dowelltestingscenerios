@@ -121,8 +121,10 @@ def authorize():
 @app.route('/callback')
 def callback():
     # state = flask.session['state']
+    # flow = Flow.from_client_secrets_file(
+    #   CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
     flow = Flow.from_client_secrets_file(
-      CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
+      CLIENT_SECRETS_FILE, scopes=SCOPES)
     
     flow.redirect_uri = flask.url_for('callback', _external=True)
     # authorization_response = flask.request.url
