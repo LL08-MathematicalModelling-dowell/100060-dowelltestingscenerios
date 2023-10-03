@@ -120,7 +120,7 @@ def authorize():
 
 @app.route('/callback')
 def callback():
-    state = flask.session['state']
+    # state = flask.session['state']
     flow = Flow.from_client_secrets_file(
       CLIENT_SECRETS_FILE, scopes=SCOPES, state=state)
     
