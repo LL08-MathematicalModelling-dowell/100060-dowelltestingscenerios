@@ -99,7 +99,7 @@ img {
 
 .upper-nav-icon {
   color: var(--dark-white-clr);
-  font-size: 1.3rem;
+  font-size: 1.6rem;
 }
 
 .six-icon-flex {
@@ -300,6 +300,7 @@ img {
 .login-btn {
   background: var(--white-clr);
   border-radius: 0;
+  width: 100%;
 }
 
 /* .switch-btn {
@@ -372,6 +373,7 @@ img {
 
 .setting-icon label p {
   font-size: 0.8rem;
+  color: var(--white-clr);
 }
 
 #webcam-recording:checked~label,
@@ -380,6 +382,14 @@ img {
 #private-videos:checked~label,
 #unlisted-videos:checked~label,
 #public-videos:checked~label {
+  color: var(--light-primary_clr);
+}
+#webcam-recording:checked~label p,
+#screen-recording:checked~label p,
+#audio-settings:checked~label p,
+#private-videos:checked~label p,
+#unlisted-videos:checked~label p,
+#public-videos:checked~label p {
   color: var(--light-primary_clr);
 }
 
@@ -405,6 +415,7 @@ img {
 .tooltip-text {
   position: absolute;
   background: var(--dark-clr);
+  color: var(--white-clr);
   bottom: 150%;
   left: 30%;
   text-align: center;
@@ -436,6 +447,7 @@ img {
   border-radius: 0.5rem;
   cursor: pointer;
   color: var(--white-clr);
+  text-align: center;
   outline: none;
   border: none;
 }
@@ -504,7 +516,9 @@ img {
   outline: none;
   border: none;
 }
-
+.library-btn a{
+  margin: 0;
+}
 .library-btn button {
   background: #a8a837;
   padding: 0.3rem 0.6rem;
@@ -743,13 +757,13 @@ img {
 
 .form-container {
   position: relative;
-  display: grid;
-  margin: 0 auto;
+  /* display: grid; */
   background: var(--white-clr);
   padding: 2rem;
   border-radius: 0.5rem;
   box-shadow: var(--light-shadow);
   width: 70%;
+  margin: 0 auto;
 }
 
 .form-container label {
@@ -766,7 +780,9 @@ img {
   border: 1px solid var(--dark-clr);
   border-radius: 0.5rem;
 }
-
+.form-container form{
+  width: 100%;
+}
 .signup-url {
   color: var(--light-primary_clr);
 }

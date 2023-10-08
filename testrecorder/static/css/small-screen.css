@@ -45,13 +45,13 @@
     display: block;
     cursor: pointer;
     text-align: center;
-    padding: 10px;
-    font-size: 24px;
-    color: #333;
-    background-color: #ecb5b5;
-    border: 1px solid #333;
-    border-radius: 15px;
-    border-style: none;
+    /* padding: 10px; */
+    font-size: 1.6rem;
+    color: #ffffff;
+    /* background-color: #ecb5b5; */
+    /* border: 1px solid #333; */
+    /* border-radius: 15px;
+    border-style: none; */
   }
 
   .mobile-menu {

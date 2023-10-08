@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<!-- library_base.html -->
+<head>
+    {% block title %}
+    {% endblock title %}
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="{%  static 'images/favicon.webp' %}">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS New --includes datatables -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+        integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- for library page -->
+    <link rel="stylesheet" href="{% static 'css/library_style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- Custom css -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/small-screen.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome-free-6.2.0-web/css/all.css' %}">
+
+    {% block css %}
+    {% endblock css %}
+    {% if user.is_authenticated %}
+    <script>
+        var isAuthenticated = true;
+    </script>
+    {% else %}
+    <script>
+        var isAuthenticated = false;
+    </script>
+    {% endif %}
+
+</head>
+
+<body>
+    <header>
+      <nav id="navigation-bar" class="upper-nav">
+        <div class="upper-nav">
+          <a href="https://uxlive.org">
+            <div class="upper-nav-icon active">
+              <i class="fas fa-home"></i>
+            </div>
+          </a>
+          <a href="https://uxlive.org/privacy-policy">
+            <div class="upper-nav-icon active">
+              <i class="fa-solid fa-shield-alt"></i>
+            </div>
+          </a>
+          <!--<a href="#">
+            <div class="upper-nav-icon">
+              <i class="fas fa-cog"></i>
+            </div>
+          </a>-->
+          <a href="{% url 'about' %}">
+            <div class="upper-nav-icon dowell-logo">
+              <img src="{% static 'images/favicon.jpg' %}" alt="">
+            </div>
+          </a>
+          {% if user.is_authenticated %}
+          <div class="user-icon">
+            <i class="fas fa-user-circle" style="font-size: 40px;"></i>
+          </div>
+          {% endif %}
+        </div>
+        <a href="https://uxlive.org" class="mobile">
+          <div class="upper-nav-icon active">
+            <i class="fas fa-home" style="font-size:35px; color: #ecb5b5;"></i>
+          </div>
+        </a>
+        <div id="menu-icon" class="hide-desktop mobile">
+          <i class="fas fa-bars menu-icon"></i>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="user-display">
+          <div class="">
+            <p class="" id="username">{{ user.username }}</p>
+          </div>
+          <div class="">
+            <a href="{% url 'logout' %}" class="">Logout</a>
+          </div>
+        </div>
+        {% endif %}
+      </nav>
+      <!-- ========================== -->
+      <div class="mobile-menu">
+        <a href="https://uxlive.org/privacy-policy" class="mobile-menu-item"><i style="font-size:25px; margin-right: 50px;"
+            class='fas'>&#xf3ed;</i> Privacy Policy</a>
+        <a href="{% url 'about' %}" class="mobile-menu-item"><i style="font-size:25px; margin-right: 50px;"
+            class="fa">&#xf05a;</i>About</a>
+        <hr>
+        {% load socialaccount %}
+        {% if user.is_authenticated %}
+        <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:25px; margin-right: 50px;"></i>{{ user.username }}</p>
+        {% endif %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-in-out" style="font-size:20px;"><i class="fas fa-sign-out" style="font-size:25px; margin-right: 50px;"></i>Logout</a>
+        {% else %}
+        <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Login with Google/Select
+          Channel</a>
+          <div style="color:red;" id="logout-error"></div>
+        {% endif %}
+      </div>
+    
+    </header>
+    {% block body %}
+    {% endblock body %}
+    {% comment %} {% include "footer.html" %} {% endcomment %}
+    <script>
+        $(document).ready(function () {
+            $('#selectPlaylist').select2({
+                placeholder: "Playlist",
+                allowClear: true
+            });
+        });
+    </script>
+    {% block index_js %}
+    {% endblock %}
+</body>
+</html>
