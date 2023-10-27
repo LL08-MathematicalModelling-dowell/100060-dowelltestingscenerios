@@ -1,6 +1,3 @@
-const controller = new AbortController();
-const signal = controller.signal;
-
 // Some app controls
 let video = document.getElementById('video')
 let cameraCheckbox = document.getElementById('webcam-recording')
@@ -20,11 +17,10 @@ let channelSelect = document.getElementById("selectChannel");
 let channelSelect_1 = document.getElementById("selectChannel_1");
 
 // App global variables
+let pingInterval;
 let usernameValue = null;
 let testNameValue = null;
 let testDescriptionValue = null;
-
-let recordingStoped = false;
 
 let screenRecorderChunks = [];
 let webcamChunks = [];
@@ -91,23 +87,13 @@ let tableChannels = [];
 let currentChannelTitle = null;
 let showNotificationPermission = 'default';
 
-// let player = null;
-
-// video timer
 let videoTimer = document.querySelector(".video-timer")
-// let switchCamBtn = document.querySelector(".switch-btn")
 let hourTime = document.querySelector(".hour-time")
 let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
-// navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-//   .then(function (stream) {
-//     console.log('Got stream, time diff :', Date.now() - now);
-//   })
-//   .catch(function (err) {
-//     console.log('GUM failed with error, time diff: ', Date.now() - now);
-//   });
+
 
 $(document).ready(() => {
   if ((window.location.pathname === '/') && isAuthenticated) {
@@ -218,7 +204,7 @@ function disablePrivandUnlist() {
     unlistedChecked == true
     unlistedVideosCheckbox.click()
   }
-  
+
 }
 // diasble public if unlist is checked
 function disablePublicandUnlist() {
@@ -234,7 +220,7 @@ function disablePublicandUnlist() {
     if (unlistedChecked == true) {
       unlistedVideosCheckbox.click()
     }
-  } 
+  }
   if (privateChecked == false && unlistedChecked == false) {
     publicChecked == true
     publicVideosCheckbox.click()
@@ -255,7 +241,7 @@ function disablePubandPriv() {
     if (privateChecked == true) {
       privateVideosCheckbox.click()
     }
-  } 
+  }
   if (unlistedChecked == false && publicChecked == false) {
     privateChecked == true
     privateVideosCheckbox.click()
@@ -303,24 +289,7 @@ async function showAudioModal() {
   }
   await microphoneStatus()
 }
-// document.getElementById('closeAudioModal').addEventListener('click', () => audioCheckbox.checked = false);
-// document.getElementById('choose-audio').addEventListener('click', () => {
-//   const audioSourceSelect = document.getElementById('audio-source');
-//   const selectedValue = audioSourceSelect.value;
 
-//   if (selectedValue) {
-//     audioCheckbox.checked = true;
-//   }
-// });
-
-// document.getElementById('closecameraModal').addEventListener('click', () => cameraCheckbox.checked = false);
-// document.getElementById('choose-camera').addEventListener('click', () => {
-//   const videoSourceSelect = document.getElementById('video-source');
-//   const selectedValue = videoSourceSelect.value;
-//   if (selectedValue) {
-//     cameraCheckbox.checked = true;
-//   }
-// });
 /**
  * Gets the webcam stream based on the provided media constraints.
  * Sets the stream as the source for the HTML video element.
@@ -439,9 +408,7 @@ const cancelVideoFrame = function (id) {
  * Clears the recording data.
  * Clears the recording chunks.
 */
-async function stopRecording() {
-  recordingStoped = true;
-
+async function stopRecording(errorOccured = false) {
   if (window.innerWidth < 768) {
     $(".main-content-check-boxes").fadeIn("slow");
   }
@@ -457,70 +424,69 @@ async function stopRecording() {
     // Close the websocket and stop streaming
     await stopStreams();
 
-    // Transition the broadcast to complete state
-    await endBroadcast();
+    if (!errorOccured) {
+      // Transition the broadcast to complete state
+      await endBroadcast();
+    }
     await clearTimer();
 
+    recordinginProgress = false;
+  
     // Enable the start recording button
     document.getElementById("start").disabled = false;
     resetonStartRecording();
 
-    // Show the upload in progress modal
-    // let uploadModal = new bootstrap.Modal(document.getElementById('uploadInProgress'));
-    // uploadModal.show();
-
     // Clear the progress bar
     globalProgress = 0;
-    // await setProgressBarValue(globalProgress);
 
-    // Check the settings
-    const recordWebcam = cameraCheckbox.checked;
-    const recordScreen = screenCheckbox.checked;
-
-    // Initialize upload data object if null
-    if (testRecordingData === null) {
-      testRecordingData = new FormData();
-    }
-
-    // Add the selected playlist information as an object
-    if (userPlaylistSelection !== null) {
-      try {
-        const Account_info = {
-          'Channeltitle': channelTitle,
-          'Playlist_title': userPlaylistSelection[currentRadioButtonID]
-        };
-        testRecordingData.set('Account_info', JSON.stringify(Account_info));
-      } catch (error) {
-        console.error("Error while adding Account_info to upload data.", error);
+    if (!errorOccured) {
+      // Check the settings
+      const recordWebcam = cameraCheckbox.checked;
+      const recordScreen = screenCheckbox.checked;
+      // Initialize upload data object if null
+      if (testRecordingData === null) {
+        testRecordingData = new FormData();
       }
+
+      // Add the selected playlist information as an object
+      if (userPlaylistSelection !== null) {
+        try {
+          const Account_info = {
+            'Channeltitle': channelTitle,
+            'Playlist_title': userPlaylistSelection[currentRadioButtonID]
+          };
+          testRecordingData.set('Account_info', JSON.stringify(Account_info));
+        } catch (error) {
+          console.error("Error while adding Account_info to upload data.", error);
+        }
+      }
+
+      // Set video YouTube links or file names
+      const youtubeLink = "https://youtu.be/" + newBroadcastID;
+
+      if (recordScreen && recordWebcam) {
+        testRecordingData.set('merged_webcam_screen_file', youtubeLink);
+        testRecordingData.set('screen_file', screenFileName);
+        testRecordingData.set('webcam_file', webcamFileName);
+      } else if (recordScreen) {
+        testRecordingData.set('screen_file', youtubeLink);
+      } else if (recordWebcam) {
+        testRecordingData.set('webcam_file', youtubeLink);
+      }
+
+      // Append test details data
+      testRecordingData.set('user_name', usernameValue);
+      testRecordingData.set('test_description', testDescriptionValue);
+      testRecordingData.set('test_name', testNameValue);
+      testRecordingData.set('user_files_timestamp', filesTimestamp);
+
+      // Send data to the server for storage
+      sendAvailableData();
     }
-
-    // Set video YouTube links or file names
-    const youtubeLink = "https://youtu.be/" + newBroadcastID;
-
-    if (recordScreen && recordWebcam) {
-      testRecordingData.set('merged_webcam_screen_file', youtubeLink);
-      testRecordingData.set('screen_file', screenFileName);
-      testRecordingData.set('webcam_file', webcamFileName);
-    } else if (recordScreen) {
-      testRecordingData.set('screen_file', youtubeLink);
-    } else if (recordWebcam) {
-      testRecordingData.set('webcam_file', youtubeLink);
-    }
-
-    // Append test details data
-    testRecordingData.set('user_name', usernameValue);
-    testRecordingData.set('test_description', testDescriptionValue);
-    testRecordingData.set('test_name', testNameValue);
-    testRecordingData.set('user_files_timestamp', filesTimestamp);
-
-    // Send data to the server for storage
-    sendAvailableData();
   } catch (error) {
     console.error("Error while stopping recording:", error);
   }
 }
-
 
 // ==========================================================================================
 // ==========================================================================================
@@ -796,49 +762,46 @@ async function startRecording() {
     [socket, socketType] = await createAllsockets();
     if (!socket) {
       throw new Error('No socket connection!');
-    }
+    } else {
+      showCreatingBroadcastModal(true);
+      await createBroadcast(socket);
+      showCreatingBroadcastModal(false);
 
-    showCreatingBroadcastModal(true);
-    await createBroadcast(socket);
-    showCreatingBroadcastModal(false);
+      recordWebcam = cameraCheckbox.checked;
+      recordScreen = screenCheckbox.checked;
+      let streamRecorder = null;
 
-    ecordWebcam = cameraCheckbox.checked;
-    recordScreen = screenCheckbox.checked;
-    let streamRecorder = null;
-
-    if (recordScreen && recordWebcam) {
-      streamRecorder = await newRecordWebcamAndScreen();
-    } else if (!recordScreen && recordWebcam) {
-      streamRecorder = await recordWebcamStream();
-    } else if (recordScreen && !recordWebcam) {
-      streamRecorder = await recordScreenAndAudio();
-    }
-
-    if (streamRecorder != null) {
-      displayTimer();
-      streamRecorder.start(200);
-      await createRecordingTimestamp();
-      recordinginProgress = true;
-
-      if (window.innerWidth < 768) {
-        $(".main-content-check-boxes").fadeOut("slow");
+      if (recordScreen && recordWebcam) {
+        streamRecorder = await newRecordWebcamAndScreen();
+      } else if (!recordScreen && recordWebcam) {
+        streamRecorder = await recordWebcamStream();
+      } else if (recordScreen && !recordWebcam) {
+        streamRecorder = await recordScreenAndAudio();
       }
 
-      $('.lower-nav').fadeOut('slow');
+      if (streamRecorder != null) {
+        displayTimer();
+        streamRecorder.start(200);
+        await createRecordingTimestamp();
+        recordinginProgress = true;
 
-      console.log('Streaming has started');
-
-      streamRecorder.ondataavailable = (event) => {
-        if ((recordinginProgress && event.data.size > 0) && (socket.readyState === WebSocket.OPEN)) {
-          // console.log('================= message sent to server ===============')
-          socket.send(event.data);
+        if (window.innerWidth < 768) {
+          $(".main-content-check-boxes").fadeOut("slow");
         }
-      };
 
-      streamRecorder.onstop = () => {
-        recordinginProgress = false;
-        document.getElementById("app-status").innerHTML = "STATUS: Recording stopped.";
-      };
+        $('.lower-nav').fadeOut('slow');
+
+        streamRecorder.ondataavailable = (event) => {
+          if ((recordinginProgress && event.data.size > 0) && (socket.readyState === WebSocket.OPEN)) {
+            socket.send(event.data);
+          }
+        };
+
+        streamRecorder.onstop = () => {
+          recordinginProgress = false;
+          document.getElementById("app-status").innerHTML = "STATUS: Recording stopped.";
+        };
+      }
     }
   } catch (err) {
     handleRecordingError("Recording Error: " + err.message);
@@ -925,18 +888,16 @@ async function validateAll() {
 */
 
 // hide errors on typing
-function hideTestNameError(){
+function hideTestNameError() {
   document.querySelector("#test-name-error").innerHTML = ""
 }
-function hidePlaylistError(){
+function hidePlaylistError() {
   document.querySelector("#playlist-error").innerHTML = ""
 }
-
 
 async function validateModal() {
   // Get permission to show notifications in system tray
   const showNotificationPermission = await Notification.requestPermission();
-  // console.log("showNotificationPermission: ", showNotificationPermission);
 
   // Clear previous test data
   userPlaylistSelection = null;
@@ -970,16 +931,6 @@ async function validateModal() {
 
   // Validate username
   let docIsValid = true;
-  // usernameValue = document.getElementById("username").name.trim();
-  // let usernameErrorMsg = "";
-
-  // if (usernameValue === "") {
-  //   usernameErrorMsg = "Please fill in the username";
-  //   docIsValid = false;
-  // }
-
-  // document.getElementById("username-error").innerHTML = usernameErrorMsg;
-
   // Validate test name
   let testNameIsValid = true;
   testNameValue = document.getElementById("test-name").value.trim().replace(/\s/g, "_");
@@ -1032,7 +983,7 @@ async function sendAvailableData() {
     const csrftoken = await getCookie('csrftoken');
 
     status.innerText = "STATUS: Uploading files to server...";
-    console.log('Uploading files to server...')
+    // console.log('Uploading files to server...')
 
     if (testRecordingData !== null) {
       const fileUploadUrl = '/file/upload/';
@@ -1057,14 +1008,6 @@ async function sendAvailableData() {
         taskIDwasRreceived = false;
         userPlaylistSelection = null;
         channelTitle = null;
-
-        // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-        // btnCloseUploadigModal.click();
-
-        // Show upload complete modal
-        // const uploadCompleteModal = new bootstrap.Modal(document.getElementById('uploadComplete'));
-        // uploadCompleteModal.show();
-
         try {
           const newFileLinks = responseJson;
           set_video_links(newFileLinks);
@@ -1073,11 +1016,6 @@ async function sendAvailableData() {
         }
       } else {
         status.innerHTML = "STATUS: Files Upload Failed.";
-
-        // Hide upload in progress modal
-        // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-        // btnCloseUploadigModal.click();
-
         // Check which error modal to show
         let errorMessage = null;
         if ("error_msg" in responseJson) {
@@ -1092,9 +1030,6 @@ async function sendAvailableData() {
           // 
         } else {
           console.error('Upload failed!!');
-          // Show upload failed modal
-          // const uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
-          // uploadFailedModal.show();
         }
       }
     }
@@ -1102,14 +1037,6 @@ async function sendAvailableData() {
     console.error("Error while sending data:", error);
     msg = "STATUS: Files Upload Failed.";
     document.getElementById("app-status").innerHTML = msg;
-
-    // Hide upload in progress modal
-    // const btnCloseUploadigModal = document.getElementById('btnCloseUploadigModal');
-    // btnCloseUploadigModal.click();
-
-    // Show upload failed modal
-    // const uploadFailedModal = new bootstrap.Modal(document.getElementById('uploadFailed'));
-    // uploadFailedModal.show();
   }
 }
 
@@ -1340,89 +1267,144 @@ async function set_video_links(linksData) {
  * Handles the WebSocket events such as open, close, error, and message.
  */
 async function createWebsocket(recordWebcam, recordScreen) {
-  // Determine the WebSocket protocol based on the current page protocol
-  const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-  let socketType = '';
-  let socket = null;
-  const endpoint = wsStart + window.location.host + "/ws/app/";
-  socket = new WebSocket(endpoint);
+  const socketType = determineSocketType(recordWebcam, recordScreen);
+  const endpoint = getWebsocketEndpoint();
 
-  if ((recordScreen && !recordWebcam) || (!recordScreen && recordWebcam)) {
-    appWebsocket = socket;
-    socketType = recordScreen ? 'screen' : 'webcam';
-  } else if (recordScreen && recordWebcam) {
-    webcamScreenWebSocket = socket;
-    socketType = 'webcamScreen';
-  }
+  let socket = new WebSocket(endpoint);
+  let pingInterval;
+  let pongTimeout;
+
   socket.onopen = (event) => {
-    // console.log('Socket is open');
-    const mediaFileName = testNameValue + "_" + filesTimestamp + "_" + socketType + ".webm";
-    const socketMsg = "FILENAME," + mediaFileName;
-    socket.send(socketMsg);
-    // console.log('socket Message sent to server');
-    document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
-    websocketReconnect = false;
+    handleSocketOpen(socket, socketType);
+    pingInterval = setupPingInterval(socket);
+    pongTimeout = setupPongTimeout();
   };
 
-  socket.onmessage = function (event) {
+  socket.onmessage = (event) => {
+    handleSocketMessage(event, pongTimeout);
+  };
+
+  socket.onerror = async (event) => {
+    await handleSocketError(socket, recordWebcam, recordScreen);
+  };
+
+  socket.onclose = (evt) => {
+    handleSocketClose(pingInterval, pongTimeout);
+  };
+
+  return [socket, socketType];
+
+  function determineSocketType(recordWebcam, recordScreen) {
+    if (recordScreen && recordWebcam) {
+      return 'webcamScreen';
+    } else if (recordScreen || recordWebcam) {
+      return recordScreen ? 'screen' : 'webcam';
+    }
+  }
+
+  function getWebsocketEndpoint() {
+    const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+    return wsStart + window.location.host + "/ws/app/";
+  }
+
+  function setupPingInterval(socket) {
+    return setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send('ping');
+      }
+    }, 5000);
+  }
+
+  function setupPongTimeout() {
+    return setTimeout(async () => {
+      if (recordinginProgress) {
+        // Only stop recording if it's in progress
+        await stopRecording(errorOccured = true);
+        handLeNotification();
+        // console.log('WebSocket reconnection failed after multiple attempts');
+      }
+    }, 30000);
+  }
+
+  // Clearing the pongTimeout
+  function clearPongTimeout() {
+    clearTimeout(pongTimeout);
+  }
+  
+  function handleSocketOpen(socket, socketType) {
+    const mediaFileName = `${testNameValue}_${filesTimestamp}_${socketType}.webm`;
+    const socketMsg = `FILENAME,${mediaFileName}`;
+    socket.send(socketMsg);
+    document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
+  }
+
+  function handleSocketMessage(event, pongTimeout) {
     const receivedMsg = event.data;
     msgRcvdFlag = true;
-    // console.log('socket on message >>>   ', receivedMsg);
-
     if (receivedMsg.includes("RTMP url received: rtmp://")) {
       recordinginProgress = true;
-      // console.log('RTMLP received');
       document.getElementById("app-status").innerHTML = "STATUS: Recording in Progress.";
     }
-  };
+    if (receivedMsg.includes('pong')) {
+      clearPongTimeout(pongTimeout);
+      pongTimeout = setupPongTimeout();
+    }
+  }
 
-  socket.onerror = async function (event) {
-    if (recordinginProgress && !recordingStoped) {
-      try {
-        console.log('WebSocket disconnected unexpectedly');
-        console.log('Reconnecting websocket...');
-        let reconnectionAttempts = 0;
-        const maxReconnectionAttempts = 3;
+  async function handleSocketError(event, recordWebcam, recordScreen) {
+    if (recordinginProgress) {
+      console.log('WebSocket disconnected unexpectedly');
+      console.log('Reconnecting websocket...');
+      const maxReconnectionAttempts = 3;
+      let reconnectionAttempts = 0
 
-        while (reconnectionAttempts < maxReconnectionAttempts) {
-          try {
-            [socket, socketType] = await createWebsocket(recordWebcam, recordScreen);
-            recordinginProgress = true;
-            console.log('WebSocket reconnected successfully');
-            break;
-          } catch (error) {
-            console.error('WebSocket reconnection attempt failed:', error);
-          }
-
-          reconnectionAttempts++;
-          await new Promise(resolve => setTimeout(resolve, 1000));
+      for (;reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
+        try {
+          [socket, socketType] = await createWebsocket(recordWebcam, recordScreen);
+          recordinginProgress = true;
+          console.log('WebSocket reconnected successfully');
+          break;
+        } catch (error) {
+          console.error('WebSocket reconnection attempt failed:', error);
         }
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
-        if (reconnectionAttempts === maxReconnectionAttempts) {
-          stopRecording();
-          throw new Error('WebSocket reconnection failed after multiple attempts');
-        }
-      } catch (error) {
-        stopRecording();
-        throw new Error('WebSocket reconnection process failed');
+      if (reconnectionAttempts === maxReconnectionAttempts) {
+        // Only stop recording if it's in progress
+        await stopRecording();
+        handLeNotification();
+        // console.log('WebSocket reconnection failed after multiple attempts');
       }
     } else {
-      stopRecording();
+      await stopRecording(errorOccured=true);
+      recordinginProgress = false;
       document.getElementById("app-status").innerHTML = "STATUS: WebSocket creation error.";
       console.error("WebSocket creation error: ", event.message);
       resetStateOnError();
-      showErrorModal();
+      // showErrorModal();
     }
-  };
+  }
 
-  socket.onclose = function (evt) {
+  async function handleSocketClose(pingInterval, pongTimeout) {
     recordinginProgress = false;
-    stopRecording();
-  };
-
-  return [socket, socketType]
+    if (recordinginProgress) {
+      await stopRecording(errorOccured=true);
+      clearInterval(pingInterval);
+      clearPongTimeout(pongTimeout);
+      handLeNotification();
+    }
+  }
 }
 
+function handLeNotification(
+  title="Recording Stopped",
+  body="WebSocket Connection Lost\nDon't worry, your recording is safe and uploaded succesfully"
+  ) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, { body: body});
+  }
+}
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
@@ -1669,8 +1651,7 @@ async function setVideoPrivacyStatus() {
  * Stops the recording streams.
  */
 async function stopStreams() {
-
-  let video = document.getElementById('video')
+  let video = document.getElementById('video');
   // Stop video display tracks
   await stopVideoElemTracks(video);
   // recording timer
@@ -1713,7 +1694,7 @@ async function stopStreams() {
       if (mergedStreamRecorder && mergedStreamRecorder.stream) {
         mergedStreamRecorder.stream.getTracks().forEach(track => track.stop());
         screenStream.getTracks().forEach((track) => track.stop());
-        webcamStream.getTracks().forEach((track) => track.stop())
+        webcamStream.getTracks().forEach((track) => track.stop());
       }
     } catch (err) {
       console.error("Error while stopping merged stream recorder: " + err.message);
@@ -1738,7 +1719,6 @@ async function createAllsockets() {
     showErrorModal();
   }
 }
-
 
 // Creates a timestamp for the files
 async function createRecordingTimestamp() {
@@ -1890,9 +1870,6 @@ async function sendRTMPURL(socket) {
     }
     displayUtilities();
   }
-  // else {
-  //   console.log('Error: Unable. sent RTMP URL, websocket not connected');
-  // }
 }
 
 // Shows youtube playlist insert video error modal
@@ -1912,14 +1889,12 @@ async function showCreatingBroadcastModal(showModal) {
   if (showModal) {
     // close modal if open
     btnCloseCreatingBroadcastModal.click();
-    controller.abort();
 
     // Show modal
     creatingBroadcastModal.show();
   } else {
     // close modal
     btnCloseCreatingBroadcastModal.click();
-    controller.abort()
   }
 }
 
@@ -2063,7 +2038,6 @@ async function handleCreatePlaylistRequest() {
     docIsValid = false;
   }
 
-
   document.getElementById("p_title-error").innerHTML = msg;
   let newPlaylistPrivacyStatus = document.querySelector('input[name="privacy_status"]:checked').value;
 
@@ -2075,8 +2049,6 @@ async function handleCreatePlaylistRequest() {
     // Show creating playlist spinner
     showCreatingPlaylistModal(true);
 
-    // Make request to create playlist
-    // await createNewPlaylist(newPlaylistTitle, newPlaylistDescription, newPlaylistPrivacyStatus);
     await createNewPlaylist();
   }
 
@@ -2089,13 +2061,13 @@ async function createNewPlaylist() {
   try {
     const createPlaylistURL = '/youtube/createplaylist/api/';
     let responseStatus = null;
-    
+
     const form = document.getElementById("create-playlist");
     const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     const channel = document.getElementById("selectChannel").value;
     const title = document.getElementById("playlist_title_modal").value;
     const privacy = document.querySelector('input[name="privacy_status"]:checked').value;
-    
+
     if (channel === 'Channel Loading...') {
       const msg = "STATUS: Failed to create playlist because channel is not loaded yet.";
       document.getElementById("app-status").innerHTML = msg;
@@ -2245,7 +2217,6 @@ async function showCreatingPlaylistModal(status) {
   }
 }
 
-
 // ====================================== CHANNEL CODE SECTION ============================================
 
 // =====================================  Adding A Channel ================================================
@@ -2324,8 +2295,6 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
   }
 })
 
-
-
 document.getElementById("create-playlist-btn").addEventListener("click", async function (event) {
   event.preventDefault();
   handleCreatePlaylistRequest();
@@ -2343,10 +2312,6 @@ function displayUtilities() {
   document.querySelector('.library-btn').style.display = 'none';
   // hide create playlist btn
   document.querySelector('.create-playlist-btn').style.display = 'none';
-  // disable playlist button /********* create playlist btn already hidden ********/
-  // document.querySelector('#create-playlist').disabled = true;
-  // disable channel button
-  // document.querySelector('#view_records').disabled = true;
   document.querySelector('#selectChannel').disabled = true;
   document.querySelector('.selectPlaylist').disabled = true;
   document.querySelector('#test-name').disabled = true;
@@ -2356,7 +2321,6 @@ function displayUtilities() {
   document.querySelector('#private-videos').disabled = true;
   document.querySelector('#unlisted-videos').disabled = true;
   document.querySelector('#audio-settings').disabled = true;
-  // document.querySelector('#screen-recording').disabled = true;
   document.querySelector('#webcam-recording').disabled = true;
 
   // clear navbar forms

@@ -37,7 +37,7 @@ def insert_broadcast(youtube):
     videoPrivacyStatus = "private"  # ToDo get this from request
     testNameValue = "Python tests"  # ToDo get this from request
     videoTitle = "Test Record Broadcast " + testNameValue + " " + future_date_iso
-    print(future_date_iso)
+   # print(future_date_iso)
 
     request = youtube.liveBroadcasts().insert(
         part="snippet,contentDetails,statistics,status",
@@ -59,12 +59,12 @@ def insert_broadcast(youtube):
     )
 
     insert_broadcast_response = request.execute()
-    print(insert_broadcast_response)
+   # print(insert_broadcast_response)
 
     snippet = insert_broadcast_response["snippet"]
 
-    print(
-        f'Broadcast ID {insert_broadcast_response["id"]} with title { snippet["title"]} was published at {snippet["publishedAt"]}.')
+   # print(
+        # f'Broadcast ID {insert_broadcast_response["id"]} with title { snippet["title"]} was published at {snippet["publishedAt"]}.')
 
     return insert_broadcast_response["id"]
 
@@ -93,23 +93,23 @@ def insert_stream(youtube):
     )
 
     insert_stream_response = request.execute()
-    print('Stream Response ===> ', insert_stream_response)
+   # print('Stream Response ===> ', insert_stream_response)
 
     snippet = insert_stream_response["snippet"]
     cdn = insert_stream_response["cdn"]
     ingestionInfo = cdn["ingestionInfo"]
 
-    print("Stream '%s' with title '%s' was inserted." % (
-        insert_stream_response["id"], snippet["title"]))
+   # print("Stream '%s' with title '%s' was inserted." % (
+        # insert_stream_response["id"], snippet["title"]))
 
     newStreamId = insert_stream_response["id"]
     newStreamName = ingestionInfo["streamName"]
     newStreamIngestionAddress = ingestionInfo["rtmpsIngestionAddress"]
-    print("New stream id: ", newStreamId)
-    print("New stream name: ", newStreamName)
-    print("New stream ingestion address: ", newStreamIngestionAddress)
+   # print("New stream id: ", newStreamId)
+   # print("New stream name: ", newStreamName)
+   # print("New stream ingestion address: ", newStreamIngestionAddress)
     newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName
-    print("New stream RTMP url: ", newRtmpUrl)
+   # print("New stream RTMP url: ", newRtmpUrl)
 
     stream_dict = {"newStreamId": newStreamId,
                    "newStreamName": newStreamName,
@@ -132,9 +132,9 @@ def bind_broadcast(youtube, broadcast_id, stream_id):
 
     bind_broadcast_response = request.execute()
 
-    print("Broadcast '%s' was bound to stream '%s'." % (
-        bind_broadcast_response["id"],
-        bind_broadcast_response["contentDetails"]["boundStreamId"]))
+   # print("Broadcast '%s' was bound to stream '%s'." % (
+        # bind_broadcast_response["id"],
+        # bind_broadcast_response["contentDetails"]["boundStreamId"]))
 
 
 def create_broadcast(request):
@@ -143,7 +143,7 @@ def create_broadcast(request):
     """
     youtube, credential = create_user_youtube_object(request)
     if youtube is None:
-        print('youtube object creation failed!!')
+       # print('youtube object creation failed!!')
         return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
     # create broadcast time
@@ -153,7 +153,7 @@ def create_broadcast(request):
     future_date1 = time_now + time_delt1
     future_date_iso = future_date1.isoformat()
 
-    print(f" <=== Brodcast time {future_date_iso} ====> ")
+   # print(f" <=== Brodcast time {future_date_iso} ====> ")
 
     # Create broadcast
     new_broadcast_id = insert_broadcast(youtube)
@@ -168,7 +168,7 @@ def create_broadcast(request):
 
     # Serializing json
     json_stream_dict = json.dumps(stream_dict)
-    print(json_stream_dict)
+   # print(json_stream_dict)
 
     # return json_stream_dict
     return HttpResponse(json_stream_dict)
@@ -221,7 +221,7 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
     videoPrivacyStatus = videoPrivacyStatus
     testNameValue = testNameValue
     videoTitle = testNameValue + " " + future_date_iso
-    print(future_date_iso)
+   # print(future_date_iso)
 
     request = youtube.liveBroadcasts().insert(
         part="snippet,contentDetails,statistics,status",
@@ -243,12 +243,12 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
     )
 
     insert_broadcast_response = request.execute()
-    # print(insert_broadcast_response)
+    ## print(insert_broadcast_response)
 
     snippet = insert_broadcast_response["snippet"]
 
-    print("Broadcast '%s' with title '%s' was published at '%s'." % (
-        insert_broadcast_response["id"], snippet["title"], snippet["publishedAt"]))
+   # print("Broadcast '%s' with title '%s' was published at '%s'." % (
+        # insert_broadcast_response["id"], snippet["title"], snippet["publishedAt"]))
 
     return insert_broadcast_response["id"]
 
@@ -278,23 +278,23 @@ def insert_stream(youtube):
     )
 
     insert_stream_response = request.execute()
-    # print(insert_stream_response)
+    ## print(insert_stream_response)
 
     snippet = insert_stream_response["snippet"]
     cdn = insert_stream_response["cdn"]
     ingestionInfo = cdn["ingestionInfo"]
 
-    print("Stream '%s' with title '%s' was inserted." % (
-        insert_stream_response["id"], snippet["title"]))
+   # print("Stream '%s' with title '%s' was inserted." % (
+        # insert_stream_response["id"], snippet["title"]))
 
     newStreamId = insert_stream_response["id"]
     newStreamName = ingestionInfo["streamName"]
     newStreamIngestionAddress = ingestionInfo["rtmpsIngestionAddress"]
-    print("New stream id: ", newStreamId)
-    print("New stream name: ", newStreamName)
-    print("New stream ingestion address: ", newStreamIngestionAddress)
+   # print("New stream id: ", newStreamId)
+   # print("New stream name: ", newStreamName)
+   # print("New stream ingestion address: ", newStreamIngestionAddress)
     newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName
-    print("New stream RTMP url: ", newRtmpUrl)
+   # print("New stream RTMP url: ", newRtmpUrl)
 
     stream_dict = {"newStreamId": newStreamId,
                    "newStreamName": newStreamName,
@@ -312,27 +312,27 @@ class CreateBroadcastView(APIView):
             Creates broadcast using API
         """
 
-        print("Request: ", request)
-        print("Request Data: ", request.data)
-        print("Request Data Type: ", type(request.data))
+        ## print("Request: ", request)
+        ## print("Request Data: ", request.data)
+        ## print("Request Data Type: ", type(request.data))
         # videoPrivacyStatus = "private"
         # testNameValue = "Test1"
         videoPrivacyStatus = request.data.get("videoPrivacyStatus")
         testNameValue = request.data.get("testNameValue")
-        print("videoPrivacyStatus: ", videoPrivacyStatus)
-        print("testNameValue: ", testNameValue)
+       # print("videoPrivacyStatus: ", videoPrivacyStatus)
+       # print("testNameValue: ", testNameValue)
 
         try:
             stream_dict = self.create_broadcast(
                 videoPrivacyStatus, testNameValue, request)
             # stream_dict = {"Hello":"Testing for now!"}
-            print("stream_dict: ", stream_dict)
+           # print("stream_dict: ", stream_dict)
         except HttpError as e:  # Exception as e:
             # HttpError as e:
             error_data = {
                 'message': e.reason,
             }
-            print(f'Broadcast Error: {error_data}')
+           # print(f'Broadcast Error: {error_data}')
             return Response(error_data, status=status.HTTP_403_FORBIDDEN)
 
         return Response(stream_dict, status=status.HTTP_201_CREATED)
@@ -341,11 +341,11 @@ class CreateBroadcastView(APIView):
         """
         Creates a broadcast with a live stream bound
         """
-        print('Creating broadcast... ')
+       # print('Creating broadcast... ')
 
         youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            print('youtube object creation failed!!')
+           # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if the user's account has live streaming enabled
@@ -357,7 +357,7 @@ class CreateBroadcastView(APIView):
             channel_id = list_response['items'][0]['snippet']['channelId']
         except:
             logger.critical('User does not have a YouTube channel!!!')
-            print('User does not have a YouTube channel!!!')
+           # print('User does not have a YouTube channel!!!')
             raise Exception("User does not have a YouTube channel")
 
         # Create a new broadcast
@@ -374,7 +374,7 @@ class CreateBroadcastView(APIView):
 
         # Serialize the stream dictionary to JSON
         json_stream_dict = json.dumps(stream_dict)
-        print(json_stream_dict)
+       # print(json_stream_dict)
 
         return stream_dict
 
@@ -388,19 +388,19 @@ class TransitionBroadcastView(APIView):
         """
 
         try:
-            print('Transitionig Broadcast...')
-            print("Request: ", request)
-            print("Request Data: ", request.data)
-            print("Request Data Type: ", type(request.data))
+           # print('Transitionig Broadcast...')
+           # print("Request: ", request)
+           # print("Request Data: ", request.data)
+           # print("Request Data Type: ", type(request.data))
             # videoPrivacyStatus = "private"
             # testNameValue = "Test1"
             the_broadcast_id = request.data.get("the_broadcast_id")
-            print("the_broadcast_id: ", the_broadcast_id)
+           # print("the_broadcast_id: ", the_broadcast_id)
 
             transition_response = transition_broadcast(
                 the_broadcast_id, request)
             # transition_response = {"Hello":"Testing for now!"}
-            # print("transition_response: ", transition_response)
+            ## print("transition_response: ", transition_response)
 
             return Response(transition_response, status=status.HTTP_200_OK)
         except Exception as e:
@@ -412,7 +412,7 @@ def transition_broadcast(the_broadcast_id, request):
 
     youtube, credential = create_user_youtube_object(request)
     if youtube is None:
-        print('youtube object creation failed!!')
+       # print('youtube object creation failed!!')
         return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
     request = youtube.liveBroadcasts().transition(
@@ -422,9 +422,9 @@ def transition_broadcast(the_broadcast_id, request):
     )
 
     broadcast_transition_response = request.execute()
-    # print("broadcast_transition_response: ", broadcast_transition_response)
+    ## print("broadcast_transition_response: ", broadcast_transition_response)
     video_id = broadcast_transition_response['id']
-    # print('====== video ID => ', video_id)
+    ## print('====== video ID => ', video_id)
 
     return broadcast_transition_response
 
@@ -438,18 +438,18 @@ class PlaylistItemsInsertView(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            # print("Request: ", request)
-            print("Request Data: ", request.data)
+            ## print("Request: ", request)
+           # print("Request Data: ", request.data)
 
             # Get the video and playlist data
             the_video_id = request.data.get("videoId")
             the_playlist_id = request.data.get("playlistId")
-            print("the_video_id: ", the_video_id)
-            print("the_playlist_id: ", the_playlist_id)
+           # print("the_video_id: ", the_video_id)
+           # print("the_playlist_id: ", the_playlist_id)
 
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                print('youtube object creation failed!!')
+               # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Make the insert request
@@ -471,7 +471,7 @@ class PlaylistItemsInsertView(APIView):
             return Response(response, status=status.HTTP_200_OK)
 
         except Exception as err:
-            print("Error while inserting video into playlist: " + str(err))
+           # print("Error while inserting video into playlist: " + str(err))
             return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -505,10 +505,10 @@ def get_todays_playlist_title():
     current_date_and_time = datetime.now()
 
     date_string = current_date_and_time.strftime('%d %B %Y')
-    # print("date_string: ",date_string)
+    ## print("date_string: ",date_string)
 
     playlist_title = date_string + " Daily Playlist"
-    # print("playlist_title: ",playlist_title)
+    ## print("playlist_title: ",playlist_title)
 
     return playlist_title
 
@@ -567,16 +567,16 @@ class FetchPlaylistsView(APIView):
 
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                print('youtube object creation failed!!')
+               # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-            print('fetching playlist with pagination...')
+           # print('fetching playlist with pagination...')
             # Fetch all playlists with pagination
             playlists = fetch_playlists_with_pagination(youtube)
 
             # Check if the playlist is empty
             if len(playlists) == 0:
-                print("The playlist is empty.")
+               # print("The playlist is empty.")
                 return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
             else:
                 # playlist id and title dictionary
@@ -591,7 +591,7 @@ class FetchPlaylistsView(APIView):
                 # Iterating through the json list
                 for playlist in playlists:
                     id = playlist["id"]
-                    # print("Playlist ID = ", id)
+                    ## print("Playlist ID = ", id)
                     title = playlist["snippet"]["title"]
                     # Filter out daily playlists
                     if "Daily Playlist" not in title:
@@ -615,7 +615,7 @@ class FetchPlaylistsView(APIView):
 
                 # return Response(user_playlists, status=status.HTTP_200_OK)
         except Exception as err:
-            print("Error while fetching playlists: " + str(err))
+           # print("Error while fetching playlists: " + str(err))
             return Response({'Error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -625,12 +625,12 @@ def insert_video_into_playlist(request, the_video_id, the_playlist_id):
         playlist
     """
     try:
-        print("the_video_id: ", the_video_id)
-        print("the_playlist_id: ", the_playlist_id)
+       # print("the_video_id: ", the_video_id)
+       # print("the_playlist_id: ", the_playlist_id)
 
         youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            print('youtube object creation failed!!')
+           # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Make the insert request
@@ -653,7 +653,7 @@ def insert_video_into_playlist(request, the_video_id, the_playlist_id):
 
     except Exception as err:
         error_msg = "Error while inserting video into playlist: " + str(err)
-        print(error_msg)
+       # print(error_msg)
         raise Exception(error_msg)
 
 
@@ -664,7 +664,7 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
     try:
         youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            print('youtube object creation failed!!')
+           # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if a playlist with provided title exists
@@ -693,12 +693,12 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
 
     except HttpError as err:
         error_msg = f"HTTP error occurred while creating playlist: {err}"
-        print(error_msg)
+       # print(error_msg)
         raise Exception(error_msg)
 
     except Exception as err:
         error_msg = f"Error occurred while creating playlist: {err}"
-        print(error_msg)
+       # print(error_msg)
         raise Exception(error_msg)
 
 
@@ -720,7 +720,7 @@ class CreatePlaylistView(APIView):
 
             # create playlist
             response = create_playlist(title, description, privacy, request)
-            # print("Playlist creation response: ",response)
+            ## print("Playlist creation response: ",response)
 
             if response:
                 msg = {'CreatePlaylistResponse': "Playlist created"}
@@ -731,7 +731,7 @@ class CreatePlaylistView(APIView):
 
         except Exception as err:
             error_msg = "Error while creating playlist: " + str(err)
-            print(error_msg)
+           # print(error_msg)
 
             if "already exists!" in error_msg:
                 return Response(error_msg, status=status.HTTP_409_CONFLICT)

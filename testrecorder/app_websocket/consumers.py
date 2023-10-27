@@ -1,10 +1,11 @@
 import json
+import os
+import subprocess
+
+import django
 from channels.consumer import AsyncConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
-import subprocess
 from django.conf import settings
-import django
-import os
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
@@ -14,8 +15,6 @@ django.setup()
 from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
 from file_app.views import save_recording_metadata
 
-
-import subprocess
 
 class VideoConsumer(AsyncConsumer):
     """
@@ -28,11 +27,19 @@ class VideoConsumer(AsyncConsumer):
         self.audio_enabled = False
 
     async def websocket_connect(self, event):
-        print("WebSocket connected:", event)
+        """
+        Handle when websocket is connected
+            :param event: websocket connection event
+            :return: None
+        """
+        # print("WebSocket connected:", event)
         await self.send({"type": "websocket.accept"})
 
     async def websocket_receive(self, event):
-        # print('=============================== sockect message recieve ===============================')
+        """
+        Receive message from WebSocket.
+        Get the event and send the appropriate event
+        """
         if 'text' in event.keys():
             data = event['text']
             if 'browser_sound' in data:
@@ -44,21 +51,21 @@ class VideoConsumer(AsyncConsumer):
             elif 'rtmp://a.rtmp.youtube.com' in data or 'rtmps://a.rtmps.youtube.com' in data:
                 self.audio_enabled = False
                 self.rtmpUrl = data
-                print("Received RTMP url:", self.rtmpUrl)
+                # print("Received RTMP url:", self.rtmpUrl)
                 self.start_ffmpeg_process()
                 await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
-            # print('=============================== sockect message sent  ===============================')
-
+            elif 'ping' in data:
+                # print('================ pong response recieved ================')
+                await self.send_ack_message('pong')
 
         if 'bytes' in event.keys() and self.process:
             byte_data = event['bytes']
             self.process.stdin.write(byte_data)
-            # print(f'Byte sent')
-            await self.send_ack_message("Bytes received")
             
     async def websocket_disconnect(self, event):
         """when websocket disconnects"""
-        print("disconnected", event)
+        self.connection_lost = True
+
         if self.process:
             try:
                 # Close the stdin of the subprocess to prevent BrokenPipeError
@@ -114,6 +121,7 @@ class VideoConsumer(AsyncConsumer):
         return command
 
     async def send_ack_message(self, message):
+        """Send acknowledgement message to frontend"""
         await self.send({"type": "websocket.send", "text": message})
 
 

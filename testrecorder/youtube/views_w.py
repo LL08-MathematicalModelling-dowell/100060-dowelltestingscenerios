@@ -75,10 +75,10 @@ class UserChannelsView(APIView):
                 
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                print('youtube object creation failed!!')
+                # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            print('Getting user youtube channel...')
+            # print('Getting user youtube channel...')
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
             if 'items' not in channels_response:
@@ -110,7 +110,7 @@ class UserChannelsView(APIView):
                 # If the channel already exists, update the credential
                 if not created and channel_record.channel_credentials != credential:
                     channel_record.channel_credentials = credential
-                    print("Channel credential updated!!!")
+                    # print("Channel credential updated!!!")
                     channel_record.save()
 
             except Exception as e:
@@ -162,7 +162,6 @@ class UserChannelsView(APIView):
         if response.get('data') is None:
             return False
 
-        print("xxx DB Response xx=> ", response)
         return True
 
     def fetch_user_credential_from_dowell_connection_db(self, email):
@@ -243,7 +242,7 @@ class DeleteVideoView(APIView):
         try:
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                print('youtube object creation failed!!')
+                # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
             
 
@@ -288,7 +287,7 @@ class LoadVideoView(APIView):
         try:
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                print('youtube object creation failed!!')
+                # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
         
             # Perform the YouTube Channels API call
@@ -364,7 +363,7 @@ class YouTubeVideoAPIView(APIView):
         # Set up the YouTube API client
         youtube, credential = create_user_youtube_object(request)
         if youtube is None:
-            print('youtube object creation failed!!')
+            # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
