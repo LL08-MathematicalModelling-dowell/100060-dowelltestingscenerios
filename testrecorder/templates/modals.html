@@ -1,4 +1,26 @@
 <!-- Share youtube link Modal -->
+<div class="modal" id="share-library-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Video on</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-share-library-link-modal"></button>
+            </div>
+            <div class="modal-body modal-link">
+                <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
+                        onClick="shareVideoToFacebook()"></i></a>
+                <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareVideoToTwitter()"></i></a>
+                <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
+                        onClick="shareVideoToLinkedin()"></i></a>
+                <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareVideoToEmail()"></i></a>
+                <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
+                        onClick="shareVideoToWhatsapp()"></i></a> 
+                <button class="copylink" onClick="copySelectedLink()"><i class="fas fa-link"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Share youtube link Modal -->
 <div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog">
         <div class="modal-content">

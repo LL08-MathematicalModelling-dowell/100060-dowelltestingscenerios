@@ -31,12 +31,12 @@ button {
 
 body {
   line-height: 1.05 !important;
-  height: 100vh;
+  /* height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: var(--dark-clr);
   margin-bottom: 0;
-  justify-content: space-between;
+  justify-content: space-between; */
 }
 
 a {
@@ -83,8 +83,10 @@ img {
 }
 
 .about-content {
-  margin: 1rem 0;
+  width: 80%;
+  margin: 1rem auto;
   font-size: 1.2rem;
+  font-family: sans-serif;
 }
 
 /* upper nav */
@@ -93,7 +95,7 @@ img {
   display: flex;
   justify-content: space-around;
   align-items: center !important;
-  padding: .2rem .5rem;
+  padding: .5rem .5rem;
   width: 100%;
 }
 
@@ -151,7 +153,7 @@ img {
   align-items: center;
   background: var(--light-primary_clr);
   padding: .5em;
-  margin: 5px;
+  /* margin: 5px; */
   text-align: center;
 }
 
@@ -211,9 +213,9 @@ img {
   overflow: hidden;
 }
 
-#body {
+/* #body {
   min-height: 800px;
-}
+} */
 
 @media screen and (min-width:768px) {
   /* .user-display {
@@ -274,11 +276,11 @@ img {
 }
 
 /* main contents */
-.input-start-record-btn {
+/* .input-start-record-btn {
   background: var(--white-clr);
   padding: 0.5rem 2rem;
   border-radius: 0.5rem;
-}
+} */
 
 .main-content-btns {
   display: flex;
@@ -287,12 +289,18 @@ img {
 }
 
 .main-contents {
-  height: 74vh;
+  height: 55.7vh;
   background: var(--dark-clr);
   color: var(--white-clr);
   position: relative;
 }
 
+@media screen and (min-width: 768px) {
+.main-contents {
+  height: 66.8vh;
+}
+
+}
 #test-name {
   outline: 1px solid #fa3d4a;
 }
@@ -303,19 +311,7 @@ img {
   width: 100%;
 }
 
-/* .switch-btn {
-  padding: 0.2rem 0.5rem;
-  font-size: 1.5rem;
-  border: none;
-  cursor: pointer;
-  color: var(--light-primary_clr);
-  background: transparent;
-  position: absolute;
-  top: 30%;
-  right: 10%;
-  display: none;
-  z-index: 99;
-} */
+
 
 .video-timer {
   position: absolute;
@@ -342,7 +338,7 @@ img {
 
 .input-start-record-btn {
   position: absolute;
-  bottom: 5%;
+  bottom: 25%;
   left: 0;
   width: 100%;
   background: border-box;
@@ -358,10 +354,17 @@ img {
 
 .main-content-check-boxes {
   position: absolute;
-  top: 20%;
+  top: 12%;
   left: 5%;
 }
 
+/* @media screen and (min-width: 768px) {
+  .main-content-check-boxes {
+    position: absolute;
+    top: 10%;
+    left: 5%;
+  }
+} */
 .setting-icon {
   text-align: center;
 }
@@ -424,6 +427,21 @@ img {
   visibility: hidden;
 }
 
+.tooltip-container .header-tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--dark-clr);
+  color: var(--white-clr);
+  text-align: center;
+  font-size: 0.8rem;
+  border-radius: 0.5rem;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 77;
+  top: 15%;
+  left: 110%;
+}
+
 .tooltip-text::after {
   content: "";
   position: absolute;
@@ -435,9 +453,24 @@ img {
   border-color: black transparent transparent transparent;
 }
 
+.tooltip-container .header-tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  margin-top: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent black transparent transparent;
+  /* font-size: 0.8rem; */
+}
+
+.tooltip-container:hover .header-tooltip-text,
 .tooltip-container:hover .tooltip-text {
   visibility: visible;
 }
+
+
 
 .create-playlist-btn button {
   background: var(--gray-clr);
@@ -562,7 +595,7 @@ img {
 @media screen and (min-width:768px) {
   .input-start-record-btn {
     position: absolute;
-    bottom: 5%;
+    bottom: 10%;
     left: 0;
     width: 100%;
     background: border-box;
@@ -1048,7 +1081,7 @@ iframe {
 
 .input-start-record-btn {
   position: absolute;
-  bottom: 0;
+  bottom: 5%;
   left: 0;
   width: 100%;
   background: border-box;

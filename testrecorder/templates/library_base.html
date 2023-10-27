@@ -47,78 +47,11 @@
 </head>
 
 <body>
-    <header>
-      <nav id="navigation-bar" class="upper-nav">
-        <div class="upper-nav">
-          <a href="https://uxlive.org">
-            <div class="upper-nav-icon active">
-              <i class="fas fa-home"></i>
-            </div>
-          </a>
-          <a href="https://uxlive.org/privacy-policy">
-            <div class="upper-nav-icon active">
-              <i class="fa-solid fa-shield-alt"></i>
-            </div>
-          </a>
-          <!--<a href="#">
-            <div class="upper-nav-icon">
-              <i class="fas fa-cog"></i>
-            </div>
-          </a>-->
-          <a href="{% url 'about' %}">
-            <div class="upper-nav-icon dowell-logo">
-              <img src="{% static 'images/favicon.jpg' %}" alt="">
-            </div>
-          </a>
-          {% if user.is_authenticated %}
-          <div class="user-icon">
-            <i class="fas fa-user-circle" style="font-size: 40px;"></i>
-          </div>
-          {% endif %}
-        </div>
-        <a href="https://uxlive.org" class="mobile">
-          <div class="upper-nav-icon active">
-            <i class="fas fa-home" style="font-size:35px; color: #ecb5b5;"></i>
-          </div>
-        </a>
-        <div id="menu-icon" class="hide-desktop mobile">
-          <i class="fas fa-bars menu-icon"></i>
-        </div>
-        {% if user.is_authenticated %}
-        <div class="user-display">
-          <div class="">
-            <p class="" id="username">{{ user.username }}</p>
-          </div>
-          <div class="">
-            <a href="{% url 'logout' %}" class="">Logout</a>
-          </div>
-        </div>
-        {% endif %}
-      </nav>
-      <!-- ========================== -->
-      <div class="mobile-menu">
-        <a href="https://uxlive.org/privacy-policy" class="mobile-menu-item"><i style="font-size:25px; margin-right: 50px;"
-            class='fas'>&#xf3ed;</i> Privacy Policy</a>
-        <a href="{% url 'about' %}" class="mobile-menu-item"><i style="font-size:25px; margin-right: 50px;"
-            class="fa">&#xf05a;</i>About</a>
-        <hr>
-        {% load socialaccount %}
-        {% if user.is_authenticated %}
-        <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:25px; margin-right: 50px;"></i>{{ user.username }}</p>
-        {% endif %}
-        {% if user.is_authenticated %}
-        <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-in-out" style="font-size:20px;"><i class="fas fa-sign-out" style="font-size:25px; margin-right: 50px;"></i>Logout</a>
-        {% else %}
-        <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in-out" style="font-size:20px;">Login with Google/Select
-          Channel</a>
-          <div style="color:red;" id="logout-error"></div>
-        {% endif %}
-      </div>
-    
-    </header>
+    {% include "header.html" %}
     {% block body %}
     {% endblock body %}
-    {% comment %} {% include "footer.html" %} {% endcomment %}
+    {% include "youtube_copyright.html" %}
+
     <script>
         $(document).ready(function () {
             $('#selectPlaylist').select2({

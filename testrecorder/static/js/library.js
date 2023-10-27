@@ -15,6 +15,7 @@ let selectAudio = document.getElementById('audio-source');
 let currentStream;
 
 let btnShareRecords = document.querySelector('.share-record-btn');
+let libraryShareRecords = document.querySelector('.library-share');
 let channelSelect = document.getElementById("selectChannel");
 let channelSelect_1 = document.getElementById("selectChannel_1");
 // App global variables
@@ -124,7 +125,15 @@ if (window.location.pathname === '/library/') {
 
     library_page();
 }
-
+if (window.innerWidth < 768) {
+    $(".mobile-menu").hide();
+    // Toggle the div when a checkbox is clicked
+    $("#menu-icon").on("click", function () {
+        $(".mobile-menu").css("display", function () {
+            return $(this).css("display") === "none" ? "flex" : "none";
+        });
+    });
+}
 function displayTimer() {
     videoTimer.classList.add("show-cam-timer")
     switchCamBtn.classList.add("show-cam-timer")
@@ -258,10 +267,10 @@ generateString(6).then((randomString) => {
 // let userSettingsModal = new bootstrap.Modal(document.getElementById('user-settings-modal'));
 
 // Get task id from user modal
-let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
+// let getTaskIdFromUserModal = new bootstrap.Modal(document.getElementById('getTaskIdFromUserModal'));
 
 // Fill user email settings if it exists
-document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
+// document.getElementById("userClickupEmail").value = localStorage.getItem("userClickupEmail");
 
 
 // show select camera modal
@@ -3190,16 +3199,16 @@ async function showAddChannelModal() {
     createChannelModal.show();
 }
 
-let channel_id = document.querySelector('input[name=channel_id');
-channel_id.addEventListener('keyup', () => {
-    document.getElementById('id-error').innerText = '';
-})
-// Confiqure error display
-let channel_title = document.querySelector('input[name=channel_title]');
-channel_title.addEventListener('keyup', () => {
-        document.getElementById('title-error').innerText = '';
-    }
-);
+// let channel_id = document.querySelector('input[name=channel_id');
+// channel_id.addEventListener('keyup', () => {
+//     document.getElementById('id-error').innerText = '';
+// })
+// // Confiqure error display
+// let channel_title = document.querySelector('input[name=channel_title]');
+// channel_title.addEventListener('keyup', () => {
+//         document.getElementById('title-error').innerText = '';
+//     }
+// );
 
 document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
     event.preventDefault();
@@ -3545,24 +3554,26 @@ async function library_page() {
 
                 // Create a div element to represent the playlist
                 const playlistDiv = document.createElement('div');
-                playlistDiv.classList.add('media', 'd-flex', 'justify-content-center', 'align-items-center', 'up-next');
+                playlistDiv.classList.add('single-video-item');
+                // playlistDiv.classList.add('media', 'd-flex', 'justify-content-center', 'align-items-center', 'up-next');
                 playlistDiv.dataset.playlistId = playlist_id; // Store the playlistId as a data attribute
                 playlistDiv.dataset.privacyStatus = privacy_status;
 
                 // Create a div for the thumbnail and time
                 const thumbnailDiv = document.createElement('div');
-                thumbnailDiv.classList.add('position-relative');
+                thumbnailDiv.classList.add('video-img');
+                // thumbnailDiv.classList.add('position-relative');
 
                 // Create an img element for the thumbnail
                 const thumbnailImg = document.createElement('img');
-                thumbnailImg.classList.add('media-figure', 'img-aside', 'position-relative');
+                // thumbnailImg.classList.add('media-figure', 'img-aside', 'position-relative');
                 thumbnailImg.src = thumbnail_url;
                 thumbnailImg.alt = 'Playlist Thumbnail';
                 thumbnailDiv.appendChild(thumbnailImg);
 
                 // Create a label for the video count
                 const videoCountLabel = document.createElement('span');
-                videoCountLabel.textContent = `Videos: ${total_videos}`;
+                videoCountLabel.textContent = `${total_videos} Videos`;
                 videoCountLabel.classList.add('video-count-label');
                 thumbnailDiv.appendChild(videoCountLabel);
 
@@ -3677,24 +3688,27 @@ async function user_selected_playlist(playlist_title, selectedPlaylistId, privac
                     } = video_detail;
 
                     const videoDiv = document.createElement('div');
-                    videoDiv.classList.add('media', 'd-flex', 'justify-content-center', 'align-items-center', 'up-next');
+                    videoDiv.classList.add('single-video-item');
+                    // videoDiv.classList.add('media', 'd-flex', 'justify-content-center', 'align-items-center', 'up-next');
                     videoDiv.dataset.videoId = videoId; // Store the playlistId as a data attribute
                     videoDiv.dataset.privacyStatus = privacyStatus;
 
                     // Create a div for the thumbnail and time
                     const thumbnailDiv = document.createElement('div');
-                    thumbnailDiv.classList.add('position-relative');
+                    thumbnailDiv.classList.add('video-img');
+                    // thumbnailDiv.classList.add('position-relative');
 
                     // Create an img element for the thumbnail
                     const thumbnailImg = document.createElement('img');
-                    thumbnailImg.classList.add('media-figure', 'img-aside', 'position-relative');
+                    // thumbnailImg.classList.add('media-figure', 'img-aside', 'position-relative');
                     thumbnailImg.src = videoThumbnail;
                     thumbnailImg.alt = 'Video Thumbnail';
                     thumbnailDiv.appendChild(thumbnailImg);
 
                     // Create a label for the video duration
                     const videoCountLabel = document.createElement('span');
-                    videoCountLabel.textContent = `Duration: ${convertDuration(duration)}`;
+                    videoCountLabel.textContent = `${convertDuration(duration)}`;
+                    // videoCountLabel.textContent = `Duration: ${convertDuration(duration)}`;
                     videoCountLabel.classList.add('video-count-label');
                     thumbnailDiv.appendChild(videoCountLabel);
 
@@ -3769,16 +3783,16 @@ async function play(videoObject) {
                     event.target.playVideo();
                     updateVideoInfo(videoObject);
 
-                    const likeButton = document.getElementById('thumb_like');
-                    const dislikeButton = document.getElementById('thumb_dislike');
+                    // const likeButton = document.getElementById('thumb_like');
+                    // const dislikeButton = document.getElementById('thumb_dislike');
 
-                    likeButton.addEventListener('click', function () {
-                        handleVideoRating('like', videoObject.id);
-                    });
+                    // likeButton.addEventListener('click', function () {
+                    //     handleVideoRating('like', videoObject.id);
+                    // });
 
-                    dislikeButton.addEventListener('click', function () {
-                        handleVideoRating('dislike', videoObject.videoId);
-                    });
+                    // dislikeButton.addEventListener('click', function () {
+                    //     handleVideoRating('dislike', videoObject.videoId);
+                    // });
                 },
             },
         });
@@ -3788,16 +3802,23 @@ async function play(videoObject) {
 function updateVideoInfo(videoObject) {
     // playing video update info on html
     console.log('function updateVideoInfo 3796: ', videoObject)
-    const titleElement = document.querySelector('.fs-4.fw-bold');
+    videoId = videoObject.videoId;
+    console.log(videoId);
+    const titleElement = document.querySelector('.play-video-title');
+    // const titleElement = document.querySelector('.fs-4.fw-bold');
     const thumbnailElement = document.querySelector('.img-profile');
     const privacy = document.getElementById('playingvideo_privacy');
 
     // Update the elements with video information
-    titleElement.textContent = videoObject.title;
-    thumbnailElement.src = videoObject.thumbnail;
-    privacy.textContent = `Playlist: ${videoObject.privacy.trim()}`;
+    titleElement.textContent = videoObject.videoTitle;
+    thumbnailElement.src = videoObject.videoThumbnail;
+    privacy.textContent = `Privacy: ${videoObject.privacyStatus}`;
+    // titleElement.textContent = videoObject.title;
+    // thumbnailElement.src = videoObject.thumbnail;
+    // privacy.textContent = `Privacy: ${videoObject.privacy}`;
 
 }
+
 
 async function handleVideoRating(rating, videoId) {
     console.log('Video rating function call 3803 rating and videoid as a parameter:', rating, videoId)
@@ -3895,3 +3916,63 @@ function resetonStartRecording() {
 
 }
 
+async function copySelectedLink() {
+
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Create a temporary input element to copy link
+    var tempInput = document.createElement("input");
+    tempInput.value = youtubeLink;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    alert("Link copied to clipboard");
+}
+
+// share youtube link
+async function shareVideoToFacebook() {
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Get name of the youtube video
+    let videoTitle = document.getElementById("test-name").value;
+    let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+    document.querySelector(".facebook").href = `https://www.facebook.com/sharer/sharer.php?u=${youtubeLink}&t=${finalvideoTitle}`;
+}
+async function shareVideoToTwitter() {
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Get name of the youtube video
+    let videoTitle = document.getElementById("test-name").value;
+    let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+    document.querySelector(".twitter").href = `https://twitter.com/share?text=${finalvideoTitle}&url=${youtubeLink}&hashtags=${finalvideoTitle}`;
+}
+async function shareVideoToLinkedin() {
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Get name of the youtube video
+    let videoTitle = document.getElementById("test-name").value;
+    document.querySelector(".linkedin").href = `https://www.linkedin.com/sharing/share-offsite?url=${youtubeLink}`;
+}
+async function shareVideoToEmail() {
+    //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Get name of the youtube video
+    let videoTitle = document.getElementById("test-name").value;
+    let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+    document.querySelector(".envelope").href = `mailto=?subject='Watch My Video'&amp;body=${finalvideoTitle}%20${youtubeLink}`;
+}
+async function shareVideoToWhatsapp() {
+    //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
+    let youtubeLink = "https://youtu.be/" + videoId;
+    // Get name of the youtube video
+    let videoTitle = document.getElementById("test-name").value;
+    let finalvideoTitle = videoTitle.replace(/_/ig, " ");
+    document.querySelector(".whatsapp").href = `https://api.whatsapp.com/send?text=${finalvideoTitle}%20${youtubeLink}`;
+}
+
+// share library video modal
+async function shareLibraryLinkModal() {
+    // close modal if open
+    const btnCloseshareLibraryLinkModal = document.getElementById('close-share-library-link-modal');
+    btnCloseshareLibraryLinkModal.click();
+    // Show modal
+    const libraryLinkModal = new bootstrap.Modal(document.getElementById('share-library-link-modal'));
+    libraryLinkModal.show();
+}

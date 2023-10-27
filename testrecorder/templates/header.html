@@ -3,13 +3,15 @@
   <nav id="navigation-bar" class="upper-nav">
     <div class="upper-nav">
       <a href="https://uxlive.org">
-        <div class="upper-nav-icon active">
+        <div class="upper-nav-icon active tooltip-container">
           <i class="fas fa-home"></i>
+          <span class="header-tooltip-text">Home</span>
         </div>
       </a>
       <a href="https://uxlive.org/privacy-policy">
-        <div class="upper-nav-icon active">
+        <div class="upper-nav-icon active tooltip-container">
           <i class="fa-solid fa-shield-alt"></i>
+          <span class="header-tooltip-text">Privacy Policy</span>
         </div>
       </a>
       <!--<a href="#">
@@ -18,19 +20,22 @@
         </div>
       </a>-->
       <a href="{% url 'about' %}">
-        <div class="upper-nav-icon dowell-logo">
+        <div class="upper-nav-icon dowell-logo tooltip-container">
           <img src="{% static 'images/favicon.jpg' %}" alt="">
+          <span class="header-tooltip-text">About Us</span>
         </div>
       </a>
       {% if user.is_authenticated %}
-      <div class="user-icon">
+      <div class="user-icon tooltip-container">
         <i class="fas fa-user-circle" style="font-size: 40px;"></i>
+        <span class="header-tooltip-text">User</span>
       </div>
       {% endif %}
     </div>
     <a href="https://uxlive.org" class="mobile">
-      <div class="upper-nav-icon active">
-        <i class="fas fa-home" style="font-size:35px; color: #ecb5b5;"></i>
+      <div class="upper-nav-icon active tooltip-container">
+        <i class="fas fa-home"></i>
+        <span class="header-tooltip-text">Home page</span>
       </div>
     </a>
     <div id="menu-icon" class="hide-desktop mobile">

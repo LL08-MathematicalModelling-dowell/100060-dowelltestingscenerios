@@ -83,8 +83,8 @@
 
   .mobile-menu {
     position: absolute;
-    top: 55px;
-    right: 0px;
+    top: 6%;
+    right: 0;
     display: none;
     flex-direction: column;
     width: 100%;
@@ -93,8 +93,9 @@
     padding: 20px;
     background-color: var(--light-primary_clr);
     border-radius: 8px;
-    margin: 5px 5px 0px 0px;
+    /* margin: 5px 5px 0px 0px; */
     z-index: 999;
+    transition: 0.3s all ease-in-out;
   }
 
   #navigation-bar {
@@ -145,7 +146,7 @@
     align-items: center;
     background: var(--light-primary_clr);
     padding: 0;
-    margin: 3px;
+    /* margin: 3px; */
     text-align: center;
   }
 
