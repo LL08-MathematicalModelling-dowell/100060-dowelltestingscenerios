@@ -31,10 +31,10 @@ button {
 
 body {
   line-height: 1.05 !important;
+  background-color: var(--dark-clr);
   /* height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--dark-clr);
   margin-bottom: 0;
   justify-content: space-between; */
 }

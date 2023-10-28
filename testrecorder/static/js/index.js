@@ -17,7 +17,6 @@ let channelSelect = document.getElementById("selectChannel");
 let channelSelect_1 = document.getElementById("selectChannel_1");
 
 // App global variables
-let pingInterval;
 let usernameValue = null;
 let testNameValue = null;
 let testDescriptionValue = null;
@@ -93,7 +92,22 @@ let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
-
+// navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+//   .then(function (stream) {
+//     console.log('Got stream, time diff :', Date.now() - now);
+//   })
+//   .catch(function (err) {
+//     console.log('GUM failed with error, time diff: ', Date.now() - now);
+//   });
+if (window.innerWidth < 768) {
+  $(".mobile-menu").hide();
+  // Toggle the div when a checkbox is clicked
+  $("#menu-icon").on("click", function () {
+    $(".mobile-menu").css("display", function () {
+      return $(this).css("display") === "none" ? "flex" : "none";
+    });
+  });
+}
 
 $(document).ready(() => {
   if ((window.location.pathname === '/') && isAuthenticated) {
@@ -118,15 +132,6 @@ $(document).ready(() => {
   }
 });
 
-if (window.innerWidth < 768) {
-  $(".mobile-menu").hide();
-  // Toggle the div when a checkbox is clicked
-  $("#menu-icon").on("click", function () {
-    $(".mobile-menu").css("display", function () {
-      return $(this).css("display") === "none" ? "flex" : "none";
-    });
-  });
-}
 
 
 async function startRecordModal() {
@@ -1271,17 +1276,17 @@ async function createWebsocket(recordWebcam, recordScreen) {
   const endpoint = getWebsocketEndpoint();
 
   let socket = new WebSocket(endpoint);
-  let pingInterval;
-  let pongTimeout;
+  // let pingInterval;
+  // let pongTimeout;
 
   socket.onopen = (event) => {
     handleSocketOpen(socket, socketType);
-    pingInterval = setupPingInterval(socket);
-    pongTimeout = setupPongTimeout();
+    // pingInterval = setupPingInterval(socket);
+    // pongTimeout = setupPongTimeout();
   };
 
   socket.onmessage = (event) => {
-    handleSocketMessage(event, pongTimeout);
+    handleSocketMessage(event);
   };
 
   socket.onerror = async (event) => {
@@ -1289,7 +1294,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
   };
 
   socket.onclose = (evt) => {
-    handleSocketClose(pingInterval, pongTimeout);
+    handleSocketClose();
   };
 
   return [socket, socketType];
@@ -1312,7 +1317,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
       if (socket.readyState === WebSocket.OPEN) {
         socket.send('ping');
       }
-    }, 5000);
+    }, 15000);
   }
 
   function setupPongTimeout() {
@@ -1338,17 +1343,17 @@ async function createWebsocket(recordWebcam, recordScreen) {
     document.getElementById("app-status").innerHTML = "STATUS: WebSocket created.";
   }
 
-  function handleSocketMessage(event, pongTimeout) {
+  function handleSocketMessage(event) {
     const receivedMsg = event.data;
     msgRcvdFlag = true;
     if (receivedMsg.includes("RTMP url received: rtmp://")) {
       recordinginProgress = true;
       document.getElementById("app-status").innerHTML = "STATUS: Recording in Progress.";
     }
-    if (receivedMsg.includes('pong')) {
-      clearPongTimeout(pongTimeout);
-      pongTimeout = setupPongTimeout();
-    }
+    // if (receivedMsg.includes('pong')) {
+    //   clearPongTimeout(pongTimeout);
+    //   // pongTimeout = setupPongTimeout();
+    // }
   }
 
   async function handleSocketError(event, recordWebcam, recordScreen) {
@@ -1386,12 +1391,12 @@ async function createWebsocket(recordWebcam, recordScreen) {
     }
   }
 
-  async function handleSocketClose(pingInterval, pongTimeout) {
+  async function handleSocketClose() {
     recordinginProgress = false;
     if (recordinginProgress) {
       await stopRecording(errorOccured=true);
-      clearInterval(pingInterval);
-      clearPongTimeout(pongTimeout);
+      // clearInterval(pingInterval);
+      // clearPongTimeout(pongTimeout);
       handLeNotification();
     }
   }
