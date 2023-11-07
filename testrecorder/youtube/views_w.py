@@ -350,6 +350,44 @@ class LoadVideoView(APIView):
 
 
 class YouTubeVideoAPIView(APIView):
+    """
+    This class is a DRF APIView that retrieves the authenticated user's YouTube videos.
+    Methods:
+        get(self, request, *args, **kwargs): Handles GET requests to this view and retrieves the
+            videos associated with the currently
+            authenticated user's YouTube account.
+            Parameters:
+            request: DRF Request object
+            *args: tuple of positional arguments
+            **kwargs: dictionary of keyword arguments
+    
+            Functionality:
+                The get method retrieves the authenticated user's YouTube videos by first retrieving
+                the YoutubeUserCredential object associated with the authenticated user. It then retrieves the user's
+                credentials associated with the YoutubeUserCredential object and uses them to create a YouTube object using
+                the v3 version of the API. It then retrieves the videos associated with the user's account and processes
+                them into a list of dictionaries containing the video id and title. It saves the first video's details
+                to a ChannelsRecord object and returns the videos in the response body with a 200 OK status code.
+                If an exception is raised during any of the above steps, it returns an error response with a 404
+                Not Found status code.
+    
+            Returns:
+                If successful, returns a DRF Response object with a JSON array of dictionaries containing the video id and
+                 title with a 200 OK status code.
+                If the user doesn't have a YoutubeUserCredential object, returns a DRF Response object with an error message
+                    and a 401 Unauthorized status code.
+                If unable to fetch the YouTube videos, returns a DRF Response object with an error message and
+                    a 404 Not Found status code.
+
+        get_video_data(self, request, video_id): Retrieves the video data from the YouTube API.
+            Parameters:
+                request: DRF Request object
+                video_id: The ID of the video to retrieve.
+            Returns:
+                If successful, returns a dictionary containing the video data.
+                If the video is not found, returns None.
+                If an exception is raised, returns None.
+    """
     def get(self, request, broadcast_id):
         # Retrieve the video from the YouTube API
         video_data = self.get_video_data(request, broadcast_id)
