@@ -6,8 +6,10 @@ from .models import YoutubeUserCredential
 
 
 def get_user_cache_key(user_id, view_url):
+    """
+    helper function to generate a cache key for a user
+    """
     return f'user_{user_id}_view_{view_url}'
-
 
 
 def create_user_youtube_object(request):
@@ -15,7 +17,7 @@ def create_user_youtube_object(request):
     Create a YouTube object using the v3 version of the API and
     the authenticated user's credentials.
     """
-    print('Creating youtube object...')
+    # print('Creating youtube object...')
     try:
         # Retrieve the YoutubeUserCredential object associated with the authenticated user
         youtube_user = YoutubeUserCredential.objects.get(user=request.user)
@@ -27,17 +29,15 @@ def create_user_youtube_object(request):
             credentials_data_dict = json.loads(credentials_data)
             # Create credentials from the dictionary
             credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
-            # print('Credentials: xxxxxxxxxxx')
         except Exception as e:
             credentials = Credentials.from_authorized_user_info(info=credentials_data)
-            # print('Credentials: xxxxxxxxxxx')
         try:
-            # print(f'Checking if access token has expired...{credentials.expired}')
+            # # print(f'Checking if access token has expired...{credentials.expired}')
             # Check if the access token has expired
             if credentials.expired:
-                print('Access token has expired!')
+                # print('Access token has expired!')
 
-                print('Refreshing access token...')
+                # print('Refreshing access token...')
                 import google.auth.transport.requests
 
                 # Create a request object using the credentials
@@ -49,10 +49,10 @@ def create_user_youtube_object(request):
                 # Update the stored credential data with the refreshed token
                 youtube_user.credential = credentials.to_json()
                 youtube_user.save()
-                print('Access token refreshed!')
+                # print('Access token refreshed!')
         except Exception as e:
             # Handle any error that occurred while refreshing the access token
-            print(f'An error occurred: {e}')
+            # print(f'An error occurred: {e}')
             return None
 
         # Create a YouTube object using the v3 version of the API and the retrieved credentials
