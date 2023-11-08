@@ -1518,7 +1518,6 @@ async function endBroadcast() {
 }
 
 async function goToPage(event) {
-  //let youtubeLink = "https://youtu.be/9Kann9lg1O8";
   let youtubeLink = "https://youtu.be/" + newBroadcastID;
   window.open(youtubeLink, '_blank');
   return false;
