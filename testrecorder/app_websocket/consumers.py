@@ -54,9 +54,9 @@ class VideoConsumer(AsyncConsumer):
                 # print("Received RTMP url:", self.rtmpUrl)
                 self.start_ffmpeg_process()
                 await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
-            # elif 'ping' in data:
-                # print('================ pong response recieved ================')
-                # await self.send_ack_message('pong')
+            elif 'ping' in data:
+                print('================ pong response recieved ================')
+                await self.send_ack_message('pong')
 
         if 'bytes' in event.keys() and self.process:
             byte_data = event['bytes']

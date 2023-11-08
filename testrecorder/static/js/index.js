@@ -1324,11 +1324,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
     return setTimeout(async () => {
       if (recordinginProgress) {
         // Only stop recording if it's in progress
-        await stopRecording(errorOccured = true);
+        // await stopRecording(errorOccured = true);
         handLeNotification();
         // console.log('WebSocket reconnection failed after multiple attempts');
       }
-    }, 30000);
+    }, 300000);
   }
 
   // Clearing the pongTimeout
@@ -1394,7 +1394,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
   async function handleSocketClose() {
     recordinginProgress = false;
     if (recordinginProgress) {
-      await stopRecording(errorOccured=true);
+      // await stopRecording(errorOccured=true);
       // clearInterval(pingInterval);
       // clearPongTimeout(pongTimeout);
       handLeNotification();
