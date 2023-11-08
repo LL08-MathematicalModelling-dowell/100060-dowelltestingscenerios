@@ -26,25 +26,25 @@ Follow these steps to set up UX Live on your local machine:
 
 1. **Clone the repository:**
 
-`
+```
     git clone https://github.com/LL08-MathematicalModelling-dowell/100060-dowelltestingscenerios.git
     cd 100060-dowelltestingscenerios
-`
+```
 
 
 2. **Create a virtual environment and install dependencies:**
-`
+```
     virtualenv venv
     source venv/bin/activate # for Unix-based systems
     pip install -r requirements.txt
-`
+```
 
 3. **Database Setup:**
 
-`
+```
     python manage.py makemigrations
     python manage.py migrate
-`
+```
 
 
 4. **Configuration:**
@@ -52,9 +52,9 @@ Follow these steps to set up UX Live on your local machine:
 - Configure the application for YouTube API access.
 
 5. **Run the development server:**
-`
+```
     python manage.py runserver
-`
+```
 
 6. Access the application at `http://localhost:8000` in your web browser.
 
@@ -83,5 +83,3 @@ This project is licensed under the [Apache License](LICENSE).
 ## Support
 
 For any questions, feedback, or assistance, please contact [maintainer's email or contact information].
-
-
