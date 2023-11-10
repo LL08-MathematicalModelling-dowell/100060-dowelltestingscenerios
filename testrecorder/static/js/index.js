@@ -734,6 +734,8 @@ async function newRecordWebcamAndScreen() {
 async function startRecording() {
   const startButton = document.getElementById('start');
   startButton.blur();
+  const previewButton = document.getElementById('playback-video-button');
+  previewButton.blur();
 
   try {
     [socket, socketType] = await createAllsockets();
