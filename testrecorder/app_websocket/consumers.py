@@ -1,19 +1,19 @@
-import json
+# import json
 import os
 import subprocess
 
 import django
 from channels.consumer import AsyncConsumer
-from channels.generic.websocket import AsyncWebsocketConsumer
-from django.conf import settings
+# from channels.generic.websocket import AsyncWebsocketConsumer
+# from django.conf import settings
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
 
-from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
-from file_app.views import save_recording_metadata
+# from youtube.views import create_broadcast, insert_video_into_playlist, transition_broadcast
+# from file_app.views import save_recording_metadata
 
 
 class VideoConsumer(AsyncConsumer):
@@ -125,6 +125,7 @@ class VideoConsumer(AsyncConsumer):
         await self.send({"type": "websocket.send", "text": message})
 
 
+'''
 class WebacamScreenVideoConsumer(AsyncConsumer):
     """
         Handles the storage of webcam and screen videos
@@ -542,3 +543,5 @@ class MultiPurposeConsumer(AsyncConsumer):
             self.process.stdin.close()
         except Exception as err:
             print("Failed to close ffmpeg")
+
+'''

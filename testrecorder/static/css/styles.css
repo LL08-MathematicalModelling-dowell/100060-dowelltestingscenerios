@@ -32,11 +32,8 @@ button {
 body {
   line-height: 1.05 !important;
   background-color: var(--dark-clr);
-  /* height: 100vh;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0;
-  justify-content: space-between; */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 1em;
 }
 
 a {
@@ -100,7 +97,7 @@ img {
 }
 
 .upper-nav-icon {
-  color: var(--dark-white-clr);
+  color: white;
   font-size: 1.6rem;
 }
 
@@ -153,8 +150,9 @@ img {
   align-items: center;
   background: var(--light-primary_clr);
   padding: .5em;
-  /* margin: 5px; */
   text-align: center;
+  height: 60px;
+  font-size: .8em;
 }
 
 .authenticated-user {
@@ -190,17 +188,22 @@ img {
 } */
 .user-icon {
   cursor: pointer;
+  font-weight: 600;
 }
+
 
 .user-icon i {
   color: var(--white-clr);
   font-size: 1.2rem;
 }
-.upper-nav{
+
+.upper-nav {
   position: relative;
+  height: 50px;
+  font-size: 1.3em;
 }
+
 .user-display {
-  /* background: var(--light-primary_clr); */
   background-color: var(--primary_clr);
   color: var(--white-clr);
   position: absolute;
@@ -218,13 +221,6 @@ img {
 } */
 
 @media screen and (min-width:768px) {
-  /* .user-display {
-    position: absolute;
-    top: 100px;
-    right: 10%;
-    border-radius: 10px;
-  } */
-
   .user-icon i {
     font-size: 1.5rem;
   }
@@ -297,7 +293,7 @@ img {
 
 @media screen and (min-width: 768px) {
 .main-contents {
-  height: 66.8vh;
+  height: 72vh;
 }
 
 }
@@ -424,6 +420,7 @@ img {
   text-align: center;
   width: 120px;
   margin-left: -60px;
+  font-size: .6em;
   visibility: hidden;
 }
 
@@ -618,11 +615,19 @@ img {
 .status-bar {
   background: var(--primary_clr);
   color: var(--white-clr);
-  padding: 0.3rem 2rem;
+  padding: 0.2rem 2rem;
   text-align: center;
+  font-size: .9em;
+  position: absolute;
+  width: 100%;
+  bottom: 38px;
 }
 
 .youtube-copyright {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
   background-image: url(../images/developed-with-youtube-sentence-case-light.png);
   background-size: contain;
   background-repeat: no-repeat;
@@ -1081,8 +1086,7 @@ iframe {
 
 .input-start-record-btn {
   position: absolute;
-  bottom: 5%;
-  left: 0;
+  bottom: 0px;
   width: 100%;
   background: border-box;
 }
@@ -1095,4 +1099,43 @@ iframe {
   padding: 5px;
   min-width: 100px;
   text-align: left;
+}
+
+/* xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx */
+#nav-bar-header {
+  color: white;
+  font-size: 1em;
+  font-weight: 400;
+}
+.user-icon-div {
+  background-color: indianred;
+  border-radius: 50%;
+  padding: 8px;
+}
+.upper-nav a{
+  color: white;
+  font-size: 1em;
+  font-weight: 400;
+  padding: 5px;
+}
+.upper-nav a:hover {
+  text-decoration: none;
+  border-bottom: 2px solid yellow;
+}
+.setting-icon .fas{
+  size: 40px
+}
+
+.tooltip-container button {
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.setting-icon label {
+  cursor: pointer;
+  font-size: 1em;
+}
+
+.video-title h2 {
+  font-size: 1.5em;
 }

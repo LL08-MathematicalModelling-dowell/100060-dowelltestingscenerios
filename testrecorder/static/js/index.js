@@ -1,4 +1,3 @@
-// Some app controls
 let video = document.getElementById('video')
 let cameraCheckbox = document.getElementById('webcam-recording')
 let screenCheckbox = document.getElementById('screen-recording')
@@ -28,9 +27,7 @@ let testRecordingData = null;
 let screenRecorder = null;
 let mergedStreamRecorder = null;
 let webcamRecorder = null
-// ======================================================================
 streamRecorder = null;
-// ======================================================================
 let webcamStream = null;
 let screenStream = null;
 let audioStream = null;
@@ -72,10 +69,7 @@ let screenFileName = null;
 let webcamFileName = null;
 let taskIdWebSocket = null;
 let receivedTaskID = [];
-let taskIDwasRreceived = false;
-let faultyTaskID = null; // Bad clickup task or task id
 let currentRadioButtonID = null;
-let userPlaylists = null;
 let userPlaylistSelection = null;
 let channelTitle = null;
 let todaysPlaylistId = null;
@@ -92,16 +86,10 @@ let minuteTime = document.querySelector(".minute-time")
 let secondTime = document.querySelector(".second-time")
 let timeInterval;
 let totalTime = 0;
-// navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-//   .then(function (stream) {
-//     console.log('Got stream, time diff :', Date.now() - now);
-//   })
-//   .catch(function (err) {
-//     console.log('GUM failed with error, time diff: ', Date.now() - now);
-//   });
+
+
 if (window.innerWidth < 768) {
   $(".mobile-menu").hide();
-  // Toggle the div when a checkbox is clicked
   $("#menu-icon").on("click", function () {
     $(".mobile-menu").css("display", function () {
       return $(this).css("display") === "none" ? "flex" : "none";
@@ -178,19 +166,7 @@ function calcTime(val) {
     return valString;
   }
 }
-// let publicChecked = publicVideosCheckbox.checked;
-// let privateChecked = privateVideosCheckbox.checked;
-// let unlistedChecked = unlistedVideosCheckbox.checked;
-// if (publicChecked==false && privateChecked==false) {
-//   unlistedChecked == true
-// }
-// if (publicChecked == false && unlistedChecked ==false) {
-//   privateChecked == true
-// }
-// if (publicChecked == false && unlistedChecked ==false) {
-//   privateChecked == true
-// }
-// diasble private if public is checked
+
 function disablePrivandUnlist() {
   let publicChecked = publicVideosCheckbox.checked;
   let privateChecked = privateVideosCheckbox.checked;
@@ -393,7 +369,7 @@ async function microphoneStatus() {
 const requestVideoFrame = function (callback) {
   return window.setTimeout(function () {
     callback(Date.now());
-  }, 1000 / 60); // 60 fps - just like requestAnimationFrame
+  }, 1000 / 60);
 };
 
 /**
@@ -413,7 +389,9 @@ const cancelVideoFrame = function (id) {
  * Clears the recording data.
  * Clears the recording chunks.
 */
-async function stopRecording(errorOccured = false) {
+async function stopRecording(errorOccurred = false) {
+  let broadcastStoppedSuccessfully = false;
+
   if (window.innerWidth < 768) {
     $(".main-content-check-boxes").fadeIn("slow");
   }
@@ -422,71 +400,64 @@ async function stopRecording(errorOccured = false) {
   try {
     clearInterval(networkTimer);
   } catch (error) {
-    console.error("Error while stopping network timer!");
+    console.error("Error while stopping network timer:", error);
   }
 
   try {
-    // Close the websocket and stop streaming
     await stopStreams();
-
-    if (!errorOccured) {
-      // Transition the broadcast to complete state
-      await endBroadcast();
-    }
     await clearTimer();
+    document.querySelector('.stop-btn').style.display = 'none';
+    document.getElementById("start").disabled = false;
+
+
+    if (!errorOccurred) {
+      broadcastStoppedSuccessfully = await endBroadcast();
+    }
 
     recordinginProgress = false;
-  
-    // Enable the start recording button
-    document.getElementById("start").disabled = false;
-    resetonStartRecording();
 
-    // Clear the progress bar
-    globalProgress = 0;
+    resetOnStartRecording();
 
-    if (!errorOccured) {
-      // Check the settings
-      const recordWebcam = cameraCheckbox.checked;
-      const recordScreen = screenCheckbox.checked;
-      // Initialize upload data object if null
-      if (testRecordingData === null) {
-        testRecordingData = new FormData();
-      }
+    if (!errorOccurred) {
+      try{
+        const recordWebcam = cameraCheckbox.checked;
+        const recordScreen = screenCheckbox.checked;
 
-      // Add the selected playlist information as an object
-      if (userPlaylistSelection !== null) {
-        try {
-          const Account_info = {
-            'Channeltitle': channelTitle,
-            'Playlist_title': userPlaylistSelection[currentRadioButtonID]
-          };
-          testRecordingData.set('Account_info', JSON.stringify(Account_info));
-        } catch (error) {
-          console.error("Error while adding Account_info to upload data.", error);
+        let testRecordingData = new FormData();
+
+        if (userPlaylistSelection !== null) {
+          try {
+            const accountInfo = {
+              channelTitle: channelTitle,
+              playlistTitle: userPlaylistSelection[currentRadioButtonID]
+            };
+            testRecordingData.set('accountInfo', JSON.stringify(accountInfo));
+          } catch (error) {
+            console.error("Error while adding accountInfo to upload data:", error);
+          }
         }
+
+        const youtubeLink = "https://youtu.be/" + newBroadcastID;
+
+        if (recordScreen && recordWebcam) {
+          testRecordingData.set('mergedWebcamScreenFile', youtubeLink);
+          testRecordingData.set('screenFile', screenFileName);
+          testRecordingData.set('webcamFile', webcamFileName);
+        } else if (recordScreen) {
+          testRecordingData.set('screenFile', youtubeLink);
+        } else if (recordWebcam) {
+          testRecordingData.set('webcamFile', youtubeLink);
+        }
+
+        testRecordingData.set('userName', usernameValue);
+        testRecordingData.set('testDescription', testDescriptionValue);
+        testRecordingData.set('testName', testNameValue);
+        testRecordingData.set('userFilesTimestamp', filesTimestamp);
+
+        sendAvailableData(testRecordingData);
+      } catch (error) {
+        console.error("Error while sending available data:", error);
       }
-
-      // Set video YouTube links or file names
-      const youtubeLink = "https://youtu.be/" + newBroadcastID;
-
-      if (recordScreen && recordWebcam) {
-        testRecordingData.set('merged_webcam_screen_file', youtubeLink);
-        testRecordingData.set('screen_file', screenFileName);
-        testRecordingData.set('webcam_file', webcamFileName);
-      } else if (recordScreen) {
-        testRecordingData.set('screen_file', youtubeLink);
-      } else if (recordWebcam) {
-        testRecordingData.set('webcam_file', youtubeLink);
-      }
-
-      // Append test details data
-      testRecordingData.set('user_name', usernameValue);
-      testRecordingData.set('test_description', testDescriptionValue);
-      testRecordingData.set('test_name', testNameValue);
-      testRecordingData.set('user_files_timestamp', filesTimestamp);
-
-      // Send data to the server for storage
-      sendAvailableData();
     }
   } catch (error) {
     console.error("Error while stopping recording:", error);
@@ -769,7 +740,13 @@ async function startRecording() {
       throw new Error('No socket connection!');
     } else {
       showCreatingBroadcastModal(true);
-      await createBroadcast(socket);
+      broadcastCreated = await createBroadcast(socket);
+
+      if (!broadcastCreated) {
+        stopRecording();
+        throw new Error('Broadcast not created!');
+      }
+
       showCreatingBroadcastModal(false);
 
       recordWebcam = cameraCheckbox.checked;
@@ -975,20 +952,18 @@ async function validateModal() {
  * This function sends the available data to the server for storage.
  * It sends the webcam stream, screen stream, and merged stream (if available).
  */
-async function sendAvailableData() {
+async function sendAvailableData(testRecordingData = null) {
   try {
-    let status = document.getElementById("app-status");
+    // const status = document.getElementById("app-status");
     document.querySelector('.record-btn').style.display = 'block';
     document.querySelector('.library-btn').style.display = 'block';
     // show create playlist btn
     document.querySelector('.create-playlist-btn').style.display = 'block';
-    document.querySelector('.stop-btn').style.display = 'none';
     document.querySelector(".video-title").innerHTML = "";
 
     const csrftoken = await getCookie('csrftoken');
 
-    status.innerText = "STATUS: Uploading files to server...";
-    // console.log('Uploading files to server...')
+    // status.innerText = "STATUS: Uploading files to the server...";
 
     if (testRecordingData !== null) {
       const fileUploadUrl = '/file/upload/';
@@ -1000,8 +975,9 @@ async function sendAvailableData() {
 
       const responseJson = await response.json();
       const responseStatus = response.status;
+
       if (responseStatus === 201) {
-        status.innerHTML = "STATUS: Record data uploaded succesfully!";
+        // status.innerHTML = "STATUS: Record data uploaded successfully!";
 
         testNameValue = null;
         testRecordingData = null;
@@ -1013,6 +989,7 @@ async function sendAvailableData() {
         taskIDwasRreceived = false;
         userPlaylistSelection = null;
         channelTitle = null;
+
         try {
           const newFileLinks = responseJson;
           set_video_links(newFileLinks);
@@ -1020,19 +997,19 @@ async function sendAvailableData() {
           console.error("Error while setting video links: ", error);
         }
       } else {
-        status.innerHTML = "STATUS: Files Upload Failed.";
+        // status.innerHTML = "STATUS: Files Upload Failed.";
         // Check which error modal to show
         let errorMessage = null;
+
         if ("error_msg" in responseJson) {
           errorMessage = responseJson.error_msg;
         }
 
         if (errorMessage && errorMessage.includes("Failed to get")) {
-          // Get task id that has error
+          // Get the task ID that has an error
           const faultyTaskIDArray = errorMessage.split(";");
           const faultyTaskID = faultyTaskIDArray[1]?.trim();
-          cosole.log('');
-          // 
+          console.log('Faulty Task ID:', faultyTaskID);
         } else {
           console.error('Upload failed!!');
         }
@@ -1040,8 +1017,7 @@ async function sendAvailableData() {
     }
   } catch (error) {
     console.error("Error while sending data:", error);
-    msg = "STATUS: Files Upload Failed.";
-    document.getElementById("app-status").innerHTML = msg;
+    // status.innerHTML = "STATUS: Files Upload Failed.";
   }
 }
 
@@ -1394,9 +1370,6 @@ async function createWebsocket(recordWebcam, recordScreen) {
   async function handleSocketClose() {
     recordinginProgress = false;
     if (recordinginProgress) {
-      // await stopRecording(errorOccured=true);
-      // clearInterval(pingInterval);
-      // clearPongTimeout(pongTimeout);
       handLeNotification();
     }
   }
@@ -1410,111 +1383,112 @@ function handLeNotification(
     new Notification(title, { body: body});
   }
 }
-// ==========================================================================================
-// ==========================================================================================
-// ==========================================================================================
-// ==========================================================================================
 
+// ==========================================================================================
+// ==========================================================================================
+// ========================  CREATE YOUTUBE BROADCAST =======================================
+// ==========================================================================================
 async function createBroadcast(socket) {
-  url = "/youtube/createbroadcast/api/"
-  let broadcast_data = new Object();
-  broadcast_data.videoPrivacyStatus = videoPrivacyStatus;
-  // console.log(videoPrivacyStatus);
-  broadcast_data.testNameValue = testNameValue;
-  broadcast_data.channel_title = currentChannelTitle;
+  const url = "/youtube/createbroadcast/api/";
+  const broadcastData = {
+    videoPrivacyStatus: videoPrivacyStatus,
+    testNameValue: testNameValue,
+    channelTitle: currentChannelTitle
+  };
 
-  json_broadcast_data = JSON.stringify(broadcast_data);
-
-  let csrftoken = await getCookie('csrftoken');
-
+  const csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
   myHeaders.append('Accept', 'application/json');
   myHeaders.append('Content-type', 'application/json');
   myHeaders.append('X-CSRFToken', csrftoken);
 
-  let broadcastCreated = false;
+  broadcastCreated = false;
 
-  await fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders })
-    .then((response) => {
-      if (response.status != 201) {
-        if (response.status === 403) {
-          return response.json().then(data => {
-            console.error(`Error: ${data.message}`);
-            let errMsg = data.message;
-            resetStateOnError();
-            if (errMsg === 'The user is not enabled for live streaming.') {
-              errMsg = 'This youtube account is not enabled for live streaming.';
-            }
-            showErrorModal(errMsg);
-          });
-        } else {
-          throw new Error("Error when creating broadcast!");
-        }
-      } else {
-        broadcastCreated = true;
-        return response.json();
-      }
-    })
-    .then((json) => {
-      try {
-        data = json;
-        // console.log("data: ", data);
-        newStreamId = data.newStreamId;
-        newStreamName = data.newStreamName;
-        newStreamIngestionAddress = data.newStreamIngestionAddress;
-        //newRtmpUrl=data.newRtmpUrl;
-        newRtmpUrl = "rtmp://a.rtmp.youtube.com/live2" + "/" + newStreamName;
-        newBroadcastID = data.new_broadcast_id;
-      }
-      catch {
-        return
-      }
-    })
-    .catch((err) => {
-      console.error("Broadcast creation error: ", err)
-      resetStateOnError();
-      showErrorModal();
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(broadcastData),
+      headers: myHeaders
     });
 
-  if (broadcastCreated == true) {
-    insertVideoIntoPlaylist(socket);
+    if (response.status !== 201) {
+      if (response.status === 403) {
+        const data = await response.json();
+        console.error(`Error: ${data.message}`);
+        let errMsg = data.message;
+
+        stopRecording();
+        resetStateOnError();
+
+        if (errMsg === 'The user is not enabled for live streaming.') {
+          errMsg = 'This YouTube account is not enabled for live streaming.';
+        }
+        showErrorModal(errMsg);
+      } else {
+        throw new Error("Error when creating broadcast!");
+      }
+    } else {
+      const json = await response.json();
+      const { newStreamId, newStreamName, newStreamIngestionAddress, new_broadcast_id } = json;
+      newRtmpUrl = `rtmp://a.rtmp.youtube.com/live2/${newStreamName}`;
+      newBroadcastID = new_broadcast_id;
+
+      // Insert the video into playlist
+      const videoInserted = await insertVideoIntoPlaylist(socket);
+      if (!videoInserted) {
+        throw new Error("Error when inserting video into playlist!");
+      }
+
+      broadcastCreated = true;
+
+      return broadcastCreated;
+    }
+  } catch (error) {
+    console.error("Broadcast creation error: ", error);
+    resetStateOnError();
+    showErrorModal();
+
+    return broadcastCreated;
   }
 }
-
+// ==========================================================================================
+// ==========================================================================================
+// ==========================================================================================
+// ==========================================================================================
 async function endBroadcast() {
-  url = "/youtube/transitionbroadcast/api/";
-  let broadcast_data = new Object();
-  broadcast_data.the_broadcast_id = newBroadcastID;
-  broadcast_data.channel_title = currentChannelTitle;
-  json_broadcast_data = JSON.stringify(broadcast_data);
-  let csrftoken = await getCookie('csrftoken');
+  let broadcastStoppedSuccessfully = false;
+  const url = "/youtube/transitionbroadcast/api/";
+  const broadcastData = {
+    the_broadcast_id: newBroadcastID,
+    channel_title: currentChannelTitle
+  };
+
+  const csrftoken = await getCookie('csrftoken');
   const myHeaders = new Headers();
   myHeaders.append('Accept', 'application/json');
   myHeaders.append('Content-type', 'application/json');
   myHeaders.append('X-CSRFToken', csrftoken);
 
-  fetch(url, { method: 'post', body: json_broadcast_data, headers: myHeaders })
-    .then((response) => {
-      if (response.status != 200) {
-        throw new Error("Error when transitioning broadcast!");
-      } else {
-        return response.json();
-      }
-    })
-    .then((json) => {
-      data = json;
-      // console.log("transition complete broadcast data: ", data);
-    })
-    .then(() => {
-      // console.log("Broadcast Trasitioned to complete state!");
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      body: JSON.stringify(broadcastData),
+      headers: myHeaders
+    });
+
+    if (response.status === 200) {
+      const json = await response.json();
       const previewButton = document.getElementById('playback-video-button');
       previewButton.style.display = 'block';
+      broadcastStoppedSuccessfully = true;
+
+      return broadcastStoppedSuccessfully;
+    } else {
+      return broadcastStoppedSuccessfully;
     }
-    )
-    .catch((err) => {
-      console.error("Broadcast Trasitioning to complete state failed!");
-      // console.log('transiton broadcast error >>> ', err);
-    });
+  } catch (error) {
+    return broadcastStoppedSuccessfully;
+  }
 }
 
 async function goToPage(event) {
@@ -1736,7 +1710,6 @@ async function createRecordingTimestamp() {
 
   // Set the files timestamp
   filesTimestamp = newTimestamp;
-  // // console.log("New File Timestamp: ", filesTimestamp);
 }
 
 // Stops video element tracks
@@ -1750,116 +1723,49 @@ async function stopVideoElemTracks(videoElem) {
     console.error("Error while stopping video display tracks: ", error.message)
   }
 }
-
-// Inserts a video into a youtube playlist
 async function insertVideoIntoPlaylist(socket) {
-  // hide the creating broadcast modal
-  let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  let csrftoken = await getCookie('csrftoken');
-  let responseStatus = null;
-  await fetch(playlistItemsInsertURL, {
-    method: 'POST',
-    body: JSON.stringify({
-      videoId: newBroadcastID,
-      playlistId: userPlaylistSelection,
-      channel_title: currentChannelTitle
-    }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-      'X-CSRFToken': csrftoken
-    }
-  })
-    .then(response => {
-      responseStatus = response.status;
-      return response.json();
-    })
-    .then((json) => {
-      if (responseStatus == 200) {
-        msg = "STATUS: Video Inserted Into User Playlist."
-        document.getElementById("app-status").innerHTML = msg;
+  const playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
+  const csrftoken = await getCookie('csrftoken');
+  let video_inserted = false;
+  let selectedPlaylist = document.getElementById("selectPlaylist").value.trim();
 
-        // Insert video into daily playlist
-        if (todaysPlaylistId != null) {
-          insertVideoIntoTodaysPlaylist(socket);
-        } else {
-          sendRTMPURL(socket);
-        }
-
-      } else {
-        // Server error message
-        // console.log("Server Error Message: ", json)
-        msg = "STATUS: Failed to Insert Video Into User Playlist."
-        document.getElementById("app-status").innerHTML = msg;
-
-        // Show error modal
-        // playlistInsertVideoErrorModal();
+  try {
+    const response = await fetch(playlistItemsInsertURL, {
+      method: 'POST',
+      body: JSON.stringify({
+        videoId: newBroadcastID,
+        playlistId: selectedPlaylist,
+        channel_title: currentChannelTitle
+      }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+        'X-CSRFToken': csrftoken
       }
-    })
-    .catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to Insert Video Into User Playlist."
-      document.getElementById("app-status").innerHTML = msg;
-
-      // Show error modal
-      // playlistInsertVideoErrorModal();
     });
-  // display some buttons and remove some
-  displayUtilities()
-}
 
-// Inserts a video into the current day's youtube playlist
-async function insertVideoIntoTodaysPlaylist(socket) {
-  showCreatingBroadcastModal(false);
-  let playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  let csrftoken = await getCookie('csrftoken');
-  let responseStatus = null;
-  await fetch(playlistItemsInsertURL, {
-    method: 'POST',
-    body: JSON.stringify({
-      videoId: newBroadcastID,
-      playlistId: todaysPlaylistId,
-      channel_title: currentChannelTitle
-    }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8",
-      "X-CSRFToken": csrftoken
+    const json = await response.json();
+    const responseStatus = response.status;
+
+    if (responseStatus === 200) {
+      document.getElementById("app-status").innerHTML = "STATUS: Video Inserted Into User Playlist.";
+
+      sendRTMPURL(socket);
+
+      displayUtilities();
+
+      return video_inserted = true;
+    } else {
+      throw new Error("Failed to insert video into user playlist!");
     }
-  })
-    .then(response => {
-      // console.log(response)
-      responseStatus = response.status;
-      return response.json();
-    })
-    .then((json) => {
-      if (responseStatus == 200) {
-        msg = "STATUS: Video Inserted Into Daily Playlist."
-        document.getElementById("app-status").innerHTML = msg;
 
-        // Proceed to send RTMP URL
-        sendRTMPURL(socket);
-
-      } else {
-        // Server error message
-        msg = "STATUS: Failed to Insert Video Into Daily Playlist."
-        document.getElementById("app-status").innerHTML = msg;
-
-        // Show error modal
-        playlistInsertVideoErrorModal();
-      }
-    })
-    .catch(error => {
-      console.error(error);
-      msg = "STATUS: Failed to Insert Video Into Daily Playlist."
-      document.getElementById("app-status").innerHTML = msg;
-
-      // Show error modal
-      playlistInsertVideoErrorModal();
-    });
+  } catch (error) {
+    document.getElementById("app-status").innerHTML = "ERROR: Failed to Insert Video Into User Playlist.";
+    return video_inserted;
+  }
 }
 
 // Sends an RTMP URL to the websocket
 async function sendRTMPURL(socket) {
-  // displayTimer();
   showCreatingBroadcastModal(false);
   if (socket != null && socket.readyState === WebSocket.OPEN) {
     // Check if we need to add audio stream
@@ -1867,23 +1773,11 @@ async function sendRTMPURL(socket) {
     if (recordAudio == true) {
       let msg = "browser_sound," + newRtmpUrl;
       await socket.send(msg)
-      // console.log('<=== RTMP sent with audio ====>');
     } else {
       await socket.send(newRtmpUrl);
-      // console.log('<=== RTMP sent ====>');
     }
     displayUtilities();
   }
-}
-
-// Shows youtube playlist insert video error modal
-async function playlistInsertVideoErrorModal() {
-  // close modal if open
-  const btnClosePlaylistInsertErrorModal = document.getElementById('btnClosePlaylistInsertErrorModal');
-  btnClosePlaylistInsertErrorModal.click();
-  // Show modal
-  const playlistInsertErrorModal = new bootstrap.Modal(document.getElementById('playlist-insert-video-error-modal'));
-  playlistInsertErrorModal.show();
 }
 
 // Creating youtube broadcast modal
@@ -2167,26 +2061,9 @@ async function showPlaylistCreationErrorModal() {
 
 async function getSupportedMediaType() {
   let options = null;
-  /*if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-    options = {
-      mimeType: 'video/webm; codecs=vp9',
-      videoBitsPerSecond: 3000000
-    };
-    return options;
-  } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
-    options = {
-      mimeType: 'video/webm; codecs=vp8,opus',
-      videoBitsPerSecond: 3000000
-    };
-    return options;
-  } else {
-    return null;
-  }*/
-
   // Rolling back the mime type feature
   options = {
     mimeType: 'video/webm; codecs=h264',
-    //videoBitsPerSecond: 3000000
     videoBitsPerSecond: 1200000
   };
   return options;
@@ -2221,9 +2098,7 @@ async function showCreatingPlaylistModal(status) {
   }
 }
 
-// ====================================== CHANNEL CODE SECTION ============================================
 
-// =====================================  Adding A Channel ================================================
 async function showAddChannelModal() {
   // close modal if open
   const btnCloseAddNewChannelModal = document.getElementById('close-add-channel-modal');
@@ -2340,15 +2215,16 @@ function displayUtilities() {
   document.querySelector(".video-title").innerHTML = `<h2>${finalvideoTitle}</h2>`
 }
 
-/* Fetch channels for the user */
+// #################################################################################
+// #################################################################################
+// ######################### FETCH USER CHANNEL ####################################
+// #################################################################################
 async function fetchUserChannel() {
   try {
     const channelsApiUrl = '/youtube/channels/api';
     let statusBar = document.getElementById("app-status");
 
-    const response = await fetch(channelsApiUrl, {
-      method: 'GET',
-    });
+    const response = await fetch(channelsApiUrl, {method: 'GET'});
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -2359,10 +2235,8 @@ async function fetchUserChannel() {
         throw new Error('Error: ' + response.status);
       }
     }
-
     const data = await response.json();
     const userChannels = data;
-
     statusBar.innerHTML = "STATUS: User Channel Received.";
 
     userChannels.forEach((obj) => {
@@ -2384,71 +2258,78 @@ async function fetchUserChannel() {
     const statusBar = document.getElementById("app-status");
 
     if (error.message === 'Unauthorized') {
-      statusBar.innerHTML = 'ERROR: Account is not a Google account';
+      statusBar.innerHTML = 'ERROR: Google authentication failed';
       channelSelect.value = 'Channel Unavailable';
     } else if (error.message === 'Not Found') {
-      statusBar.innerHTML = 'ERROR: Account does not have a created channel';
+      statusBar.innerHTML = 'ERROR: Account does not have an associated YouTube channel';
       channelSelect.value = 'Channel Unavailable';
     } else {
-      statusBar.innerHTML = 'ERROR: Unable to fetch the channel, please contact the admin';
+      statusBar.innerHTML = 'ERROR: Failed to fetch channel, An error occurred while fetching the data.';
       channelSelect.value = 'Channel Unavailable';
     }
 
     return 'Error';
   }
 }
+// #################################################################################
+// #################################################################################
+// #################################################################################
+// #################################################################################
 
 async function loadUserPlaylist() {
   let channel = document.getElementById("selectChannel").name;
   if (channel) {
-    fetchUserPlaylists()
+    fetchUserPlaylists();
   }
 }
-
+// #################################################################################
+// #################################################################################
+// ######################### FETCH USER PLAYLISTS ##################################
+// #################################################################################
 async function fetchUserPlaylists() {
-  let statusBar = document.getElementById("app-status");
-  let selectUserPlaylist = document.querySelector(".selectPlaylist")
+  const statusBar = document.getElementById("app-status");
+  const selectUserPlaylist = document.querySelector(".selectPlaylist");
 
-  await fetch('/youtube/fetchplaylists/api/', { method: 'GET', })
-    .then(response => {
-      responseStatus = response.status;
-      if (response.ok) {
-        if (response.status === 204) {
-          throw new Error('No Content');
-        } else {
-          return response.json();
+  try {
+    const response = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
+
+    if (response.ok) {
+      if (response.status === 204) {
+        throw new Error('No Content');
+      } else {
+        const json = await response.json();
+
+        statusBar.innerHTML = "STATUS: Playlists Received.";
+        const userPlaylists = json.user_playlists;
+
+        for (const key in userPlaylists) {
+          const opt = document.createElement("option");
+          opt.innerHTML = userPlaylists[key];
+          opt.value = key;
+          selectUserPlaylist.append(opt);
         }
-      } else {
-        throw new Error('Server side error')
-      }
-    })
-    .then((json) => {
-      msg = "STATUS: Playlists Received."
-      statusBar.innerHTML = msg;
-      let userPlaylists = json.user_playlists;
-      for (const key in userPlaylists) {
-        let opt = document.createElement("option");
-        opt.innerHTML = userPlaylists[key];
-        opt.value = key;
-        selectUserPlaylist.append(opt)
-      }
-      // Get today's playlist id
-      let todaysPlaylistObject = json.todays_playlist_dict
-      todaysPlaylistId = todaysPlaylistObject.todays_playlist_id
-    }
-    )
-    .catch(error => {
-      console.error(error);
-      if (error.message === 'No content') {
-        msg = "ERROR: The channel does not have any playlists created.";
-        statusBar.innerHTML = msg;
-      } else {
 
-        msg = "ERROR: Unable to fetch playlist please contact the admin";
-        statusBar.innerHTML = msg;
+        // Get today's playlist id
+        const todaysPlaylistObject = json.todays_playlist_dict;
+        todaysPlaylistId = todaysPlaylistObject.todays_playlist_id;
       }
-    });
+    } else {
+      throw new Error('Server side error');
+    }
+  } catch (error) {
+    console.error(error);
+
+    if (error.message === 'No Content') {
+      statusBar.innerHTML = "ERROR: The channel does not have any playlists created.";
+    } else {
+      statusBar.innerHTML = "ERROR: Failed to fetch playlists. An error occurred while fetching the data.";
+    }
+  }
 }
+// #################################################################################
+// #################################################################################
+// #################################################################################
+// #################################################################################
 
 async function load_gallery() {
   // console.log('welcome Load Gallery Function');
@@ -2598,7 +2479,7 @@ async function play(videoId, playerElementID = 'player') {
   }
 }
 
-function resetonStartRecording() {
+function resetOnStartRecording() {
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
   // reset video title 

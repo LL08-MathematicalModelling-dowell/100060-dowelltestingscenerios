@@ -17,7 +17,6 @@ def create_user_youtube_object(request):
     Create a YouTube object using the v3 version of the API and
     the authenticated user's credentials.
     """
-    # print('Creating youtube object...')
     try:
         # Retrieve the YoutubeUserCredential object associated with the authenticated user
         youtube_user = YoutubeUserCredential.objects.get(user=request.user)
@@ -30,9 +29,8 @@ def create_user_youtube_object(request):
             # Create credentials from the dictionary
             credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
         except Exception as e:
-            credentials = Credentials.from_authorized_user_info(info=credentials_data)
+            return None
         try:
-            # # print(f'Checking if access token has expired...{credentials.expired}')
             # Check if the access token has expired
             if credentials.expired:
                 # print('Access token has expired!')
@@ -49,10 +47,8 @@ def create_user_youtube_object(request):
                 # Update the stored credential data with the refreshed token
                 youtube_user.credential = credentials.to_json()
                 youtube_user.save()
-                # print('Access token refreshed!')
         except Exception as e:
             # Handle any error that occurred while refreshing the access token
-            # print(f'An error occurred: {e}')
             return None
 
         # Create a YouTube object using the v3 version of the API and the retrieved credentials
