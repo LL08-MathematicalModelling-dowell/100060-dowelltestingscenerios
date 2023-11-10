@@ -407,6 +407,7 @@ async function stopRecording(errorOccurred = false) {
     await stopStreams();
     await clearTimer();
     document.querySelector('.stop-btn').style.display = 'none';
+    document.querySelector('.record-btn').style.display = 'block';
     document.getElementById("start").disabled = false;
 
 
@@ -954,7 +955,6 @@ async function validateModal() {
  */
 async function sendAvailableData(testRecordingData = null) {
   try {
-    // const status = document.getElementById("app-status");
     document.querySelector('.record-btn').style.display = 'block';
     document.querySelector('.library-btn').style.display = 'block';
     // show create playlist btn
