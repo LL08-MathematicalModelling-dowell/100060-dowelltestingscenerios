@@ -5,23 +5,23 @@
     {% load socialaccount %}
     {% if user.is_authenticated %}
     <div class="authenticated-user">
-      <div class="lower-nav-item">
-        <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
-        <div class="lower-nav-label">Channel</div>
+      <div class="lower-nav-item channel" style="width: 200px;">
+        <div class="lower-nav-label">Channel: </div>
+        <input type="text" name="" style="margin-left: 0px;" id="selectChannel" value="Loading..." disabled>
         <div style="color:red;" id="channelname-error"></div>
       </div>
       <!-- end single select -->
       <div class="story-name lower-nav-item">
-        <input type="text" name="" id="test-name" placeholder="Title" onkeydown="hideTestNameError()">
-        <div class="lower-nav-label">Enter Video Title</div>
+        <div class="lower-nav-label">Video Title: </div>
+        <input type="text" name="" id="test-name" placeholder="Enter video title" onkeydown="hideTestNameError()">
         <div style="color:red;" id="test-name-error"></div>
       </div>
       <div class="lower-nav-item">
         <!-- single select -->
-        <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist" style="width: 100%" onchange="hidePlaylistError()">
+        <div class="lower-nav-label">Playlist: </div>
+        <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist" onchange="hidePlaylistError()">
           <option value=""></option>
         </select>
-        <div class="lower-nav-label">Select a Playlist</div>
         <div style="color:red;" id="playlist-error"></div>
         <!-- end single select -->
       </div>

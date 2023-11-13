@@ -144,7 +144,7 @@ img {
 }
 
 /* lower nav */
-.lower-nav {
+/* .lower-nav {
   display: flex;
   justify-content: space-around;
   align-items: center;
@@ -153,25 +153,46 @@ img {
   text-align: center;
   height: 60px;
   font-size: .8em;
+} */
+
+.lower-nav {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--light-primary_clr);
+  padding: 0 50px;
+  text-align: center;
+  height: 60px;
+  font-size: .8em;
+  border-radius: 0 0 10px 10px;
 }
+
 
 .authenticated-user {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
-  width: 100%;
+  width: 60%;
 }
 
+/* .lower-nav-item {
+  margin: 0.5rem 0.5rem;
+  width: inherit;
+} */
+
 .lower-nav-item {
+  display: flex;
+  flex-direction: row;
   margin: 0.5rem 0.5rem;
   width: inherit;
 }
+
 
 .lower-nav-item select,
 .lower-nav-item input,
 .lower-nav-item a {
   display: block;
-  width: 100%;
+  width: 250px;
   margin: 0 auto;
   background: var(--light-primary_clr);
   color: var(--white-clr);
@@ -236,12 +257,15 @@ img {
 
 }
 
-
-
 .lower-nav-label {
   color: var(--dark-clr);
   padding-top: 5px;
+  text-wrap: nowrap;
+  font-size: 1em;
+  margin-right: 5px;
+  font-weight: 500;
 }
+
 
 .show-user-bar {
   height: 90px;
@@ -260,6 +284,7 @@ img {
 } */
 #app-status {
   color: var(--white-clr);
+  height: 20px;
 }
 
 .story-name a {
@@ -299,6 +324,7 @@ img {
 }
 #test-name {
   outline: 1px solid #fa3d4a;
+  width: 200px;
 }
 
 .login-btn {
@@ -876,6 +902,7 @@ img {
   background-color: var(--light-primary_clr) !important;
 }
 
+
 .col-lg-4 {
   flex: 0 0 auto;
   width: auto;
@@ -913,13 +940,12 @@ iframe {
   width: 100%;
   height: 100%;
 }
-
 #modal-dialog-video-modal {
   position: relative;
   width: 80%;
   margin: var(--bs-modal-margin);
   pointer-events: none;
-  margin: 180px auto;
+  margin: 50px auto;
 }
 
 #modal-content-video-modal {
@@ -1096,7 +1122,7 @@ iframe {
 }
 
 #selectPlaylist {
-  padding: 5px;
+  padding: 10px;
   min-width: 100px;
   text-align: left;
 }
@@ -1138,4 +1164,13 @@ iframe {
 
 .video-title h2 {
   font-size: 1.5em;
+}
+
+#preview-video-modal {
+  display: none;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  margin: 0px;
+  place-items: center;
 }
