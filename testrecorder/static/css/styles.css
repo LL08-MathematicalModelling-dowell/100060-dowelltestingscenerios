@@ -1115,6 +1115,7 @@ iframe {
   bottom: 0px;
   width: 100%;
   background: border-box;
+  padding: 10px;
 }
 
 .mobile-menu {
