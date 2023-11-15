@@ -75,10 +75,8 @@ class UserChannelsView(APIView):
                 
             youtube, credential = create_user_youtube_object(request)
             if youtube is None:
-                # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
             
-            # print('Getting user youtube channel...')
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
             if 'items' not in channels_response:
@@ -110,7 +108,6 @@ class UserChannelsView(APIView):
                 # If the channel already exists, update the credential
                 if not created and channel_record.channel_credentials != credential:
                     channel_record.channel_credentials = credential
-                    # print("Channel credential updated!!!")
                     channel_record.save()
 
             except Exception as e:
