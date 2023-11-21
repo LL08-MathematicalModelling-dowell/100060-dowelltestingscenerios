@@ -92,7 +92,7 @@ class UserChannelsView(APIView):
                 for channel in channels_response['items']
             ]
 
-            cache.set(cache_key, channels, 24 * 60 * 60)
+            cache.set(cache_key, channels, 5 * 24 * 60 * 60)
 
             try:
                 # Check if the first channel already exists in the database
