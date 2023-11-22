@@ -6,8 +6,6 @@ from googleapiclient.errors import HttpError
 from datetime import datetime
 from datetime import timedelta
 from django.shortcuts import redirect
-from django.conf import settings
-from rest_framework.reverse import reverse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -44,8 +42,6 @@ def insert_broadcast(youtube):
         part="snippet,contentDetails,statistics,status",
         body={
             "status": {
-                # "privacyStatus": "private",
-                # "privacyStatus": "public",
                 "privacyStatus": videoPrivacyStatus,
                 "selfDeclaredMadeForKids": False
             },
@@ -55,7 +51,8 @@ def insert_broadcast(youtube):
             },
             "contentDetails": {
                 "enableAutoStart": True,
-                "enableAutoStop": True
+                "enableAutoStop": True,
+                "closedCaptionsType": "closedCaptionsEmbedded",
             }
         }
     )
@@ -65,8 +62,8 @@ def insert_broadcast(youtube):
 
     snippet = insert_broadcast_response["snippet"]
 
-    print("Broadcast '%s' with title '%s' was published at '%s'." % (
-        insert_broadcast_response["id"], snippet["title"], snippet["publishedAt"]))
+    print(
+        f'Broadcast ID {insert_broadcast_response["id"]} with title { snippet["title"]} was published at {snippet["publishedAt"]}.')
 
     return insert_broadcast_response["id"]
 
@@ -95,7 +92,7 @@ def insert_stream(youtube):
     )
 
     insert_stream_response = request.execute()
-    print(insert_stream_response)
+    print('Stream Response ===> ', insert_stream_response)
 
     snippet = insert_stream_response["snippet"]
     cdn = insert_stream_response["cdn"]
@@ -235,7 +232,8 @@ def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
             },
             "contentDetails": {
                 "enableAutoStart": True,
-                "enableAutoStop": True
+                "enableAutoStop": True,
+                "closedCaptionsType": "closedCaptionsEmbedded",
             }
         }
     )
@@ -340,7 +338,7 @@ class CreateBroadcastView(APIView):
         Creates a broadcast with a live stream bound
         """
         print('Creating broadcast... ')
-        
+
         youtube = create_user_youtube_object(request)
         if youtube is None:
             raise AttributeError('youtube object creation failed!!')
@@ -368,6 +366,7 @@ class CreateBroadcastView(APIView):
         stream_dict['new_broadcast_id'] = new_broadcast_id
         stream_id = stream_dict['newStreamId']
         bind_broadcast(youtube, new_broadcast_id, stream_id)
+
         # Serialize the stream dictionary to JSON
         json_stream_dict = json.dumps(stream_dict)
         print(json_stream_dict)
@@ -384,6 +383,7 @@ class TransitionBroadcastView(APIView):
         """
 
         try:
+            print('Transitionig Broadcast...')
             print("Request: ", request)
             print("Request Data: ", request.data)
             print("Request Data Type: ", type(request.data))
@@ -402,8 +402,6 @@ class TransitionBroadcastView(APIView):
             error = {'Error': str(e)}
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-    # Transitions a broadcast to complete status
-
 
 def transition_broadcast(the_broadcast_id, request):
 
@@ -419,6 +417,8 @@ def transition_broadcast(the_broadcast_id, request):
 
     broadcast_transition_response = request.execute()
     print("broadcast_transition_response: ", broadcast_transition_response)
+    video_id = broadcast_transition_response['id']
+    print('====== video ID => ', video_id)
 
     return broadcast_transition_response
 
