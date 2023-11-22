@@ -1,2 +1,2 @@
 # heroku-test-recorder
-A YouTube streaming api
+A YouTube streaming api.
