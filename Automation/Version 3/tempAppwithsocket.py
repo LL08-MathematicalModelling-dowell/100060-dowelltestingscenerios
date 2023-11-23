@@ -1,13 +1,18 @@
-from flask import Flask, request, redirect, session, Response, jsonify, render_template
+import json
+import os
+from datetime import datetime, timedelta
+
+from flask import (
+    Flask,
+    make_response, jsonify, redirect, 
+    render_template,
+    request, session
+)
+from flask_cors import CORS
+from flask_socketio import SocketIO, emit
 from google.oauth2 import credentials
 from google_auth_oauthlib.flow import Flow
 import googleapiclient.discovery
-import os 
-from datetime import datetime,timedelta
-import json
-from flask_socketio import SocketIO, emit
-from flask_cors import CORS
-
 
 # The above code is importing the `VideoStreamer` class from the `LiveStreamclass` module.
 from LiveStreamclass import VideoStreamer
@@ -35,12 +40,17 @@ CLIENT_SECRETS_FILE = "client_secrets.json"
 
 # The above code is defining a list called `SCOPES` which contains three strings. These strings
 # represent the different scopes or permissions that are required to access certain features of the
-# YouTube API. The first scope `https://www.googleapis.com/auth/youtube.readonly` allows read-only
+# YouTube API. 
+# The first scope `https://www.googleapis.com/auth/youtube.readonly` allows read-only
 # access to the user's YouTube account. The second scope
 # `https://www.googleapis.com/auth/youtube.upload` allows the user to upload videos to their YouTube
 # account. The third scope `https://www.googleapis.com/auth/youtube.force-ssl` enforces the use of SSL
 # (Secure Sockets Layer) for all API
-SCOPES = ['https://www.googleapis.com/auth/youtube.readonly', "https://www.googleapis.com/auth/youtube.upload",'https://www.googleapis.com/auth/youtube.force-ssl']
+SCOPES = [
+    'https://www.googleapis.com/auth/youtube.readonly',
+    "https://www.googleapis.com/auth/youtube.upload",
+    'https://www.googleapis.com/auth/youtube.force-ssl'
+]
 
 # The above code is defining two variables, `API_SERVICE_NAME` and `API_VERSION`, with the values
 # "youtube" and "v3" respectively. These variables are likely used to specify the API service name and
@@ -67,33 +77,32 @@ socketio = SocketIO(app)
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    redirect_uri='http://localhost:8000/callback'
+    redirect_uri='http://localhost:8000/callback/'
 )
 
-
-"""
-The index function checks if the user is logged in and redirects them to the authorization URL if
-not, otherwise it renders the index.html template.
-:return: If the 'credentials' key is not present in the session, the code will redirect the user to
-the authorization URL. If the 'credentials' key is present in the session, the code will render the
-'index.html' template.
-"""
 @app.route('/')
 def index():
+    """
+    The index function checks if the user is logged in and redirects them to the
+    authorization URL if not, otherwise it renders the index.html template.
+    Return: If the 'credentials' key is not present in the session, the code will
+        redirect the user to the authorization URL. If the 'credentials' key is present
+        in the session, the code will render the 'index.html' template.
+    """
     if 'credentials' not in session:
         authorization_url, _ = flow.authorization_url(prompt='consent')
         return redirect(authorization_url)
     else:
-        # return "you are logged in",200
         return render_template('index.html')
 
-"""
-    This function handles the callback URL and retrieves the access token from the authorization
-    response.
-    :return: a redirect to the root URL ("/").
- """
-@app.route('/callback')
+
+@app.route('/callback/')
 def callback():
+    """
+    This function handles the callback URL and retrieves the access token
+    from the authorization response.
+    Return: a redirect to the root URL ("/").
+    """
     flow.fetch_token(authorization_response=request.url)
     if not flow.credentials:
         return 'Failed to retrieve access token.'
@@ -102,13 +111,14 @@ def callback():
     session['credentials'] = credentials_to_dict(flow.credentials)
     return redirect('/')
 
-"""
-The function retrieves the information of the authenticated user's YouTube channel and returns the
-channel's snippet information.
-:return: The channel information is being returned as a JSON object.
-"""
+
 @app.route('/channel')
 def channel():
+    """
+    The function retrieves the information of the authenticated user's YouTube
+    channel and returns the channel's snippet information.
+    return: The channel information is being returned as a JSON object.
+    """
     if 'credentials' not in session:
         return redirect('/')
 
@@ -122,22 +132,28 @@ def channel():
         ).execute()
 
         # Extract channel information
-        channel_info = channels_response['items'][0]['snippet']
+        channel_info = channels_response['items']
+        channel_dict = {}
+        if len(channel_info) > 0:
+            channel_dict = {
+                "id": channel_info[0]['id'],
+                "title": channel_info[0]['snippet']['title'],
+            }
 
-        # return f"Channel Title: {channel_info['title']}"
-        return channel_info,200
+        return make_response(jsonify(channel_dict), 200)
     except Exception as e:
-        return 'An error occurred: Please try again after some time',500
+        return make_response(jsonify({'Error': 'Failed to fetch user playlists'}), 500)
 
-"""
-The `playlists` function in this Python code fetches the user's playlists from the YouTube API and
-returns the playlist titles as a response.
-:return: The code is returning the playlists and their titles in JSON format with a status code of
-200 if the request is successful. If an error occurs, it returns an error message with a status code
-of 500.
-"""
+
 @app.route('/playlists')
 def playlists():
+    """
+    The `playlists` function in this Python code fetches the user's playlists from the
+    YouTube API.
+    return: The code is returning the playlists and their titles in JSON format
+            with a status code of 200 if the request is successful. If an
+            error occurs, it returns an error message with a status code of 500.
+    """
     if 'credentials' not in session:
         return redirect('/')
 
@@ -153,20 +169,32 @@ def playlists():
 
         # Extract playlist information
         playlists = playlists_response['items']
-        playlist_titles = [playlist['snippet']['title'] for playlist in playlists]
+        playlists_dict = []
+        if len(playlists) > 0:
+            playlists_dict = [
+                {
+                    "id": playlist['id'],
+                    "title": playlist['snippet']['title']
+                } 
+                for playlist in playlists
+            ]
 
-        # return f"Playlists: {', '.join(playlist_titles)}"
-        return playlists,200
+        return make_response(jsonify(playlists_dict), 200)
     except Exception as e:
-        return 'An error occurred: Please try again after some time',500
+        return make_response(jsonify({'Error': 'Failed to fetch playlists'}), 500)
 
-"""
-This function creates a new playlist on YouTube using the provided title and description.
-:return: The code is returning a JSON response containing the details of the newly created playlist.
-"""
+
+
+
 # send data in form not in json 
 @app.route('/createPlaylist', methods=['POST'])
 def create_playlist():
+    """
+    This function creates a new playlist on YouTube using the provided 
+    title and description.
+    return: The code is returning a JSON response containing the details
+            of the newly created playlist.
+    """
     if 'credentials' not in session:
         return redirect('/')
 
@@ -191,8 +219,9 @@ def create_playlist():
 
         return jsonify(new_playlist),200
     except Exception as e:
-        return 'An error occurred: Add playlist title/description',500
-    
+        return make_response({'Error': 'Failed to create playlist'}, 500)
+
+
 #needed for startlive function
 def insert_broadcast(youtube):
     """
@@ -201,7 +230,6 @@ def insert_broadcast(youtube):
     """
     # create broadcast time
     time_delt1 = timedelta(days=0, hours=0, minutes=1)  # ToDo use milliseconds
-    # time_now = datetime.now()
     time_now = datetime.utcnow()
     future_date1 = time_now + time_delt1
     future_date_iso = future_date1.isoformat()
@@ -230,12 +258,8 @@ def insert_broadcast(youtube):
     )
 
     insert_broadcast_response = request.execute()
-    # print(insert_broadcast_response)
 
     snippet = insert_broadcast_response["snippet"]
-
-    # print(
-    #     f'Broadcast ID {insert_broadcast_response["id"]} with title { snippet["title"]} was published at {snippet["publishedAt"]}.')
 
     return insert_broadcast_response["id"]
 
@@ -288,6 +312,7 @@ def insert_stream(youtube):
                    }
     return stream_dict
 
+
 #needed for startlive function
 def bind_broadcast(youtube, broadcast_id, stream_id):
     """
@@ -301,9 +326,6 @@ def bind_broadcast(youtube, broadcast_id, stream_id):
     )
     bind_broadcast_response = request.execute()
 
-    # print("Broadcast '%s' was bound to stream '%s'." % (
-    #     bind_broadcast_response["id"],
-    #     bind_broadcast_response["contentDetails"]["boundStreamId"]))
 
 @app.route('/startLiveStream', methods=['POST'])
 def create_broadcast():
@@ -342,60 +364,72 @@ def create_broadcast():
     except Exception as e:
         return 'An error occurred: Please try again after some time',500
 
-"""
-The function `handle_connect` is triggered when a client connects to the socket, and if the session
-does not already have a 'video_streamer' key, it creates a new instance of the `VideoStreamer` class
-and assigns it to the session.
-"""
+
 @socketio.on('connect')
 def handle_connect():
+    """
+    The function `handle_connect` is triggered when a client connects to
+    the socket, and if the session does not already have a 'video_streamer'
+    key, it creates a new instance of the `VideoStreamer` class
+    and assigns it to the session.
+    """
     print('Client connected')
     if 'video_streamer' not in session:
         session['video_streamer'] = VideoStreamer()
 
-"""
-The function "handle_disconnect" is triggered when a client disconnects from the socket.
-"""
+
 @socketio.on('disconnect')
 def handle_disconnect():
+    """
+    The function "handle_disconnect" is triggered when a client disconnects
+    from the socket.
+    """
     print('Client disconnected')
 
-"""
-The function `handle_start_stream` starts a video stream and sends the stream ID back to the client.
 
-:param stream_key: The stream_key is a unique identifier for the stream. It is used to start the
-streaming process and associate the stream with a specific key
-"""
 @socketio.on('start_stream')
 def handle_start_stream(stream_key):
+    """
+    The function `handle_start_stream` starts a video stream and sends 
+    the stream ID back to the client.
+    param 
+        stream_key: The stream_key is a unique identifier for the stream.
+            It is used to start the streaming process and associate the stream
+            with a specific key
+    """
     emit('stream_started')
     video_streamer = session['video_streamer']
     stream_id = video_streamer.start_streaming(stream_key)
-    socketio.emit('stream_id', {'stream_id': stream_id})  # Send the stream_id back to the client
+    socketio.emit('stream_id', {'stream_id': stream_id})
 
-"""
-The function `handle_stop_stream` stops a video stream identified by `stream_id` using the
-`video_streamer` object stored in the session.
 
-:param data: The `data` parameter is a dictionary that contains the information sent from the
-client-side. It is expected to have a key-value pair where the key is `'stream_id'` and the value is
-the ID of the stream that needs to be stopped
-"""
 @socketio.on('stop_stream')
 def handle_stop_stream(data):
+    """
+    The function `handle_stop_stream` stops a video stream identified by
+    `stream_id` using the `video_streamer` object stored in the session.
+    param 
+        data: The `data` parameter is a dictionary that contains the
+            information sent from the client-side. It is expected to
+            have a key-value pair where the key is `'stream_id'` and
+            the value is the ID of the stream that needs to be stopped
+    """
     stream_id = data.get('stream_id', None)
     if stream_id:
         video_streamer = session['video_streamer']
         video_streamer.stop_streaming(stream_id)
 
-"""
-The function handles streaming data by writing the stream to the corresponding ffmpeg process.
 
-:param data: The `data` parameter is a dictionary that contains the information about the stream
-data. It may have the following keys:
-"""
 @socketio.on('stream_data')
 def handle_stream_data(data):
+    """
+    The function handles streaming data by writing the
+    stream to the corresponding ffmpeg process.
+    param 
+        data: 
+            The `data` parameter is a dictionary that contains the information
+            about the stream data. It may have the following keys:
+    """
     stream_id = data.get('stream_id', None)
     video_streamer = session['video_streamer']
     ffmpeg_process = video_streamer.streams.get(stream_id)
@@ -405,14 +439,17 @@ def handle_stream_data(data):
         ffmpeg_process.stdin.flush()
 
 
-"""
-The function `credentials_to_dict` converts a `credentials` object into a dictionary.
 
-:param credentials: The "credentials" parameter is an object that contains various properties
-related to authentication and authorization. These properties include:
-:return: a dictionary with the following keys and values:
-"""
 def credentials_to_dict(credentials):
+    """
+    The function `credentials_to_dict` converts a `credentials` object into a 
+    dictionary.
+    param: 
+        credentials: 
+            The "credentials" parameter is an object that contains various
+            properties related to authentication and authorization.
+    Return: a dictionary with the following keys and values:
+    """
     return {
         'token': credentials.token,
         'refresh_token': credentials.refresh_token,
@@ -421,7 +458,8 @@ def credentials_to_dict(credentials):
         'client_secret': credentials.client_secret,
         'scopes': credentials.scopes
     }
+
+
 if __name__ == "__main__":
-#   app.run(host="127.0.0.1",port=8000)
-    # The above code is running a Flask application with Socket.IO support on port 8000.
-    socketio.run(app, port=8000)
+    # Run the app using the Flask development server and socketio server
+    socketio.run(app, port=8000, debug=True)
