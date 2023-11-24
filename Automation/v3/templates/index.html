@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Stream</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
+</head>
+<body>
+    <button onclick="startRecording()">Start Stream</button>
+    <button onclick="stopStreaming()">Stop Stream</button>
+    <p>
+        <label for="schedule-date">Schedule Date and Time</label>
+        <input type="datetime-local" id="schedule-date" name="schedule-date">
+        <button onclick="printSchedule()">Schedule Stream</button> 
+        <video id="video-stream" autoplay></video>
+    </p>
+
+    <script src="script.js"></script>
+</body>
+</html>

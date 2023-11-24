@@ -1,0 +1,1 @@
+To run application, generate youtube api client_secrets.json and put it in root directory.
