@@ -73,7 +73,7 @@ class UserChannelsView(APIView):
             if cached_response is not None:
                 return Response(cached_response, status=status.HTTP_200_OK)
                 
-            youtube, credential = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request=request)
             if youtube is None:
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
             
@@ -237,7 +237,7 @@ class DeleteVideoView(APIView):
         ```
         """
         try:
-            youtube, credential = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request=request)
             if youtube is None:
                 # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -282,7 +282,7 @@ class LoadVideoView(APIView):
             Exception: If an error occurs during the loading process.
         """
         try:
-            youtube, credential = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request=request)
             if youtube is None:
                 # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -396,7 +396,7 @@ class YouTubeVideoAPIView(APIView):
 
     def get_video_data(self, request, broadcast_id):
         # Set up the YouTube API client
-        youtube, credential = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request=request)
         if youtube is None:
             # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)

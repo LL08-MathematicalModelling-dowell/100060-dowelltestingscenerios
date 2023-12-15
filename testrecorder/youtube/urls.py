@@ -1,9 +1,8 @@
 from django.urls import path
 from .views import (
     logout_view,
-    index,
-    create_broadcast,
-    CreateBroadcastView,
+    # create_broadcast,
+    StartBroadcastView,
     TransitionBroadcastView,
     PlaylistItemsInsertView,
     FetchPlaylistsView,
@@ -24,9 +23,9 @@ from .views_library import (
 
 
 urlpatterns = [
-    path('', index, name='index'),
-    path('createbroadcast/', create_broadcast, name='createbroadcast'),
-    path('createbroadcast/api/', CreateBroadcastView.as_view(), name='create-broadcast-api'),
+    # path('', index, name='index'),
+    # path('createbroadcast/', create_broadcast, name='createbroadcast'),
+    path('createbroadcast/api/', StartBroadcastView.as_view(), name='create-broadcast-api'),
     path('transitionbroadcast/api/', TransitionBroadcastView.as_view(), name='transition-broadcast-api'),
     path('playlistitemsinsert/api/', PlaylistItemsInsertView.as_view(), name='playlist-items-insert-api'),
     path('fetchplaylists/api/', FetchPlaylistsView.as_view(), name='fetch-playlists'),
@@ -39,5 +38,4 @@ urlpatterns = [
     path('fetchlibraryplaylists/api/', FetchlibraryPlaylists.as_view(), name='fetchlibrary-playlists'),
     path('videos/api/<str:playlistId>/', SelectedPlaylistLoadVideo.as_view(), name='videos_from_playlistId'),
     path('videos/api/rate/<str:videoId>/', RateVideoView.as_view(), name='rate_video'),
-
 ]

@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-# from youtube.custom_google_call_back import oauth2_callback
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,7 +25,6 @@ urlpatterns = [
     path('file/', include('file_app.urls')),
     path('websocket/', include('app_websocket.urls')),
     path('youtube/', include('youtube.urls')),
-    # path('accounts/google/login/callback/', oauth2_callback, name='google_callback'),
     path('accounts/', include('allauth.urls')),
 ]
 
