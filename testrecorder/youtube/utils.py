@@ -16,7 +16,7 @@ def create_user_youtube_object(request=None, scope=None):
     Create a YouTube object using the v3 version of the API and
     the authenticated user's credentials.
     """
-    # print('Creating youtube object...')
+    # #print('Creating youtube object...')
     try:
         if request is not None:
             user = request.user
@@ -110,7 +110,7 @@ def insert_broadcast(youtube, video_privacy_status: str, test_name_value: str) -
         )
 
         insert_broadcast_response = request.execute()
-        # print(f'XXXXXXXXX  broadcast response {insert_broadcast_response} XXXXXX')
+        # #print(f'XXXXXXXXX  broadcast response {insert_broadcast_response} XXXXXX')
 
         return insert_broadcast_response.get("id", None)
 
@@ -147,8 +147,6 @@ def insert_stream(youtube):
         )
 
         insert_stream_response = request.execute()
-        
-        # print(f'XXXXXXXXX  stream response {insert_stream_response} XXXXXX')
 
         snippet = insert_stream_response.get("snippet", {})
         cdn = insert_stream_response.get("cdn", {})
@@ -156,8 +154,7 @@ def insert_stream(youtube):
 
         new_stream_id = insert_stream_response.get("id", "")
         new_stream_name = ingestion_info.get("streamName", "")
-        new_stream_ingestion_address = ingestion_info.get(
-            "rtmpsIngestionAddress", "")
+        new_stream_ingestion_address = ingestion_info.get("ingestionAddress", "")
         new_rtmp_url = f"{new_stream_ingestion_address}/{new_stream_name}"
 
         stream_dict = {
@@ -179,12 +176,13 @@ def bind_broadcast(youtube, broadcast_id: str, stream_id: str) -> dict:
         you will transmit to YouTube to the broadcast that the video is for.
     """
     request = youtube.liveBroadcasts().bind(
-        part="id,contentDetails",
+        part="id,status,contentDetails",
         id=broadcast_id,
         streamId=stream_id
     )
 
     bind_broadcast_response = request.execute()
+
     return bind_broadcast_response
 
 
@@ -233,6 +231,7 @@ def create_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
         # Create a new broadcast
         new_broadcast_id = insert_broadcast(
             youtube, video_privacy_status, test_name_value)
+
         if new_broadcast_id is None:
             raise Exception("Failed to create broadcast")
 
@@ -242,10 +241,11 @@ def create_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
         if stream_dict is None:
             raise Exception("Failed to create stream")
 
-        # Bind the stream to the broadcast
+        # Add the new broadcast id to the stream dictionary
         stream_dict['new_broadcast_id'] = new_broadcast_id
         stream_id = stream_dict.get('newStreamId')
 
+        # Bind the stream to the broadcast
         bind_broadcast(youtube, new_broadcast_id, stream_id)
 
         return stream_dict
@@ -269,9 +269,13 @@ def insert_video_into_playlist(video_id: str, playlist_id: str, youtube) -> bool
             }
         }
 
+        # Insert the video into the playlist using the API's playlistItems.insert method
         request = youtube.playlistItems().insert(
-            part="snippet", body=insert_request_body)
+            part="snippet", body=insert_request_body
+        )
         response = request.execute()
+
+        #print(f'XXXXXXXXX Insert video into playlist response {response} XXXXXX')
 
         return True
     except Exception as e:
@@ -280,11 +284,14 @@ def insert_video_into_playlist(video_id: str, playlist_id: str, youtube) -> bool
 
 def start_broadcast(video_privacy_status: str, test_name_value: str, playlist_id: str, youtube) -> dict:
     """ Start recording a video """
+    # Create a new broadcast and retrieve the broadcast id
     stream_dict = create_broadcast(
         video_privacy_status, test_name_value, youtube)
+
     if stream_dict.get('error', None):
         return stream_dict.get('error')
 
+    # Transition the broadcast to the 'live' status
     video_id = stream_dict.get('new_broadcast_id')
 
     # Insert the video into the playlist
@@ -293,3 +300,88 @@ def start_broadcast(video_privacy_status: str, test_name_value: str, playlist_id
         return {'error': 'Failed to insert video into playlist'}
 
     return stream_dict
+
+
+
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+# # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxx
+
+
+# import json
+# from django.core.cache import cache
+# from googleapiclient.discovery import build
+# from google.oauth2.credentials import Credentials
+# from .models import YoutubeUserCredential
+
+
+
+# def get_user_cache_key(user_id, view_url):
+#     return f'user_{user_id}_view_{view_url}'
+
+
+
+# def create_user_youtube_object(request):
+#     """
+#     Create a YouTube object using the v3 version of the API and
+#     the authenticated user's credentials.
+#     """
+#     print('Creating youtube object...')
+#     try:
+#         try:
+#             cache_key = get_user_cache_key(request.user.id, 'youtube_credenial_object')
+#             youtube, credentials = cache.get(cache_key)
+#             if youtube and credentials:
+#                 return youtube, credentials
+#         except Exception:
+#             pass
+
+#         # Retrieve the YoutubeUserCredential object associated with the authenticated user
+#         youtube_user = YoutubeUserCredential.objects.get(user=request.user)
+
+#         # Retrieve the user's credentials associated with the YoutubeUserCredential object
+#         credentials_data = youtube_user.credential
+#         try:
+#             # Convert the JSON string to a dictionary
+#             credentials_data_dict = json.loads(credentials_data)
+#             # Create credentials from the dictionary
+#             credentials = Credentials.from_authorized_user_info(info=credentials_data_dict)
+#         except Exception as e:
+#             credentials = Credentials.from_authorized_user_info(info=credentials_data)
+#         try:
+#             # Check if the access token has expired
+#             if credentials.expired:
+#                 # Import the modules required to refresh the access token
+#                 import google.auth.transport.requests
+
+#                 # Create a request object using the credentials
+#                 google_request = google.auth.transport.requests.Request()
+
+#                 # Refresh the access token using the refresh token
+#                 credentials.refresh(google_request)
+
+#                 # Update the stored credential data with the refreshed token
+#                 youtube_user.credential = credentials.to_json()
+#                 youtube_user.save()
+#                 # print('Access token refreshed!')
+#         except Exception as e:
+#             # Handle any error that occurred while refreshing the access token
+#             # print(f'An error occurred: {e}')
+#             return None, None
+
+#         # Create a YouTube object using the v3 version of the API and the retrieved credentials
+#         youtube = build('youtube', 'v3', credentials=credentials, cache_discovery=False)
+        
+#         if cache_key:
+#             # Cache the youtube object
+#             cache.set(cache_key, (youtube, credentials), 86400)
+
+#         return youtube, credentials
+#     except YoutubeUserCredential.DoesNotExist:
+#         return None, None

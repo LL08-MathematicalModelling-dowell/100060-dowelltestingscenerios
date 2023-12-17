@@ -39,6 +39,7 @@ class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     def post(self, request, *args, **kwargs):
+        return
         file_serializer = VpsIncomingFileSerializer(data=request.data)
 
         if file_serializer.is_valid():
