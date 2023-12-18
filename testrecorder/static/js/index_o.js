@@ -504,8 +504,6 @@ async function recordWebcamStream() {
     }
     webcamRecorder = new MediaRecorder(webcamStream, options);
 
-    // console.log('========== webcam recorder ====================');
-
     return webcamRecorder;
   } catch (err) {
     console.error('Webcam stream error >>> ', err);
@@ -524,6 +522,7 @@ async function recordWebcamStream() {
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
+
 // Function to get the selected audio device
 function getSelectedAudioDevice() {
   // const selectAudio = document.getElementById('select-audio');
@@ -633,8 +632,6 @@ async function newRecordWebcamAndScreen() {
     const videoTrack = screenStream.getVideoTracks()[0];
     const width = videoTrack.getSettings().width;
     const height = videoTrack.getSettings().height;
-    // console.log('Width:', width);
-    // console.log('Height:', height);
 
     const mergerOptions = {
       width: screenStream.width,
@@ -656,9 +653,6 @@ async function newRecordWebcamAndScreen() {
           width: webcamStreamWidth, height: webcamStreamHeight, mute: true
         });
     }
-    // else {
-    //   console.log('Camera Stream not available or merger height not defined');
-    // }
 
     // Start the merger and set the video source to the merged stream
     await merger.start();
@@ -671,7 +665,6 @@ async function newRecordWebcamAndScreen() {
   } catch (err) {
     // Handle errors during recording
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream.";
-    // console.log("Merged stream recording stoped with the following error >> ", err);
     await stopStreams();
     await resetStateOnError();
 
@@ -1199,12 +1192,12 @@ async function showUploadFailedModal() {
 /**
  * Set video links based on provided data.
  *
- * @param {Object} linksData - An object containing the video link data.
- * @param {string} linksData.webcam_file - The webcam video link.
- * @param {string} linksData.screen_file - The screen video link.
- * @param {string} linksData.merged_webcam_screen_file - The merged webcam and screen video link.
- * @param {string} linksData.beanote_file - The beanote file link.
- * @param {string} linksData.key_log_file - The key log file link.
+ * linksData - An object containing the video link data.
+ * linksData.webcam_file - The webcam video link.
+ * linksData.screen_file - The screen video link.
+ * linksData.merged_webcam_screen_file - The merged webcam and screen video link.
+ * linksData.beanote_file - The beanote file link.
+ * linksData.key_log_file - The key log file link.
  */
 async function set_video_links(linksData) {
   try {
