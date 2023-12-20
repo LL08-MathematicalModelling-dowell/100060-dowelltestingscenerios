@@ -1351,7 +1351,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
 function handLeNotification(
   title="Recording Stopped",
-  body="WebSocket Connection Lost\nDon't worry, your recording is safe and uploaded succesfully"
+  body="WebSocket Connection Lost but don't worry, your recording is safe and uploaded succesfully"
   ) {
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(title, { body: body});
@@ -1433,12 +1433,12 @@ async function startBroadcast() {
 
 async function tranisionBroadcast(socket) {
   let broadcastStoppedSuccessfully = false;
-  socket.send(JSON.stringify({'command': 'end_broadcast'}));
+
+  socket.send('command,end_broadcast');
 
   socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    const { message } = data;
-    if (message === "Broadcast ended successfully") {
+    const message = (event.data);
+    if (message.includes('Success')) {
       broadcastStoppedSuccessfully = true;
       const previewButton = document.getElementById('playback-video-button');
       previewButton.style.display = 'block';
@@ -1460,9 +1460,11 @@ async function endBroadcast() {
 
 
   // let broadcastStoppedSuccessfully = false;
+
   // const url = "/youtube/transitionbroadcast/api/";
   // const broadcastData = {
-  //   the_broadcast_id: newBroadcastID,
+  //   broadcast_id: newBroadcastID,
+  //   broadcast_status: "complete"
   // };
 
   // const csrftoken = await getCookie('csrftoken');

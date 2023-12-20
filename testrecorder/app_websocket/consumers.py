@@ -22,31 +22,39 @@ class VideoConsumer(AsyncConsumer):
     async def websocket_receive(self, event):
         """Receive message from WebSocket."""
         if 'text' in event:
-            self.process_text_event(event['text'])
-        elif 'command' in event:
-            await self.process_command_event(event['command'])
+            await self.process_text_event(event['text'])
         elif 'bytes' in event:
-            self.process_bytes_event(event['bytes'])
+            await self.process_bytes_event(event['bytes'])
 
     async def websocket_disconnect(self, event):
         """Handle when websocket is disconnected"""
         self.process_manager.cleanup_on_disconnect(self.scope)
 
-    def process_text_event(self, text_data):
+    async def process_text_event(self, text_data):
         """Process the text event"""
         if 'browser_sound' in text_data:
-            self.process_manager.handle_browser_sound(text_data)
+            rtmp_url = self.process_manager.handle_browser_sound(text_data)
+            await self.send_ack_message("RTMP url received: " + rtmp_url)
         elif 'rtmp://a.rtmp.youtube.com' in text_data or 'rtmps://a.rtmps.youtube.com' in text_data:
-            self.process_manager.handle_rtmp_url(text_data)
+            rtmp_url = self.process_manager.handle_rtmp_url(text_data)
+            await self.send_ack_message("RTMP url received: " + rtmp_url)
+        elif 'command' in text_data:
+            await self.process_command_event(text_data.split(",", 1)[1])
 
     async def process_command_event(self, command):
         """Process the command event"""
         if command == 'end_broadcast':
-            self.process_manager.end_broadcast(self.scope)
+            success = self.process_manager.end_broadcast(self.scope)
+            await self.send({"type": "websocket.send", "text": "Success" if success else "Failed"})
+            self.process_manager.process_manager_cleanup()
 
-    def process_bytes_event(self, bytes_data):
+    async def process_bytes_event(self, bytes_data):
         """Process the bytes event"""
         self.process_manager.handle_bytes_data(bytes_data)
+    
+    async def send_ack_message(self, message):
+        """Send acknowledgement message to frontend"""
+        await self.send({"type": "websocket.send", "text": message})
 
 
 class FFmpegProcessManager:
@@ -55,40 +63,41 @@ class FFmpegProcessManager:
         self.process = None
         self.rtmp_url = None
         self.audio_enabled = False
-        self.send = send
 
     def handle_browser_sound(self, text_data):
         """Handle the browser sound message"""
         self.audio_enabled = True
         self.rtmp_url = self.extract_rtmp_url(text_data)
         self.start_ffmpeg_process()
-        self.send_ack_message("RTMP url received: " + self.rtmp_url)
 
+        return self.rtmp_url
+       
     def handle_rtmp_url(self, data):
         """Handle the rtmp url message"""
         self.audio_enabled = False
         self.rtmp_url = data.strip()
         self.start_ffmpeg_process()
-        self.send_ack_message("RTMP url received: " + self.rtmp_url)
 
-    async def end_broadcast(self, scope):
+        return self.rtmp_url
+        
+    def end_broadcast(self, scope):
         """Ends the broadcast"""
-        success = await self.transition_broadcast(scope=scope)
-        self.process_manager_cleanup(success)
+        success = self.transition_broadcast(scope=scope)        
+        return success
 
     def handle_bytes_data(self, bytes_data):
         """Handle the bytes data message"""
-        if self.process and self.process.poll() is None:
+        if self.process:
             self.process.stdin.write(bytes_data)
 
     def cleanup_on_disconnect(self, scope):
         """Cleanup when the websocket disconnects"""
         if self.process:
-            self.transition_broadcast(scope)
+            _ = self.transition_broadcast(scope)
             cache.delete(f"stream_dict{scope.get('user').id}")
-            self.process_manager_cleanup(websocket_disconnected=True)
+            self.process_manager_cleanup()
 
-    async def transition_broadcast(self, scope):
+    def transition_broadcast(self, scope):
         """Transition the broadcast"""
         success = False
         if self.process:
@@ -111,10 +120,10 @@ class FFmpegProcessManager:
 
         return success
 
-    def process_manager_cleanup(self, websocket_disconnected=None, success=None):
+    def process_manager_cleanup(self):
         """Cleanup the process manager"""
         try:
-            self.process.stdin.close()
+            # self.process.stdin.close()
             self.process.wait(timeout=5)
         except subprocess.TimeoutExpired:
             self.process.terminate()
@@ -122,8 +131,6 @@ class FFmpegProcessManager:
             print("Error while closing the subprocess: ", e)
         finally:
             self.process = None
-        if not websocket_disconnected:
-            self.send_ack_message({"message": "Broadcast ended successfully" if success else "Broadcast failed to end"})
 
     def start_ffmpeg_process(self):
         """Start the ffmpeg process"""
@@ -168,6 +175,4 @@ class FFmpegProcessManager:
         _, rtmp_url = data.split(",", 1)
         return rtmp_url.strip()
 
-    async def send_ack_message(self, message):
-        """Send acknowledgement message to frontend"""
-        await self.send({"type": "websocket.send", "text": message})
+
