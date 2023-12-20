@@ -174,5 +174,3 @@ class FFmpegProcessManager:
         """Extract the rtmp url from the data"""
         _, rtmp_url = data.split(",", 1)
         return rtmp_url.strip()
-
-
