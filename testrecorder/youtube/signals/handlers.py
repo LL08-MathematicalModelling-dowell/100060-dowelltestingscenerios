@@ -2,11 +2,13 @@ import json
 import os
 from django.dispatch import receiver
 import requests
-from ..models import YoutubeUserCredential
+from ..models import UserProfile
 from allauth.account.signals import user_logged_in
 from django.core.cache import cache
 import datetime
 from dotenv import load_dotenv
+
+from .generate_api_key import generate_api_key
 
 
 load_dotenv()
@@ -56,14 +58,15 @@ def get_user(sender, **kwargs):
     }
 
     try:
-        # tries to retrieve an existing YoutubeUserCredential object for the logged-in user
-        youtube_user = YoutubeUserCredential.objects.get(user=user)
+        # tries to retrieve an existing UserProfile object for the logged-in user
+        youtube_user = UserProfile.objects.get(user=user)
         # prints a message indicating that the user already exists for debugging purposes
-        # print('User aready exist')
     except Exception:
-        # if no YoutubeUserCredential object exists for the logged-in user, creates a new one
-        youtube_user, created = YoutubeUserCredential.objects.get_or_create(
-            user=user, credential=credentials)
+        # Generate and assign API key
+        api_key = generate_api_key()
+        # if no UserProfile object exists for the logged-in user, creates a new one
+        youtube_user, _ = UserProfile.objects.get_or_create(
+            user=user, api_key=api_key, credential=credentials)
         youtube_user.save()
 
     db_status = is_available_in_db(user_email)
@@ -73,11 +76,8 @@ def get_user(sender, **kwargs):
         insert_response = insert_user_credential_into_dowell_connection_db(
             email=user_email, credential=credentials)
 
-        # print(f"{user.username}'s credentials saved successfully!!"
-        #      if insert_response.get('isSuccess') == True else 'Failed to save user credential')
     else:
         pass
-        # print('Credential not saved beacause record already exist!!')
 
      # delete the 'oauth_data' token from the cache
     cache.delete('oauth_data')

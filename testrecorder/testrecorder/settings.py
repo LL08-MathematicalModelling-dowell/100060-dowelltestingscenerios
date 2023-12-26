@@ -48,26 +48,34 @@ CORS_ALLOWED_ORIGIN = [
 # Application definition
 
 INSTALLED_APPS = [
+    # Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home.apps.HomeConfig',
-    'rest_framework',
-    'file_app',
-    'channels',
-    'app_websocket',
-    'youtube',
-    'corsheaders',
-    'voc_stories_websocket',
     'django.contrib.sites',
+
+    # Third-party Apps
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'channels',
+    'rest_framework',
+    # 'rest_framework.authtoken',  # <-- Here NEW
+
+    # Custom Apps
+    'app_websocket',
+    'core',
+    'corsheaders',
+    'file_app',
+    'home.apps.HomeConfig',
+    'voc_stories_websocket',
+    'youtube',
 ]
+
 
 SITE_ID = 1
 
@@ -195,6 +203,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTH_USER_MODEL = "core.User"
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -267,8 +278,12 @@ CACHES = {
     }
 }
 
-
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'core.auth.GoogleAPIKeyAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],

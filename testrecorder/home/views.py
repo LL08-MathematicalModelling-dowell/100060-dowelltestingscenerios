@@ -1,46 +1,12 @@
-import os
-import json
-from dotenv import load_dotenv
-
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render
 from django.views.generic import TemplateView
-from django.http import HttpRequest, HttpResponse, JsonResponse
-
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
-
+from django.http import HttpRequest, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from youtube.forms import AddChannelRecord, CreatePlaylist
-
-# load_dotenv()
-
-
-def validate_youtube_channel(channel_credentials, channel_id):
-    """Checks if a youtube channel ID and Credential is valid"""
-
-    try:
-        # Build the credentials object
-        credentials = Credentials(**channel_credentials)
-    except Exception:
-        return False
-    try:
-        # Build the YouTube API client
-        youtube = build('youtube', 'v3', credentials=credentials)
-        # Send a GET request to the API to retrieve information about the channel
-        response = youtube.channels().list(part='snippet', id=channel_id).execute()
-        # Check if the response contains any items
-        if 'items' in response:
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(f'An error occurred: {e}')
-        return False
+from youtube.forms import CreatePlaylist
 
 
 class PrivacyView(TemplateView):
@@ -53,42 +19,12 @@ class PrivacyView(TemplateView):
 
 class HomePageView(TemplateView):
     """Home page view class"""
-
     template_name = 'home.html'
 
     def get(self, request, *args, **kwargs):
         """Handles get requests to '/'"""
-        # create he form object to render
-        form = AddChannelRecord()
         add_playlist = CreatePlaylist()
-        return render(request, self.template_name, {'form': form, 'add_playlist': add_playlist})
-
-    def post(self, request, *args, **kwargs):
-        """Handles POST requests to '/'"""
-        # Get data from request object sent by user
-        data = request.POST
-        form = AddChannelRecord(data=data)
-        if form.is_valid():
-            # extract channel_credenials from data object
-            # credentials = json.loads(dict(data)['channel_credentials'][0])
-            credentials = json.loads(
-                os.environ.get('DOWELL_GOOGLE_CREDENDEIAL'))
-            # extract channel_id from data object
-            channel_id = data['channel_id']
-            if validate_youtube_channel(credentials, channel_id):
-                form.save()
-                # print('============Vallid form===========')
-                return JsonResponse({'message': f'Channel added sucesfully!!'}, status=200)
-            else:
-                # print('============InVallid form===========')
-                return JsonResponse({'message': 'Invalid channel!'}, status=400)
-        else:
-            print(form.errors.as_json())
-            return JsonResponse(form.errors, status=400)
-
-
-class CalendlyPageView(TemplateView):
-    template_name = 'calendly.html'
+        return render(request, self.template_name, {'add_playlist': add_playlist})
 
 
 class AboutPageView(TemplateView):
@@ -142,13 +78,6 @@ class WebsocketPermissionView(APIView):
                                 "status": "error", "data": str(error)}
             return Response(failed_feed_back, status=status.HTTP_400_BAD_REQUEST)
 
-
-# class library_page(TemplateView):
-#     print('welcome library page')
-#
-#     def get(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
-#         return render(request, self.library.html)
-#     # template_name = 'library.html'
 
 def library_page(request):
     return render(request, 'library.html')

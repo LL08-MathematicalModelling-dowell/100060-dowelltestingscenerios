@@ -2,7 +2,7 @@ import json
 from django.core.cache import cache
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
-from .models import YoutubeUserCredential
+from .models import UserProfile
 from datetime import datetime, timedelta
 
 
@@ -32,10 +32,10 @@ def create_user_youtube_object(request=None, scope=None) -> tuple:
         except Exception:
             pass
 
-        # Retrieve the YoutubeUserCredential object associated with the authenticated user
-        youtube_user = YoutubeUserCredential.objects.get(user=user)
+        # Retrieve the UserProfile object associated with the authenticated user
+        youtube_user = UserProfile.objects.get(user=user)
 
-        # Retrieve the user's credentials associated with the YoutubeUserCredential object
+        # Retrieve the user's credentials associated with the UserProfile object
         credentials_data = youtube_user.credential
         try:
             # Convert the JSON string to a dictionary
@@ -74,7 +74,7 @@ def create_user_youtube_object(request=None, scope=None) -> tuple:
             cache.set(cache_key, (youtube, credentials), 86400)
 
         return youtube, credentials
-    except YoutubeUserCredential.DoesNotExist:
+    except UserProfile.DoesNotExist:
         return None, None
 
 

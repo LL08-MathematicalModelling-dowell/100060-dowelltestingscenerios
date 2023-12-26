@@ -1,11 +1,10 @@
 from django.urls import path
-from .views import (HomePageView, CalendlyPageView, AboutPageView,
+from .views import (HomePageView, AboutPageView,
                     records_view, WebsocketPermissionView, PrivacyView, library_page)
 
 urlpatterns = [
     path('', HomePageView.as_view(), name='home'),
     path('recordings/', records_view, name='view_records'),
-    path('calendly/', CalendlyPageView.as_view(), name='calendly'),
     path('about/', AboutPageView.as_view(), name='about'),
     path('privacy/', PrivacyView.as_view(), name='privacy'),
     path('websocketpermission/', WebsocketPermissionView.as_view(), name='websocketpermission'),
