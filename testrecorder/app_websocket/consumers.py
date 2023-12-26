@@ -2,12 +2,24 @@ import os
 import subprocess
 
 import django
+from channels.db import database_sync_to_async
 from channels.consumer import AsyncConsumer
 from django.core.cache import cache
 from youtube.utils import transition_broadcast
+from youtube.models import UserProfile
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
+
+
+@database_sync_to_async
+def get_user(api_key):
+    """Get user based on the API key"""
+    try:
+        return UserProfile.objects.get(api_key=api_key).user
+    except UserProfile.DoesNotExist:
+        return None
 
 
 class VideoConsumer(AsyncConsumer):
@@ -16,8 +28,24 @@ class VideoConsumer(AsyncConsumer):
         self.process_manager = FFmpegProcessManager(send=self.send)
 
     async def websocket_connect(self, event):
-        """Handle when websocket is connected"""
-        await self.send({"type": "websocket.accept"})
+        try:
+            query_string = self.scope.get("query_string", b"").decode("utf-8")
+            if query_string:
+                api_key = query_string.split('=')[-1]
+
+                user = await get_user(api_key)
+                if user:
+                    self.scope['user'] = user
+                    await self.send({"type": "websocket.accept"})
+                else:
+                    await self.send({"type": "websocket.close", "text": "UnAuthorised" })
+                    await self.websocket_disconnect(event)
+            else:
+                await self.send({"type": "websocket.close", "text": "UnAuthorised" })
+                await self.websocket_disconnect(event)
+        except UserProfile.DoesNotExist:
+            await self.send({"type": "websocket.close", "text": "UnAuthorised" })
+            await self.websocket_disconnect(event)
 
     async def websocket_receive(self, event):
         """Receive message from WebSocket."""
@@ -51,7 +79,7 @@ class VideoConsumer(AsyncConsumer):
     async def process_bytes_event(self, bytes_data):
         """Process the bytes event"""
         self.process_manager.handle_bytes_data(bytes_data)
-    
+
     async def send_ack_message(self, message):
         """Send acknowledgement message to frontend"""
         await self.send({"type": "websocket.send", "text": message})

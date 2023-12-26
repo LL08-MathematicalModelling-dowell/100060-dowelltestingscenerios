@@ -737,7 +737,8 @@ async function startRecording() {
 
   try {
     [socket, socketType] = await createAllsockets();
-    if (!socket) {
+    if (socket === null) {
+      resetStateOnError();
       throw new Error('No socket connection!');
     } else {
       showCreatingBroadcastModal(true);
@@ -801,7 +802,7 @@ async function startRecording() {
     document.getElementById("app-status").innerHTML = msg;
     console.error(errorMessage);
     resetStateOnError();
-    showErrorModal(message = errorMessage);
+    // showErrorModal(message = errorMessage);
   }
 }
 
@@ -1287,7 +1288,9 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
   function getWebsocketEndpoint() {
     const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    return wsStart + window.location.host + "/ws/app/";
+    // return `${wsStart}${window.location.host}/ws/app/`;
+    const API_KEY = 'f193da2ce1d4fdeb7b49ac9a5ec8448e5888a829';
+    return `${wsStart}${window.location.host}/ws/app/?api_key=${API_KEY}`;
   }
 
   function handleSocketOpen(socket, socketType) {
@@ -1316,9 +1319,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
       for (;reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
         try {
           [socket, socketType] = await createWebsocket(recordWebcam, recordScreen);
-          recordinginProgress = true;
-          console.log('WebSocket reconnected successfully');
-          break;
+          if (socket.readyState === WebSocket.OPEN) {
+            recordinginProgress = true;
+            console.log('WebSocket reconnected successfully');
+            break;
+          }
         } catch (error) {
           if (reconnectionAttempts === maxReconnectionAttempts) {
             // Only stop recording if it's in progress
@@ -1694,12 +1699,15 @@ async function createAllsockets() {
   try {
     // Create youtube websocket first, then others follow on success
     [socketX, socketTypeX] = await createWebsocket(recordWebcam, recordScreen);
+    // if (socketX.readyState === WebSocket.OPEN) {
     return [socketX, socketTypeX];
+    // } else {
+    //   return [null, null];
+    // }
   } catch (err) {
-    console.error("Error while creating sockets: " + err.message);
-    // Tell user, stop the recording.
-    resetStateOnError();
-    showErrorModal();
+    // resetStateOnError();
+    // showErrorModal();
+    return [null, null];
   }
 }
 
@@ -2226,10 +2234,15 @@ function displayUtilities() {
 // #################################################################################
 async function fetchUserChannel() {
   try {
+    const headers = {
+      'Authorization': `API-KEY f193da2ce1d4fdeb7b49ac9a5ec8448e5888a829`,
+      'Content-Type': 'application/json'
+    }
+
     const channelsApiUrl = '/youtube/channels/api';
     let statusBar = document.getElementById("app-status");
 
-    const response = await fetch(channelsApiUrl, {method: 'GET'});
+    const response = await fetch(channelsApiUrl, {method: 'GET', headers:headers});
 
     if (!response.ok) {
       if (response.status === 401) {

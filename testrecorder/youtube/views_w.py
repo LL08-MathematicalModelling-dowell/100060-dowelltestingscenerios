@@ -9,11 +9,11 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import ChannelRecord
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import authentication_classes
 
 
+from .models import ChannelRecord
 from core.auth import GoogleAPIKeyAuthentication
 from .utils import get_user_cache_key, create_user_youtube_object
 
@@ -200,7 +200,7 @@ class UserChannelsView(APIView):
 
         return response
 
-
+@authentication_classes([GoogleAPIKeyAuthentication])
 class DeleteVideoView(APIView):
     """
     API view class for deleting a video on YouTube.
@@ -256,7 +256,7 @@ class DeleteVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)})
 
-
+@authentication_classes([GoogleAPIKeyAuthentication])
 class LoadVideoView(APIView):
     """
     API view class for loading all videos from YouTube.
@@ -349,7 +349,7 @@ class LoadVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-
+@authentication_classes([GoogleAPIKeyAuthentication])
 class YouTubeVideoAPIView(APIView):
     """
     This class is a DRF APIView that retrieves the authenticated user's YouTube videos.

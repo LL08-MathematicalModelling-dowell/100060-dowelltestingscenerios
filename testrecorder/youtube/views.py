@@ -7,12 +7,16 @@ from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 from googleapiclient.errors import HttpError
 from django.contrib.auth import logout
+from rest_framework.decorators import authentication_classes
+
+
+
+from core.auth import GoogleAPIKeyAuthentication
 from .serializers import (
     StartBroadcastSerializer,
     TransitionBroadcastSerializer,
     CreatePlaylistSerializer
 )
-
 from .utils import (
     create_user_youtube_object,
     get_user_cache_key,
@@ -23,7 +27,7 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
-
+@authentication_classes([GoogleAPIKeyAuthentication])
 class StartBroadcastView(APIView):
     """ DRF API that handles requests to start a broadcast """
     serializer_class = StartBroadcastSerializer
@@ -56,6 +60,7 @@ class StartBroadcastView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@authentication_classes([GoogleAPIKeyAuthentication])
 class TransitionBroadcastView(APIView):
     """ DRF API that handles requests to transition a broadcast """
     serializer_class = TransitionBroadcastSerializer
@@ -80,49 +85,6 @@ class TransitionBroadcastView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-'''
-class PlaylistItemsInsertView(APIView):
-    """
-    Handles requests to insert a video into a YouTube channel playlist
-    """
-    renderer_classes = [JSONRenderer]
-
-    def post(self, request, *args, **kwargs):
-        """Inserts a video into a YouTube channel playlist"""
-        try:
-            # Get the video and playlist data
-            the_video_id = request.data.get("videoId")
-            the_playlist_id = request.data.get("playlistId")
-
-            youtube, _ = create_user_youtube_object(request=request)
-            if youtube is None:
-                raise Exception('Authentication error')
-
-            # Make the insert request
-            insert_request_body = {
-                "snippet": {
-                    "playlistId": the_playlist_id,
-                    "position": 0,
-                    "resourceId": {
-                        "kind": "youtube#video",
-                        "videoId": the_video_id
-                    }
-                }
-            }
-
-            request = youtube.playlistItems().insert(part="snippet", body=insert_request_body)
-            response = request.execute()
-
-            return Response(response, status=status.HTTP_200_OK)
-
-        except HttpError as e:
-            error_data = {'Error': f'YouTube API error: {e}'}
-            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
-
-        except Exception as err:
-            error_data = {'Error': f'An unexpected error occurred: {err}'}
-            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
-'''
 
 def fetch_playlists_with_pagination(youtube_object):
     """
@@ -153,6 +115,7 @@ def fetch_playlists_with_pagination(youtube_object):
     return playlists
 
 
+@authentication_classes([GoogleAPIKeyAuthentication])
 class FetchPlaylistsView(APIView):
     """
     Handles requests to get the current YouTube channel's playlists
@@ -212,40 +175,6 @@ class FetchPlaylistsView(APIView):
         except Exception as err:
             return Response({'Error': 'Error occured, unable to fetch playlist'}, status=status.HTTP_400_BAD_REQUEST)
 
-'''
-def insert_video_into_playlist(request, the_video_id, the_playlist_id):
-    """
-        Handles requests to insert a video into a youtube channel
-        playlist
-    """
-    try:
-        youtube, _ = create_user_youtube_object(request=request)
-
-        if youtube is None:
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Make the insert request
-        request = youtube.playlistItems().insert(
-            part="snippet",
-            body={
-                "snippet": {
-                    "playlistId": the_playlist_id,
-                    "position": 0,
-                    "resourceId": {
-                        "kind": "youtube#video",
-                        "videoId": the_video_id
-                    }
-                }
-            }
-        )
-        response = request.execute()
-
-        return True
-
-    except Exception as err:
-        error_msg = "Error while inserting video into playlist: " + str(err)
-        raise Exception(error_msg)
-'''
 
 def create_playlist(playlist_title, playlist_description, playlist_privacy_status, request):
     """
@@ -289,6 +218,7 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
         raise Exception(error_msg)
 
 
+@authentication_classes([GoogleAPIKeyAuthentication])
 class CreatePlaylistView(APIView):
     """
         DRF API that handles requests to create youtube playlists

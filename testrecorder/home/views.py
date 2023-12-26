@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from youtube.forms import CreatePlaylist
+from youtube.models import UserProfile
 
 
 class PrivacyView(TemplateView):
@@ -24,7 +25,8 @@ class HomePageView(TemplateView):
     def get(self, request, *args, **kwargs):
         """Handles get requests to '/'"""
         add_playlist = CreatePlaylist()
-        return render(request, self.template_name, {'add_playlist': add_playlist})
+        user_profile = UserProfile.objects.get(user=request.user)
+        return render(request, self.template_name, {'add_playlist': add_playlist, 'user_profile': user_profile})
 
 
 class AboutPageView(TemplateView):
