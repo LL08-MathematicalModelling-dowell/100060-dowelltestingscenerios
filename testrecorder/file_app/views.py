@@ -1,17 +1,10 @@
 import datetime
 import json
 import os
-import re
 import shutil
-import threading
 
-import ffmpeg
 import requests
-from asgiref.sync import async_to_sync, sync_to_async
-from channels.layers import get_channel_layer
 from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import render
 from dotenv import load_dotenv
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -19,20 +12,16 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from . import youtube_api
-from .models import MegaTestRecord, VpsTestRecord
+from .models import VpsTestRecord
 from .serializers import (
-    FileSerializer,
-    MegaFileSerializer,
     VpsFileSerializer,
     VpsIncomingFileSerializer,
     VpsWebsocketFileSerializer,
 )
 
-import random
 
 load_dotenv()
 permanent_files_dir = settings.PERMANENT_FILES_ROOT
-
 
 
 class FileView(APIView):

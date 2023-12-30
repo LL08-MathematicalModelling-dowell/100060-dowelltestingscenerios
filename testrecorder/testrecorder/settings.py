@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'channels',
     'rest_framework',
+    'drf_yasg',
     # 'rest_framework.authtoken',  # <-- Here NEW
 
     # Custom Apps
