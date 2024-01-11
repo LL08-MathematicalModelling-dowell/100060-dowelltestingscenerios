@@ -123,7 +123,6 @@
 </main>
 <div class="status-bar">
     {% if user_profile %}
-    <div id="api_key" style="float: left;">API KEY: {{ user_profile.api_key }}</div>
     <div id="app-status">STATUS: Waiting to Record.</div>
     {% else %}
     <div id="app-status"></div>
@@ -138,6 +137,9 @@
 
 <!-- Video Stream Merger JavaScript -->
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
-<!-- <script src="{% static '/js/utils.js' %}"></script> -->
+{% if user.is_authenticated %}
+<script src="{% static '/js/index.js' %}" data-apiKey="{{ user_profile.api_key }}"></script>
+{% else %}
 <script src="{% static '/js/index.js' %}"></script>
+{% endif %}
 {% endblock body %}
