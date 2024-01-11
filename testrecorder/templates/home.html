@@ -137,9 +137,5 @@
 
 <!-- Video Stream Merger JavaScript -->
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
-{% if user.is_authenticated %}
-<script src="{% static '/js/index.js' %}" data-apiKey="{{ user_profile.api_key }}"></script>
-{% else %}
 <script src="{% static '/js/index.js' %}"></script>
-{% endif %}
 {% endblock body %}
