@@ -31,8 +31,7 @@
       <div class="">
         <p class="" id="username">{{ user.username }}</p>
       </div>
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" 
-      style="width: 10em;
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" style="width: 10em;
       font-size: .6em;
       background: crimson;">
         Show API-KEY
@@ -42,7 +41,7 @@
       </div>
     </div>
     <!-- Button trigger modal -->
-   
+
     {% endif %}
   </nav>
 
@@ -59,8 +58,8 @@
         style="font-size:25px; margin-right: 50px;"></i>{{ user.username }}</p>
     <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-out" style="font-size:20px;"><i
         class="fas fa-sign-out" style="font-size:25px; margin-right: 50px;"></i>Logout</a>
-    <button type="button" class="btn btn-primary mobile-menu-item" data-bs-toggle="modal" data-bs-target="#exampleModal" 
-    style="width: 10em;
+    <button type="button" class="btn btn-primary mobile-menu-item" data-bs-toggle="modal" data-bs-target="#exampleModal"
+      style="width: 10em;
     height: auto;
     font-size: .6em;
     align-self: end;
@@ -93,22 +92,25 @@
       </div>
       <div class="modal-footer">
         <p id="footer-note">DO NOT disclose this</p>
-        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <style>
-  #api-key-modal-content{
+  #api-key-modal-content {
     width: 32.5em;
   }
+
   #copy-button {
     color: brown;
   }
+
   #footer-note {
     font-size: .8em;
     color: red;
   }
+
   #copy-component {
     display: flex;
     align-items: center;
@@ -206,23 +208,25 @@
   }
 
   #copy-component .btn .fa-copy.hover:disabled {
-    color:#007bff ;
+    color: #007bff;
   }
 
   @media screen and (max-width: 768px) {
-    #copy-component code{
+    #copy-component code {
       font-size: .7rem;
       padding: 5px;
     }
+
     #copy-button {
-    margin-left: 2px;
-    color: brown;
-    padding: 5px;
-  }
-  #api-key-modal-content{
-    width: 20em;
-  }
-    
+      margin-left: 2px;
+      color: brown;
+      padding: 5px;
+    }
+
+    #api-key-modal-content {
+      width: 20em;
+    }
+
   }
 </style>
 
@@ -230,13 +234,13 @@
   const copyButton = document.getElementById("copy-button");
   const textToCopy = document.getElementById("text-to-copy");
   const popover = new bootstrap.Popover(copyButton);
-  
+
   copyButton.addEventListener("click", () => {
     navigator.clipboard.writeText(textToCopy.textContent).then(() => {
       popover.show();
-    setTimeout(() => {
-      popover.hide();
-    }, 1000);
+      setTimeout(() => {
+        popover.hide();
+      }, 1000);
     }, (err) => {
       console.error("Failed to copy text:", err);
       alert("Failed to copy text. Please try manually.");

@@ -1651,14 +1651,8 @@ async function createAllsockets() {
   try {
     // Create youtube websocket first, then others follow on success
     [socketX, socketTypeX] = await createWebsocket(recordWebcam, recordScreen);
-    // if (socketX.readyState === WebSocket.OPEN) {
     return [socketX, socketTypeX];
-    // } else {
-    //   return [null, null];
-    // }
   } catch (err) {
-    // resetStateOnError();
-    // showErrorModal();
     return [null, null];
   }
 }
@@ -1689,47 +1683,6 @@ async function stopVideoElemTracks(videoElem) {
   }
 }
 
-async function insertVideoIntoPlaylist(socket) {
-  const playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  const csrftoken = await getCookie('csrftoken');
-  let video_inserted = false;
-  let selectedPlaylist = document.getElementById("selectPlaylist").value.trim();
-
-  try {
-    const response = await fetch(playlistItemsInsertURL, {
-      method: 'POST',
-      body: JSON.stringify({
-        videoId: newBroadcastID,
-        playlistId: selectedPlaylist,
-        channel_title: currentChannelTitle
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-        'X-CSRFToken': csrftoken
-      }
-    });
-
-    const json = await response.json();
-    const responseStatus = response.status;
-
-    if (responseStatus === 200) {
-      document.getElementById("app-status").innerHTML = "STATUS: Video Inserted Into User Playlist.";
-
-      sendRTMPURL(socket);
-
-      displayUtilities();
-
-      return video_inserted = true;
-    } else {
-      throw new Error("Failed to insert video into user playlist!");
-    }
-
-  } catch (error) {
-    document.getElementById("app-status").innerHTML = "ERROR: Failed to Insert Video Into User Playlist.";
-    return video_inserted;
-  }
-}
-
 // Sends an RTMP URL to the websocket
 async function sendRTMPURL(socket) {
   if (socket != null && socket.readyState === WebSocket.OPEN) {
@@ -1741,7 +1694,6 @@ async function sendRTMPURL(socket) {
     } else {
       await socket.send(newRtmpUrl);
     }
-    // displayUtilities();
   }
 }
 
@@ -2089,13 +2041,10 @@ document.getElementById("add-channel-btn").addEventListener("click", async funct
 
   const idMsg = 'Invalid channel ID format'
   const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
-  // const credentialMsg = 'Invalid credential format';
   let channelId = document.getElementById("channel_id_modal").value;
   let channelTitle = document.getElementById("channel_title_modal").value;
-  // let channelCredentials = document.getElementById("channel_credentials_modal").value;
   const idError = document.getElementById('id-error');
   const titleError = document.getElementById('title-error');
-  // const credentialError = document.getElementById('credential-error');
   let valid_input = true;
 
   if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
@@ -2312,7 +2261,6 @@ async function load_gallery() {
   if (playlistsResponse.ok) {
     const playlistsData = await playlistsResponse.json();
     let playlistsDict = playlistsData.user_playlists;
-    // console.log('playlistsDict :', playlistsDict);
     const playlistIds = Object.keys(playlistsDict);
 
     // Display playlist names in the HTML select tag
@@ -2362,22 +2310,19 @@ async function load_videos(playlist_id) {
   if (response.ok) {
     const playlistItemsData = await response.json();
     let playlist_videos = playlistItemsData;
-    // console.log('playlist_videos 3698 :', playlist_videos);
     if (playlist_videos.length === 0) {
       console.log('No videos found in the playlist.');
       return;
     }
 
     let playlistObject = playlist_videos.find(videoObject => videoObject['playlistId'] === playlist_id);
-    // console.log('playlist objects >>> ', playlistObject)
     let playlistVideos = playlistObject.videos;
-    // console.log('playlist_videos 3698 :', playlistVideos);
     if (playlistVideos.length === 0) {
       console.log('No videos found in the playlist.');
       return;
     }
 
-    const videos = []; // Array to store the videos
+    const videos = []; 
 
     // Iterate over the playlist videos and extract necessary information
     playlistVideos.forEach(video => {
@@ -2396,11 +2341,8 @@ async function load_videos(playlist_id) {
       // Add the video object to the videos array
       videos.push(videoObject);
     });
-    videos
-    // console.log('Videos 3724:', videos)
-    // Populate the select element with video titles
     const selectElement = document.getElementById('all_video');
-    selectElement.innerHTML = ''; // Clear existing options
+    selectElement.innerHTML = ''; 
     videos.forEach(video => {
       const option = document.createElement('option');
       option.value = video.id;
@@ -2412,7 +2354,6 @@ async function load_videos(playlist_id) {
       const selectedVideoId = this.value;
 
       selected_Video_Id = selectedVideoId;
-      // console.log('selected video id > ', selected_Video_Id);
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
@@ -2424,7 +2365,6 @@ async function load_videos(playlist_id) {
 }
 
 async function play(videoId, playerElementID = 'player') {
-  // console.log('Playing video:', title, 'with videoId:', videoId)
   const playerElement = document.getElementById(playerElementID);
   if (!window.YT) {
     const tag = document.createElement('script');
@@ -2446,7 +2386,6 @@ async function play(videoId, playerElementID = 'player') {
       events: {
         onReady: function (event) {
           event.target.playVideo();
-          // console.log('Playing video:', title);
         }
       }
     });
@@ -2505,8 +2444,6 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
-  // console.log('==== Video Id >>> ', video_Id);
-
   // Close modal if open
   btnCloseVideoPreviewModal.click();
 
@@ -2531,8 +2468,6 @@ async function previewVideo() {
 async function deleteVideo(video_Id) {
 
   let csrftoken = await getCookie('csrftoken');
-  // console.log('video id ', video_Id)
-  // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
       // Successful response
@@ -2570,8 +2505,6 @@ async function deleteVideo(video_Id) {
     .then(data => {
       // // Success response
       console.log('Video deleted succesfully');
-      // console.log('Delete Response Message >> ', data.message);
-      // console.log('Delete data.response >> ', data.response);
     })
     .catch(error => {
       // Error response
@@ -2584,7 +2517,6 @@ function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
   if (window.location.pathname === '/library/' && isAuthenticated) {
-    // console.log('selected video id > ', selected_Video_Id);
   }
 }
 
@@ -2632,18 +2564,3 @@ function removeScreenOption() {
 window.onload = function () {
   removeScreenOption();
 };
-
-
-
-
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
