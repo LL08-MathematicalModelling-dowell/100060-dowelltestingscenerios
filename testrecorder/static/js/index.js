@@ -1288,9 +1288,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
   function getWebsocketEndpoint() {
     const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    // return `${wsStart}${window.location.host}/ws/app/`;
-    const API_KEY = 'f193da2ce1d4fdeb7b49ac9a5ec8448e5888a829';
-    return `${wsStart}${window.location.host}/ws/app/?api_key=${API_KEY}`;
+    return `${wsStart}${window.location.host}/ws/app/?api_key=${apiKey}`;
   }
 
   function handleSocketOpen(socket, socketType) {

@@ -5,8 +5,9 @@ from youtube.models import UserProfile
 
 
 class APIKeyAuthentication(BaseAuthentication):
-    """ """
+    """ Custom API Key bases autehnticaation class """
     def authenticate(self, request):
+        """ Overriding the base authenticate method """
         api_key = request.headers.get('Authorization')
         if not api_key or not api_key.startswith('API-KEY '):
             return None
