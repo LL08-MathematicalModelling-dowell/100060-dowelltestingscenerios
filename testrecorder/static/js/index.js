@@ -969,15 +969,16 @@ async function sendAvailableData(testRecordingData = null) {
     document.querySelector('.create-playlist-btn').style.display = 'block';
     document.querySelector(".video-title").innerHTML = "";
 
-    const csrftoken = await getCookie('csrftoken');
-
-    // status.innerText = "STATUS: Uploading files to the server...";
 
     if (testRecordingData !== null) {
       const fileUploadUrl = '/file/upload/';
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `API-KEY ${apiKey}`,
+      }
       const response = await fetch(fileUploadUrl, {
         method: 'POST',
-        headers: { 'X-CSRFToken': csrftoken },
+        headers: headers,
         body: testRecordingData
       });
 
@@ -985,8 +986,6 @@ async function sendAvailableData(testRecordingData = null) {
       const responseStatus = response.status;
 
       if (responseStatus === 201) {
-        // status.innerHTML = "STATUS: Record data uploaded successfully!";
-
         testNameValue = null;
         testRecordingData = null;
 
@@ -1391,11 +1390,9 @@ async function startBroadcast() {
 
   try {
     // Get CSRF token and set headers
-    const csrftoken = await getCookie('csrftoken');
     const headers = {
-      'Authorization': `API-KEY ${apiKey}`,
       'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken
+      'Authorization': `API-KEY ${apiKey}`,
     }
     const response = await fetch(url, {
       method: 'POST',
@@ -1403,7 +1400,6 @@ async function startBroadcast() {
       headers: headers
     });
 
-    // Check if the response is not OK (outside the 200-299 range)
     if (!response.ok) {
       // Parse the error data from the response
       const data = await response.json();
@@ -1878,7 +1874,6 @@ async function createNewPlaylist() {
     let responseStatus = null;
 
     const form = document.getElementById("create-playlist");
-    const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     const channel = document.getElementById("selectChannel").value;
     const title = document.getElementById("playlist_title_modal").value;
     const privacy = document.querySelector('input[name="privacy_status"]:checked').value;
@@ -1889,6 +1884,10 @@ async function createNewPlaylist() {
       return;
     }
 
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `API-KEY ${apiKey}`,
+    }
     const response = await fetch(createPlaylistURL, {
       method: 'POST',
       body: JSON.stringify({
@@ -1897,10 +1896,7 @@ async function createNewPlaylist() {
         new_playlist_privacy: privacy,
         channel_title: channel
       }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-        "X-CSRFToken": csrf_token,
-      }
+      headers: headers
     });
 
     responseStatus = response.status;
@@ -2036,58 +2032,6 @@ channel_title.addEventListener('keyup', () => {
 }
 );
 
-document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
-  event.preventDefault();
-
-  const idMsg = 'Invalid channel ID format'
-  const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
-  let channelId = document.getElementById("channel_id_modal").value;
-  let channelTitle = document.getElementById("channel_title_modal").value;
-  const idError = document.getElementById('id-error');
-  const titleError = document.getElementById('title-error');
-  let valid_input = true;
-
-  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
-    idError.innerText = idMsg;
-    valid_input = false;
-  }
-  if (!channelTitle.match(/^[a-zA-Z0-9_ -]{3,50}$/)) {
-    titleError.innerText = titleMsg;
-    valid_input = false;
-  }
-  if (valid_input) {
-    const form = document.getElementById("add-channel");
-    const formData = new FormData(form);
-    fetch("/", {
-      method: 'POST',
-      body: formData
-    })
-      .then(async response => {
-        const resp = await response.json()
-        const { channel_id, channel_title, channel_credential } = resp;
-        if (channel_id) {
-          idError.innerText = channel_id[0]
-        }
-        if (channel_title) {
-          titleError.innerText = channel_title[0]
-        }
-        if (channel_credential) {
-          credentialError.innerText = channel_credential[0]
-        }
-        if ('message' in resp) {
-          if (resp['message'] === 'Invalid channel!') {
-            document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
-            document.getElementById('add-status').innerText = resp['message'];
-          } else {
-            document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';
-            document.getElementById('add-status').innerText = resp['message'];
-          }
-          // console.log(resp['message'])
-        }
-      })
-  }
-})
-
 document.getElementById("create-playlist-btn").addEventListener("click", async function (event) {
   event.preventDefault();
   handleCreatePlaylistRequest();
@@ -2136,8 +2080,8 @@ function displayUtilities() {
 async function fetchUserChannel() {
   try {
     const headers = {
+      'Content-Type': 'application/json',
       'Authorization': `API-KEY ${apiKey}`,
-      'Content-Type': 'application/json'
     }
 
     const channelsApiUrl = '/youtube/channels/api';
@@ -2211,8 +2155,8 @@ async function fetchUserPlaylists() {
 
   try {
     const headers = {
+      'Content-Type': 'application/json',
       'Authorization': `API-KEY ${apiKey}`,
-      'Content-Type': 'application/json'
     }
     const response = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers });
 
@@ -2255,8 +2199,11 @@ async function fetchUserPlaylists() {
 // #################################################################################
 
 async function load_gallery() {
-  // console.log('welcome Load Gallery Function');
-  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
+  const headers = {
+    'Authorization': `API-KEY ${apiKey}`,
+    'Content-Type': 'application/json'
+  }
+  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers});
 
   if (playlistsResponse.ok) {
     const playlistsData = await playlistsResponse.json();
@@ -2304,8 +2251,11 @@ async function play_first_video() {
 }
 
 async function load_videos(playlist_id) {
-  // console.log('welcome Load Videos');
-  let response = await fetch('/youtube/videos/api/', { method: 'GET' });
+  const headers = {
+    'Authorization': `API-KEY ${apiKey}`,
+    'Content-Type': 'application/json'
+  }
+  let response = await fetch('/youtube/videos/api/', { method: 'GET', headers: headers });
 
   if (response.ok) {
     const playlistItemsData = await response.json();
@@ -2490,13 +2440,14 @@ async function deleteVideo(video_Id) {
     }
   }
 
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `API-KEY ${apiKey}`,
+  }
   // Fetch request to delete the video
   fetch('/youtube/delete-video/api/', {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
+    headers: headers,
     body: JSON.stringify({
       video_id: video_Id,
     }),
