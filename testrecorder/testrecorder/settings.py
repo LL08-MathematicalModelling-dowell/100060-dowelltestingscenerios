@@ -281,7 +281,7 @@ CACHES = {
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-    'core.auth.GoogleAPIKeyAuthentication',
+    'core.auth.APIKeyAuthentication',
     'rest_framework.authentication.SessionAuthentication',
     'rest_framework.authentication.BasicAuthentication',
     ],

@@ -14,14 +14,14 @@ from rest_framework.decorators import authentication_classes
 
 
 from .models import ChannelRecord
-from core.auth import GoogleAPIKeyAuthentication
+from core.auth import APIKeyAuthentication
 from .utils import get_user_cache_key, create_user_youtube_object
 
 
 logger = logging.getLogger(__name__)
 
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class UserChannelsView(APIView):
     """
     This class is a DRF APIView that retrieves the authenticated user's YouTube channels.
@@ -200,7 +200,7 @@ class UserChannelsView(APIView):
 
         return response
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class DeleteVideoView(APIView):
     """
     API view class for deleting a video on YouTube.
@@ -256,7 +256,7 @@ class DeleteVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)})
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class LoadVideoView(APIView):
     """
     API view class for loading all videos from YouTube.
@@ -349,7 +349,7 @@ class LoadVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class YouTubeVideoAPIView(APIView):
     """
     This class is a DRF APIView that retrieves the authenticated user's YouTube videos.

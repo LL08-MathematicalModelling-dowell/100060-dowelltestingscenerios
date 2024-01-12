@@ -11,7 +11,7 @@ from rest_framework.decorators import authentication_classes
 
 
 
-from core.auth import GoogleAPIKeyAuthentication
+from core.auth import APIKeyAuthentication
 from .serializers import (
     StartBroadcastSerializer,
     TransitionBroadcastSerializer,
@@ -27,7 +27,7 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class StartBroadcastView(APIView):
     """ DRF API that handles requests to start a broadcast """
     serializer_class = StartBroadcastSerializer
@@ -60,7 +60,7 @@ class StartBroadcastView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class TransitionBroadcastView(APIView):
     """ DRF API that handles requests to transition a broadcast """
     serializer_class = TransitionBroadcastSerializer
@@ -115,7 +115,7 @@ def fetch_playlists_with_pagination(youtube_object):
     return playlists
 
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class FetchPlaylistsView(APIView):
     """
     Handles requests to get the current YouTube channel's playlists
@@ -218,7 +218,7 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
         raise Exception(error_msg)
 
 
-@authentication_classes([GoogleAPIKeyAuthentication])
+@authentication_classes([APIKeyAuthentication])
 class CreatePlaylistView(APIView):
     """
         DRF API that handles requests to create youtube playlists
