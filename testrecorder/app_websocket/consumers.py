@@ -121,9 +121,9 @@ class FFmpegProcessManager:
     def cleanup_on_disconnect(self, scope):
         """Cleanup when the websocket disconnects"""
         if self.process:
+            self.process_manager_cleanup()
             _ = self.transition_broadcast(scope)
             cache.delete(f"stream_dict{scope.get('user').id}")
-            self.process_manager_cleanup()
 
     def transition_broadcast(self, scope):
         """Transition the broadcast"""
@@ -151,14 +151,18 @@ class FFmpegProcessManager:
     def process_manager_cleanup(self):
         """Cleanup the process manager"""
         try:
-            # self.process.stdin.close()
-            self.process.wait(timeout=5)
+            self.process.stdin.close()
+            stdout, stderr = self.process.communicate(timeout=10)
+            if stderr:
+                print("Error in subprocess stderr:", stderr)
+
         except subprocess.TimeoutExpired:
             self.process.terminate()
         except Exception as e:
             print("Error while closing the subprocess: ", e)
         finally:
             self.process = None
+
 
     def start_ffmpeg_process(self):
         """Start the ffmpeg process"""
@@ -168,7 +172,6 @@ class FFmpegProcessManager:
                 command, stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                bufsize=64358,
             )
         except Exception as e:
             print("Error starting FFmpeg process: ", e)
