@@ -151,7 +151,7 @@ def insert_stream(youtube) -> dict:
 
         new_stream_id = insert_stream_response.get("id", "")
         new_stream_name = ingestion_info.get("streamName", "")
-        new_stream_ingestion_address = ingestion_info.get("rtmpsIngestionAddress", "")
+        new_stream_ingestion_address = ingestion_info.get('ingestionAddress') # ("rtmpsIngestionAddress", "")
         new_rtmp_url = f"{new_stream_ingestion_address}/{new_stream_name}"
 
         stream_dict = {

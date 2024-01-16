@@ -163,7 +163,6 @@ class FFmpegProcessManager:
         finally:
             self.process = None
 
-
     def start_ffmpeg_process(self):
         """Start the ffmpeg process"""
         try:
@@ -172,7 +171,18 @@ class FFmpegProcessManager:
                 command, stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
+
             )
+            if stream_ended:
+                # Store buffered data
+                buffer_data = self.process.stdout.read()
+
+                # Call background task
+                flush_buffer_to_youtube.delay(self.stream_id, buffer_data)
+
+            # Terminate FFmpeg process
+            self.process.terminate()
+
         except Exception as e:
             print("Error starting FFmpeg process: ", e)
 

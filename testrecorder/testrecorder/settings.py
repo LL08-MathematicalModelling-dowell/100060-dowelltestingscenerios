@@ -65,7 +65,6 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'drf_yasg',
-    # 'rest_framework.authtoken',  # <-- Here NEW
 
     # Custom Apps
     'app_websocket',
@@ -236,7 +235,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-
 # Temporary files directory
 TEMP_FILES_ROOT = os.path.join(BASE_DIR, "temp")
 PERMANENT_FILES_ROOT = os.path.join(BASE_DIR, "media/UXLivingLab/UX_LIVE")
@@ -268,7 +266,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -285,7 +282,6 @@ REST_FRAMEWORK = {
     'rest_framework.authentication.SessionAuthentication',
     'rest_framework.authentication.BasicAuthentication',
     ],
-    # 'DEFAULT_PERMISSION_CLASSES': [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
 }
+
+CELERY_BROKER_URL = "redis://localhost:6379/2",

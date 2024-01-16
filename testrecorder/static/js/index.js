@@ -845,7 +845,7 @@ async function validateAll() {
       // Use the environment camera
       currentCamera = 'environment';
       videoConstraints.facingMode = currentCamera;
-      currentCameraIsValid = false; // Indicate that currentCamera is not valid
+      currentCameraIsValid = false;
     } else if (selectVideo.value === 'user') {
       // Use the user camera
       currentCamera = 'user';
