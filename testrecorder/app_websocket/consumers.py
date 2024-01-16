@@ -152,16 +152,22 @@ class FFmpegProcessManager:
     def process_manager_cleanup(self):
         """Cleanup the process manager"""
         try:
-            if self.process and not self.process.stdin.closed:
-                self.process.stdin.close()
-            _, stderr = self.process.communicate()
-            if stderr:
-                print("Error in subprocess stderr:", stderr)
-            self.process.wait()
+            if self.process:
+                if not self.process.stdin.closed:
+                    self.process.stdin.close()
+
+                _, stderr = self.process.communicate()
+
+                if stderr:
+                    print("Error in subprocess stderr:", stderr)
+
+                self.process.wait()
         except subprocess.TimeoutExpired:
             self.process.terminate()
+    
         except Exception as e:
             print("Error while closing the subprocess: ", e)
+
         finally:
             self.process = None
 
