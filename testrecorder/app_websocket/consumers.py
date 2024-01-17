@@ -17,8 +17,6 @@ from youtube.models import UserProfile
 @database_sync_to_async
 def get_user(api_key):
     """Get user based on the API key"""
-    # from youtube.models import UserProfile
-
     try:
         return UserProfile.objects.get(api_key=api_key).user
     except UserProfile.DoesNotExist:
@@ -182,7 +180,6 @@ class FFmpegProcessManager:
                 command, stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-
             )
             
         except Exception as e:

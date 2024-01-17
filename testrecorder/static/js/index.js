@@ -2392,6 +2392,7 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
+  btnCloseVideoPreviewModal = document.getElementbyId('close-preview-video-modal')
   // Close modal if open
   btnCloseVideoPreviewModal.click();
 
