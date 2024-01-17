@@ -2369,6 +2369,7 @@ const youtubePreview = document.getElementById('youtube-preview');
 const video_Id = newBroadcastID;
 
 
+
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -2392,7 +2393,6 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
-  btnCloseVideoPreviewModal = document.getElementbyId('close-preview-video-modal')
   // Close modal if open
   btnCloseVideoPreviewModal.click();
 
