@@ -32,16 +32,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
 
-#application = get_default_application()
-#application = get_asgi_application()
-# application = ProtocolTypeRouter({
-#   "http": get_asgi_application(),
-#   "websocket": AuthMiddlewareStack(
-#         URLRouter(
-#             routing.ws_urlpatterns
-#         )
-#     ),
-# })
 application = ProtocolTypeRouter({
   "http": get_asgi_application(),
   "websocket": AuthMiddlewareStack(
@@ -50,13 +40,3 @@ application = ProtocolTypeRouter({
         )
     )
 })
-
-
-"""application = ProtocolTypeRouter({
-  "http": AsgiHandler(),
-  "websocket": AuthMiddlewareStack(
-        URLRouter(
-            routing.ws_urlpatterns
-        )
-    ),
-})"""
