@@ -2,20 +2,26 @@ import os
 import subprocess
 
 import django
-from channels.db import database_sync_to_async
-from channels.consumer import AsyncConsumer
-from django.core.cache import cache
-from youtube.utils import transition_broadcast
-from youtube.models import UserProfile
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
+from channels.consumer import AsyncConsumer
+
+from channels.db import database_sync_to_async
+
+from django.core.cache import cache
+from youtube.utils import transition_broadcast
+from youtube.models import UserProfile
+
+
 
 @database_sync_to_async
 def get_user(api_key):
     """Get user based on the API key"""
+    # from youtube.models import UserProfile
+
     try:
         return UserProfile.objects.get(api_key=api_key).user
     except UserProfile.DoesNotExist:
