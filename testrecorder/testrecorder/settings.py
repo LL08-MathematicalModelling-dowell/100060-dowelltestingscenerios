@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-import django
 from djongo.operations import DatabaseOperations
 from dotenv import load_dotenv
 
@@ -30,7 +29,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False# True
+DEBUG = False # True
 
 ALLOWED_HOSTS = ['*']
 
