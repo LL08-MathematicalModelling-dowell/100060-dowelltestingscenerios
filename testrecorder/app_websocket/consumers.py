@@ -1,16 +1,19 @@
-from youtube.models import UserProfile
-from youtube.utils import transition_broadcast
+
 import os
 import subprocess
 import django
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.core.cache import cache
-import time
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
+
+
+# All setting are moved bellow the django setup to avoid import error in django setup process.
+from youtube.models import UserProfile
+from youtube.utils import transition_broadcast
 
 
 @database_sync_to_async
