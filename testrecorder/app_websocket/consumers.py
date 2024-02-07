@@ -1,6 +1,9 @@
 
+from youtube.utils import transition_broadcast
+from youtube.models import UserProfile
 import os
 import subprocess
+import asyncio
 import django
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
@@ -12,8 +15,6 @@ django.setup()
 
 
 # All setting are moved bellow the django setup to avoid import error in django setup process.
-from youtube.models import UserProfile
-from youtube.utils import transition_broadcast
 
 
 @database_sync_to_async
@@ -30,6 +31,26 @@ class VideoConsumer(AsyncConsumer):
 
     def __init__(self):
         self.process_manager = FFmpegProcessManager(send=self.send)
+
+    # async def websocket_connect(self, event):
+    #     try:
+    #         query_string = self.scope.get("query_string", b"").decode("utf-8")
+    #         if query_string:
+    #             api_key = query_string.split('=')[-1]
+
+    #             user = await get_user(api_key)
+    #             if user:
+    #                 self.scope['user'] = user
+    #                 await self.send({"type": "websocket.accept"})
+    #             else:
+    #                 await self.send({"type": "websocket.close", "text": "UnAuthorised"})
+    #                 await self.websocket_disconnect(event)
+    #         else:
+    #             await self.send({"type": "websocket.close", "text": "UnAuthorised"})
+    #             await self.websocket_disconnect(event)
+    #     except UserProfile.DoesNotExist:
+    #         await self.send({"type": "websocket.close", "text": "UnAuthorised"})
+    #         await self.websocket_disconnect(event)
 
     async def websocket_connect(self, event):
         try:
@@ -58,9 +79,27 @@ class VideoConsumer(AsyncConsumer):
         elif 'bytes' in event:
             await self.process_bytes_event(event['bytes'])
 
+    # async def websocket_disconnect(self, event):
+    #     """Handle when websocket is disconnected"""
+    #     self.process_manager.cleanup_on_disconnect(self.scope)
+
     async def websocket_disconnect(self, event):
         """Handle when websocket is disconnected"""
-        self.process_manager.cleanup_on_disconnect(self.scope)
+        try:
+            await asyncio.wait_for(self.wait_for_reconnect(), timeout=5)
+            # Reconnection happened within 5 seconds, do nothing
+        except asyncio.TimeoutError:
+            # No reconnection happened within 5 seconds, proceed with cleanup
+            if not self.is_connected:
+                self.process_manager.cleanup_on_disconnect(self.scope)
+
+    async def wait_for_reconnect(self):
+        """Wait for a reconnection attempt"""
+        self.is_connected = False  # Mark connection as lost
+        await asyncio.sleep(5)  # Wait for 5 seconds for a reconnection attempt
+        # If this method is not cancelled within 5 seconds, it means no reconnection attempt occurred
+        # Set is_connected back to True if reconnected during this period
+        self.is_connected = True
 
     async def process_text_event(self, text_data):
         """Process the text event"""

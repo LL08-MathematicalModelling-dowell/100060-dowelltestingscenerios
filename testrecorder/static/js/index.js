@@ -1538,29 +1538,6 @@ async function showErrorModal(liveStreamError = null, message = null) {
   }
 }
 
-// Timer to check network status every second
-networkTimer = setInterval(() => {
-  checkNetworkStatus();
-}, 1000) // each 1 second
-
-// Function to check network status
-async function checkNetworkStatus() {
-  let currentDateTime = new Date();
-  let resultInSeconds = currentDateTime.getTime() / 1000;
-  let timeNow = resultInSeconds;
-  if (msgRcvdFlag === true) {
-    lastMsgRcvTime = timeNow;
-    msgRcvdFlag = false;
-  } else {
-    if (recordinginProgress === false) {
-      lastMsgRcvTime = timeNow;
-    } else if ((timeNow - lastMsgRcvTime) > 25) { // More than 25 secs
-      msgRcvdFlag = false;
-      lastMsgRcvTime = timeNow;
-    }
-  }
-}
-
 // sets youtube video privacy status
 async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
@@ -2201,7 +2178,7 @@ async function load_gallery() {
     'Authorization': `API-KEY ${apiKey}`,
     'Content-Type': 'application/json'
   }
-  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers});
+  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers });
 
   if (playlistsResponse.ok) {
     const playlistsData = await playlistsResponse.json();
@@ -2270,7 +2247,7 @@ async function load_videos(playlist_id) {
       return;
     }
 
-    const videos = []; 
+    const videos = [];
 
     // Iterate over the playlist videos and extract necessary information
     playlistVideos.forEach(video => {
@@ -2290,7 +2267,7 @@ async function load_videos(playlist_id) {
       videos.push(videoObject);
     });
     const selectElement = document.getElementById('all_video');
-    selectElement.innerHTML = ''; 
+    selectElement.innerHTML = '';
     videos.forEach(video => {
       const option = document.createElement('option');
       option.value = video.id;

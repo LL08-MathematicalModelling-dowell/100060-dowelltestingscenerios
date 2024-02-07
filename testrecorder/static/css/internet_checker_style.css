@@ -1,0 +1,108 @@
+/* Import Google font - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    background: #E3F2FD;
+}
+
+.popup {
+    position: fixed;
+    left: 50%;
+    top: -25%;
+    visibility: hidden;
+    width: 490px;
+    max-width: 90%;
+    border-radius: 5px;
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    border-top: 3px solid #EA4D67;
+    transform: translateX(-50%);
+    box-shadow: 0 10px 25px rgba(52, 87, 220, 0.1);
+    transition: all 0.25s ease;
+    z-index: 9999;
+    /* Ensure popup appears above other content */
+}
+
+.popup.show {
+    top: 0;
+    visibility: visible;
+}
+
+.popup.online {
+    border-color: #2ECC71;
+}
+
+.popup .icon i {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    color: #fff;
+    margin-right: 15px;
+    font-size: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #EA4D67;
+}
+
+.popup.online .icon i {
+    background: #2ECC71;
+}
+
+.popup .content {
+    flex: 1;
+    /* Take remaining space */
+}
+
+.popup .title {
+    font-size: 1.2rem;
+    color: #333;
+    /* Darken title color for better contrast */
+    margin-bottom: 5px;
+    /* Add some spacing between title and description */
+}
+
+.popup .desc {
+    color: #666;
+    /* Slightly lighter text color */
+    font-size: 1rem;
+    line-height: 1.4;
+    /* Improve readability with slightly larger line-height */
+    margin-bottom: 10px;
+}
+
+.popup .reconnect {
+    border: none;
+    outline: none;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    padding: 10px 15px;
+    border-radius: 4px;
+    background: #5372F0;
+    transition: background 0.3s ease;
+}
+
+.popup.online .reconnect {
+    background: #bfbfbf;
+    pointer-events: none;
+}
+
+/* Responsive styles */
+@media screen and (max-width: 550px) {
+    .popup {
+        width: 90%;
+        max-width: 100%;
+        padding: 15px;
+    }
+}
