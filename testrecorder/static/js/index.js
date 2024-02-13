@@ -2690,27 +2690,5 @@ function bufferMediaStreams(webcamStream, screenStream, audioStream) {
       mediaBuffer.push({ type: 'audio', data: event.data });
     }
   };
-
-  // Start recording for each stream
-  mediaRecorderWebcam.start();
-  mediaRecorderScreen.start();
-  mediaRecorderAudio.start();
-
-  // Stop recording after a certain duration (you can adjust this)
-  setTimeout(() => {
-    mediaRecorderWebcam.stop();
-    mediaRecorderScreen.stop();
-    mediaRecorderAudio.stop();
-  }, 5000); // Stop after 5 seconds in this example
 }
-
-// Example of how to use the function
-const exampleWebcamStream = await getWebcamStream();
-const exampleScreenStream = await getScreenStream();
-const recordAudio = await microphoneStatus();
-  if (recordAudio) {
-    const audioDevice = getSelectedAudioDevice(); // Get the selected audio device
-    const exampleAudioStream = await getAudioStream(audioDevice);
-  };
-bufferMediaStreams(exampleWebcamStream, exampleScreenStream, exampleAudioStream);
 
