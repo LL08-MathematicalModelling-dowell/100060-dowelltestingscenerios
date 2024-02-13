@@ -2046,6 +2046,13 @@ async function showPlaylistCreatedModal() {
   // Show modal
   const playlistCreatedModal = new bootstrap.Modal(document.getElementById('playlist-created-modal'));
   playlistCreatedModal.show();
+
+  // Add event listener to the modal for a click event
+  const modalElement = document.getElementById('playlist-created-modal');
+  modalElement.addEventListener('click', () => {
+    // Reload the page upon clicking the modal
+    location.reload();
+  });
 }
 
 // Shows Playlist creation Error occurred modal
