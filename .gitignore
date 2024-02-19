@@ -13,3 +13,4 @@ env
 venv
 myenv
 testrecorder/staticfiles
+client_secret.json

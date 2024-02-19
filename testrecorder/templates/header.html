@@ -1,40 +1,20 @@
 {% load static %}
+
 <header id="nav-bar-header">
   <nav id="navigation-bar" class="upper-nav">
     <div class="upper-nav">
       <a href="https://uxlive.org">
-        <!-- <div class="upper-nav-icon active tooltip-container"> -->
-          <!-- <div class="upper-nav-icon active tooltip-container"> -->
-          <!-- <i class="fas fa-home"></i> -->
-          Home
-          <!-- <span class="header-tooltip-text">Home</span> -->
-        <!-- </div> -->
+        Home
       </a>
       <a href="https://uxlive.org/privacy-policy">
-        <!-- <div class="upper-nav-icon active tooltip-container"> -->
-          <!-- <i class="fa-solid fa-shield-alt"></i> -->
-          Privacy
-          <!-- <span class="header-tooltip-text">Privacy Policy</span> -->
-        <!-- </div> -->
+        Privacy
       </a>
-      <!--<a href="#">
-        <div class="upper-nav-icon">
-          <i class="fas fa-cog"></i>
-        </div>
-      </a>-->
       <a href="{% url 'about' %}">
-        <!-- <div class="upper-nav-icon dowell-logo tooltip-container"> -->
-          <!-- <img src="{% static 'images/favicon.jpg' %}" alt=""> -->
-          About
-          <!-- <span class="header-tooltip-text">About Us</span> -->
-        <!-- </div> -->
+        About
       </a>
       {% if user.is_authenticated %}
-      <!-- <div class="user-icon tooltip-container"> -->
-        <!-- <i class="fas fa-user-circle" style="font-size: 40px;"></i> -->
-        <div class="user-icon user-icon-div">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
-        <!-- <span class="header-tooltip-text">User</span> -->
-      <!-- </div> -->
+      <div class="user-icon user-icon-div">{{ user.first_name.0|upper }}{{ user.last_name.0|upper }}</div>
+
       {% endif %}
     </div>
     <a href="https://uxlive.org" class="mobile">
@@ -51,10 +31,17 @@
       <div class="">
         <p class="" id="username">{{ user.username }}</p>
       </div>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal" style="width: 10em;
+      font-size: .6em;
+      background: crimson;">
+        Show API-KEY
+      </button>
       <div class="">
         <a href="{% url 'logout' %}" class="">Logout</a>
       </div>
     </div>
+    <!-- Button trigger modal -->
+
     {% endif %}
   </nav>
 
@@ -67,15 +54,196 @@
     <hr>
     {% load socialaccount %}
     {% if user.is_authenticated %}
-    <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle" style="font-size:25px; margin-right: 50px;"></i>{{ user.username }}</p>
-    {% endif %}
-    {% if user.is_authenticated %}
-    <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-out" style="font-size:20px;"><i class="fas fa-sign-out" style="font-size:25px; margin-right: 50px;"></i>Logout</a>
+    <p class="mobile-menu-item miniscreen-username" id="username"><i class="fas fa-user-circle"
+        style="font-size:25px; margin-right: 50px;"></i>{{ user.username }}</p>
+    <a href="{% url 'logout' %}" class="mobile-menu-item logout-disable miniscreen-log-out" style="font-size:20px;"><i
+        class="fas fa-sign-out" style="font-size:25px; margin-right: 50px;"></i>Logout</a>
+    <button type="button" class="btn btn-primary mobile-menu-item" data-bs-toggle="modal" data-bs-target="#exampleModal"
+      style="width: 10em;
+    height: auto;
+    font-size: .6em;
+    align-self: end;
+    background: crimson;">
+      Show API-KEY
+    </button>
     {% else %}
-    <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in" style="font-size:20px;">Login with Google/Select
+    <a href="{% provider_login_url 'google' %}?next=/" class="mobile-menu-item miniscreen-log-in"
+      style="font-size:20px;">Login with Google/Select
       Channel</a>
-      <div style="color:red;" id="logout-error"></div>
+    <div style="color:red;" id="logout-error"></div>
     {% endif %}
   </div>
-  
+
 </header>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div id="api-key-modal-content" class="modal-content" style="width: 32.5em;">
+      <div class="modal-header" style="height: 2em;">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">API-KEY</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="copy-component">
+          <code id="text-to-copy">{{ user_profile.api_key }}</code>
+          <i id="copy-button" class="fa-solid fa-copy btn" data-bs-toggle="popover" data-bs-content="Text copied!"></i>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <p id="footer-note">DO NOT disclose this.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  #api-key-modal-content {
+    width: 32.5em;
+  }
+
+  #copy-button {
+    color: brown;
+  }
+
+  #footer-note {
+    font-size: .8em;
+    color: red;
+  }
+
+  #copy-component {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 200px;
+  }
+
+  #copy-component code {
+    background-color: #f1f1f1;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1.2rem;
+  }
+
+  #copy-component .btn {
+    margin-left: 10px;
+  }
+
+  #copy-component .btn:hover {
+    cursor: pointer;
+  }
+
+  #copy-component .btn:active {
+    transform: scale(0.9);
+  }
+
+  #copy-component .btn:focus {
+    outline: none;
+  }
+
+  #copy-component .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #copy-component .btn:disabled:hover {
+    transform: scale(1);
+  }
+
+  #copy-component .btn:disabled:active {
+    transform: scale(0.9);
+  }
+
+  #copy-component .btn:disabled:focus {
+    outline: none;
+  }
+
+  #copy-component .btn .fa-copy {
+    font-size: 1.5rem;
+  }
+
+  #copy-component .btn .fa-copy:hover {
+    cursor: pointer;
+  }
+
+  #copy-component .btn .fa-copy:active {
+    transform: scale(0.9);
+  }
+
+  #copy-component .btn .fa-copy:focus {
+    outline: none;
+  }
+
+  #copy-component .btn .fa-copy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  #copy-component .btn .fa-copy:disabled:hover {
+    transform: scale(1);
+  }
+
+  #copy-component .btn .fa-copy:disabled:active {
+    transform: scale(0.9);
+  }
+
+  #copy-component .btn .fa-copy:disabled:focus {
+    outline: none;
+  }
+
+  #copy-component .btn .fa-copy.hover {
+    color: #007bff;
+  }
+
+  #copy-component .btn .fa-copy.hover:hover {
+    color: #007bff;
+  }
+
+  #copy-component .btn .fa-copy.hover:active {
+    color: #007bff;
+  }
+
+  #copy-component .btn .fa-copy.hover:focus {
+    color: #007bff;
+  }
+
+  #copy-component .btn .fa-copy.hover:disabled {
+    color: #007bff;
+  }
+
+  @media screen and (max-width: 768px) {
+    #copy-component code {
+      font-size: .7rem;
+      padding: 5px;
+    }
+
+    #copy-button {
+      margin-left: 2px;
+      color: brown;
+      padding: 5px;
+    }
+
+    #api-key-modal-content {
+      width: 20em;
+    }
+
+  }
+</style>
+
+<script>
+  const copyButton = document.getElementById("copy-button");
+  const textToCopy = document.getElementById("text-to-copy");
+  const popover = new bootstrap.Popover(copyButton);
+
+  copyButton.addEventListener("click", () => {
+    navigator.clipboard.writeText(textToCopy.textContent).then(() => {
+      popover.show();
+      setTimeout(() => {
+        popover.hide();
+      }, 1000);
+    }, (err) => {
+      alert("Failed to copy text. Please try manually.");
+    });
+  });
+
+</script>

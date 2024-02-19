@@ -1,25 +1,4 @@
 from django import forms
-from .models import ChannelsRecord
-
-
-class AddChannelRecord(forms.ModelForm):
-    """
-    Form description of ChannelRecord model of the youtube app.
-    args:
-        channel_id :     The youtube channel id in the form 'UCIdKn6oPpnjySBnpWgWcg5w'
-        channel_title:   The youtube channel title, takes atleast 3 characters and at most 50 characters
-    """
-    channel_id = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control', 'id': 'channel_id_modal', 'placeholder': 'Enter Channel ID'}))
-    channel_title = forms.CharField(widget=forms.TextInput(
-        attrs={'class': 'form-control', 'id': 'channel_title_modal', 'placeholder': 'Enter Channel Title'}))
-
-    class Meta:
-        """
-        Overriden Meta class to define model class and form field 
-        """
-        model = ChannelsRecord
-        fields = ['channel_id', 'channel_title']  # , 'channel_credentials']
 
 
 class CreatePlaylist(forms.Form):

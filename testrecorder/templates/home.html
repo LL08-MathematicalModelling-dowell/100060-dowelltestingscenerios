@@ -74,7 +74,7 @@
                 </div>
                 <div class="record-btn tooltip-container">
                     <button id="start" onClick="validateAll()">
-                        
+
                         <i class="fas fa-record-vinyl"></i>
                     </button>
                     <span class="tooltip-text">Start Recording</span>
@@ -122,11 +122,12 @@
 </div>
 </main>
 <div class="status-bar">
-    {% if user.is_authenticated %}
+    {% if user_profile %}
     <div id="app-status">STATUS: Waiting to Record.</div>
     {% else %}
     <div id="app-status"></div>
-    {% endif %}
+</div>
+{% endif %}
 </div>
 {% include "youtube_copyright.html" %}
 {% include 'modals.html' %}
@@ -137,6 +138,5 @@
 
 <!-- Video Stream Merger JavaScript -->
 <script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
-<!-- <script src="{% static '/js/utils.js' %}"></script> -->
 <script src="{% static '/js/index.js' %}"></script>
 {% endblock body %}
