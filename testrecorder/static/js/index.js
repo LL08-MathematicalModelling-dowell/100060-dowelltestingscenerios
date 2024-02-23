@@ -1787,9 +1787,9 @@ async function insertVideoIntoPlaylist(socket) {
 async function sendRTMPURL(socket) {
   showCreatingBroadcastModal(false);
   // Check if we need to add audio stream
-  recordAudio = microphoneStatus();
 
   if (socket != null && socket.readyState === WebSocket.OPEN) {
+    recordAudio = microphoneStatus();
     if (recordAudio == true) {
       let msg = "browser_sound," + newRtmpUrl;
       await socket.send(msg)
@@ -1804,7 +1804,7 @@ async function sendRTMPURL(socket) {
 
   if (socket != null && socket.readyState === WebSocket.OPEN) {
     // Check if we need to add an audio stream
-//    recordAudio = microphoneStatus();
+   recordAudio = microphoneStatus();
 
     if (recordAudio) {
       let msg = "browser_sound," + newRtmpUrl;
