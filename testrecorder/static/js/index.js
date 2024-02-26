@@ -32,6 +32,9 @@ let webcamStream = null;
 let screenStream = null;
 let audioStream = null;
 
+// Assume you have a global variable for your buffer
+let mediaBuffer = [];
+
 let currentCamera = "user";
 let audioConstraints = {
   deviceId: { exact: "default" }
@@ -2537,3 +2540,34 @@ function removeScreenOption() {
 window.onload = function () {
   removeScreenOption();
 };
+
+
+// Buffer Media Stream function.
+// Takes an input of the streams and stores them in a buffer
+function bufferMediaStreams(webcamStream, screenStream, audioStream) {
+  const mediaRecorderWebcam = new MediaRecorder(webcamStream);
+  const mediaRecorderScreen = new MediaRecorder(screenStream);
+  const mediaRecorderAudio = new MediaRecorder(audioStream);
+
+  // Event listener for webcam stream
+  mediaRecorderWebcam.ondataavailable = (event) => {
+    if (event.data.size > 0) {
+      mediaBuffer.push({ type: 'webcam', data: event.data });
+    }
+  };
+
+  // Event listener for screen stream
+  mediaRecorderScreen.ondataavailable = (event) => {
+    if (event.data.size > 0) {
+      mediaBuffer.push({ type: 'screen', data: event.data });
+    }
+  };
+
+  // Event listener for audio stream
+  mediaRecorderAudio.ondataavailable = (event) => {
+    if (event.data.size > 0) {
+      mediaBuffer.push({ type: 'audio', data: event.data });
+    }
+  };
+}
+
