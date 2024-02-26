@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import FileView,BytesView,CreateBroadcastView
+from .views import FileView, BytesView, CreateBroadcastView
 
 urlpatterns = [
     path('upload/', FileView.as_view(), name='file-upload'),

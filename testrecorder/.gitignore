@@ -3,3 +3,6 @@ client_secret.json
 db.sqlite3
 *.sqlite3
 testrecorder/staticfiles
+test.js
+utils.js
+set_env.sh

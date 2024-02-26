@@ -1,19 +1,27 @@
+"""
+Second views file for the YouTube app.
+"""
 import json
 import logging
 import requests
-from requests import HTTPError
-from googleapiclient.discovery import build
-from google.oauth2.credentials import Credentials
+from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from .models import YoutubeUserCredential, ChannelsRecord
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import authentication_classes
+
+
+from .models import ChannelRecord
+from core.auth import APIKeyAuthentication
+from .utils import get_user_cache_key, create_user_youtube_object
 
 
 logger = logging.getLogger(__name__)
 
 
+@authentication_classes([APIKeyAuthentication])
 class UserChannelsView(APIView):
     """
     This class is a DRF APIView that retrieves the authenticated user's YouTube channels.
@@ -29,18 +37,18 @@ class UserChannelsView(APIView):
 
         Functionality:
             The get method retrieves the authenticated user's YouTube channels by first retrieving
-            the YoutubeUserCredential object associated with the authenticated user. It then retrieves the user's
-            credentials associated with the YoutubeUserCredential object and uses them to create a YouTube object using
+            the UserProfile object associated with the authenticated user. It then retrieves the user's
+            credentials associated with the UserProfile object and uses them to create a YouTube object using
             the v3 version of the API. It then retrieves the channels associated with the user's account and processes
             them into a list of dictionaries containing the channel id and title. It saves the first channel's details
-            to a ChannelsRecord object and returns the channels in the response body with a 200 OK status code.
+            to a ChannelRecord object and returns the channels in the response body with a 200 OK status code.
             If an exception is raised during any of the above steps, it returns an error response with a 404
             Not Found status code.
 
         Returns:
             If successful, returns a DRF Response object with a JSON array of dictionaries containing the channel id and
                title with a 200 OK status code.
-            If the user doesn't have a YoutubeUserCredential object, returns a DRF Response object with an error message
+            If the user doesn't have a UserProfile object, returns a DRF Response object with an error message
                 and a 401 Unauthorized status code.
             If unable to fetch the YouTube channels, returns a DRF Response object with an error message and
                 a 404 Not Found status code.
@@ -50,56 +58,35 @@ class UserChannelsView(APIView):
         can access this view.
     """
     permission_classes = [IsAuthenticated]
-
     def get(self, request, *args, **kwargs):
         """
         Retrieve the authenticated user's YouTube channels.
-
         Returns a JSON array of dictionaries containing the channel id and title
-        with a 200 OK status code. If the user doesn't have a YoutubeUserCredential
+        with a 200 OK status code. If the user doesn't have a UserProfile
         object, returns a 401 Unauthorized status code. If unable to fetch the
         YouTube channels, returns a 404 Not Found status code.
         """
-
         try:
-            # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-            credential = youtube_user.credential
+            user = request.user
+            # Generate a user-specific cache key
+            cache_key = get_user_cache_key(user.id, '/channels/api/')
 
-            # Get credential from dowell database
-            """ This Code snippet will be used in the future
-            user_email = request.user.email
-            user_info = self.fetch_user_credential_from_dowell_connection_db(
-                user_email)
-            if user_info.get('data') is not None:
-                credential_from_dowell_db = user_info.get(
-                    'data').get('email_credentials')
-            print('credential_from_dowell_db ===> ',  credential_from_dowell_db)
-            """
-        except YoutubeUserCredential.DoesNotExist:
-            # If the user doesn't have a YoutubeUserCredential object,
-            # return an error response with 401 Unauthorized status code
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            # Attempt to retrieve the response from the cache
+            cached_response = cache.get(cache_key, None)
 
-        try:
-            # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            credentials = Credentials.from_authorized_user_info(
-                info=credential)
-
-            # Construct a Resource for interacting with an API.
-            # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            youtube = build('youtube', 'v3',
-                            credentials=credentials, cache_discovery=False)
-
-            youtube = create_user_youtube_object(request)
+            if cached_response is not None:
+                return Response(cached_response, status=status.HTTP_200_OK)
+                
+            youtube, credential = create_user_youtube_object(request=request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            
             # Retrieve the channels associated with the user's account
             channels_response = youtube.channels().list(part='snippet', mine=True).execute()
-            # print('channel Response ===> ', channels_response)
             if 'items' not in channels_response:
                 return Response({'Error': 'There is no youtube channel associated with this account!'},
                                 status=status.HTTP_404_NOT_FOUND)
+
             # Process the channels into a list of dictionaries containing the channel id and title
             channels = [
                 {
@@ -109,31 +96,37 @@ class UserChannelsView(APIView):
                 for channel in channels_response['items']
             ]
 
+            cache.set(cache_key, channels, 5 * 24 * 60 * 60)
+
             try:
-                # Save the first channel's details to a ChannelsRecord object
-                channel_record, created = ChannelsRecord.objects.get_or_create(
-                    channel_id=channels[0].get('channel_id'),
-                    channel_title=channels[0].get('channel_title'),
-                    channel_credentials=credential
+                # Check if the first channel already exists in the database
+                first_channel = channels[0]
+
+                channel_record, created = ChannelRecord.objects.get_or_create(
+                    channel_id=first_channel.get('channel_id'),
+                    defaults={
+                        'channel_title': first_channel.get('channel_title'),
+                        'channel_credentials': credential
+                    }
                 )
-                if created:
+                # If the channel already exists, update the credential
+                if not created and channel_record.channel_credentials != credential:
+                    channel_record.channel_credentials = credential
                     channel_record.save()
+
             except Exception as e:
                 logger.error(
-                    f'Error while saving user channel credential locally!: {e}  occured')
-
-            # Return the channels in the response body with 200 OK status code
+                    f'Error while saving user channel credential locally!: {e} occurred')
+            
             return Response(channels, status=status.HTTP_200_OK)
 
-        except HTTPError as e:
-            status_code = e.resp.status
-            error_message = e._get_reason()
-            # If unable to fetch the YouTube channels, return an error response with 404 Not Found status code
+        except Exception as e:
+            error_message = str(e)
             return Response(
                 {'Error': error_message},
-                status=status_code
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
+            
     def is_available_in_db(self, email) -> bool:
         """
         Checks if record already exist in the database'
@@ -170,7 +163,6 @@ class UserChannelsView(APIView):
         if response.get('data') is None:
             return False
 
-        print("xxx DB Response xx=> ", response)
         return True
 
     def fetch_user_credential_from_dowell_connection_db(self, email):
@@ -208,7 +200,7 @@ class UserChannelsView(APIView):
 
         return response
 
-
+@authentication_classes([APIKeyAuthentication])
 class DeleteVideoView(APIView):
     """
     API view class for deleting a video on YouTube.
@@ -234,7 +226,7 @@ class DeleteVideoView(APIView):
         - Response: HTTP response indicating the result of the video deletion.
 
         Raises:
-        - Http404: If the YoutubeUserCredential object is not found for the authenticated user.
+        - Http404: If the UserProfile object is not found for the authenticated user.
         - Exception: If an error occurs while deleting the video.
 
         Authorization:
@@ -248,24 +240,13 @@ class DeleteVideoView(APIView):
         }
         ```
         """
-
-        # Load credentials from the JSON key file obtained from the Google API Console
         try:
-            # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-        except YoutubeUserCredential.DoesNotExist:
-            # If the user doesn't have a YoutubeUserCredential object,
-            # return an error response with 401 Unauthorized status code
-            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            youtube, credential = create_user_youtube_object(request=request)
+            if youtube is None:
+                # print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+            
 
-        try:
-            # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            credentials = Credentials.from_authorized_user_info(
-                info=youtube_user.credential)
-
-            # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            youtube = build('youtube', 'v3',
-                            credentials=credentials, cache_discovery=False)
             video_id = request.data.get('video_id')
 
             # Delete the video using the video ID
@@ -273,10 +254,9 @@ class DeleteVideoView(APIView):
             response = youtube.videos().delete(id=video_id).execute()
             return Response({'message': "Video deleted successfully", 'response': response}, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            # Return an error Response message
             return Response({'Error': str(e)})
 
-
+@authentication_classes([APIKeyAuthentication])
 class LoadVideoView(APIView):
     """
     API view class for loading all videos from YouTube.
@@ -290,7 +270,7 @@ class LoadVideoView(APIView):
     """
 
     permission_classes = [IsAuthenticated]
-
+    
     def get(self, request):
         """
         Load all videos from YouTube.
@@ -302,29 +282,15 @@ class LoadVideoView(APIView):
             Response: A response containing the loaded videos.
 
         Raises:
-            YoutubeUserCredential.DoesNotExist: If the authenticated user does not have a YoutubeUserCredential object.
+            UserProfile.DoesNotExist: If the authenticated user does not have a UserProfile object.
             Exception: If an error occurs during the loading process.
         """
         try:
-            #     # Retrieve the YoutubeUserCredential object associated with the authenticated user
-            #     youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-            # except YoutubeUserCredential.DoesNotExist:
-            #     # If the user doesn't have a YoutubeUserCredential object,
-            #     # return an error response with 401 Unauthorized status code
-            #     return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
-
-            # try:
-            #     # Retrieve the user's credentials associated with the YoutubeUserCredential object
-            #     credentials = Credentials.from_authorized_user_info(
-            #         info=youtube_user.credential)
-
-            #     # Create a YouTube object using the v3 version of the API and the retrieved credentials
-            #     youtube = build('youtube', 'v3',
-            #                     credentials=credentials, cache_discovery=False)
-
-            youtube = create_user_youtube_object(request)
+            youtube, credential = create_user_youtube_object(request=request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                # print('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+        
             # Perform the YouTube Channels API call
             channels_response = youtube.channels().list(
                 part='contentDetails',
@@ -381,32 +347,48 @@ class LoadVideoView(APIView):
 
             return Response(videos, status=status.HTTP_200_OK)
         except Exception as e:
-            # Return an error message
-            print('videos error  >> ', e)
-            # raise Exception('load video error >>>> ', e)
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
-
-def create_user_youtube_object(request):
-    try:
-        # Retrieve the YoutubeUserCredential object associated with the authenticated user
-        youtube_user = YoutubeUserCredential.objects.get(user=request.user)
-
-        # Retrieve the user's credentials associated with the YoutubeUserCredential object
-        credentials = Credentials.from_authorized_user_info(
-            info=youtube_user.credential)
-
-        # Create a YouTube object using the v3 version of the API and the retrieved credentials
-        youtube = build('youtube', 'v3',
-                        credentials=credentials, cache_discovery=False)
-        return youtube
-    except YoutubeUserCredential.DoesNotExist:
-        # If the user doesn't have a YoutubeUserCredential object,
-        # return an error response with 401 Unauthorized status code
-        return None
-
-
+@authentication_classes([APIKeyAuthentication])
 class YouTubeVideoAPIView(APIView):
+    """
+    This class is a DRF APIView that retrieves the authenticated user's YouTube videos.
+    Methods:
+        get(self, request, *args, **kwargs): Handles GET requests to this view and retrieves the
+            videos associated with the currently
+            authenticated user's YouTube account.
+            Parameters:
+            request: DRF Request object
+            *args: tuple of positional arguments
+            **kwargs: dictionary of keyword arguments
+    
+            Functionality:
+                The get method retrieves the authenticated user's YouTube videos by first retrieving
+                the UserProfile object associated with the authenticated user. It then retrieves the user's
+                credentials associated with the UserProfile object and uses them to create a YouTube object using
+                the v3 version of the API. It then retrieves the videos associated with the user's account and processes
+                them into a list of dictionaries containing the video id and title. It saves the first video's details
+                to a ChannelRecord object and returns the videos in the response body with a 200 OK status code.
+                If an exception is raised during any of the above steps, it returns an error response with a 404
+                Not Found status code.
+    
+            Returns:
+                If successful, returns a DRF Response object with a JSON array of dictionaries containing the video id and
+                 title with a 200 OK status code.
+                If the user doesn't have a UserProfile object, returns a DRF Response object with an error message
+                    and a 401 Unauthorized status code.
+                If unable to fetch the YouTube videos, returns a DRF Response object with an error message and
+                    a 404 Not Found status code.
+
+        get_video_data(self, request, video_id): Retrieves the video data from the YouTube API.
+            Parameters:
+                request: DRF Request object
+                video_id: The ID of the video to retrieve.
+            Returns:
+                If successful, returns a dictionary containing the video data.
+                If the video is not found, returns None.
+                If an exception is raised, returns None.
+    """
     def get(self, request, broadcast_id):
         # Retrieve the video from the YouTube API
         video_data = self.get_video_data(request, broadcast_id)
@@ -418,7 +400,10 @@ class YouTubeVideoAPIView(APIView):
 
     def get_video_data(self, request, broadcast_id):
         # Set up the YouTube API client
-        youtube = create_user_youtube_object(request)
+        youtube, credential = create_user_youtube_object(request=request)
+        if youtube is None:
+            # print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         try:
             # Make a request to the YouTube API to retrieve video details

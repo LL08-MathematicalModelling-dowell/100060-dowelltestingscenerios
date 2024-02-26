@@ -1,0 +1,578 @@
+<!-- Share youtube link Modal -->
+<div class="modal" id="share-library-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Video on</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-share-library-link-modal"></button>
+            </div>
+            <div class="modal-body modal-link">
+                <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
+                        onClick="shareVideoToFacebook()"></i></a>
+                <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareVideoToTwitter()"></i></a>
+                <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
+                        onClick="shareVideoToLinkedin()"></i></a>
+                <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareVideoToEmail()"></i></a>
+                <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
+                        onClick="shareVideoToWhatsapp()"></i></a> 
+                <button class="copylink" onClick="copySelectedLink()"><i class="fas fa-link"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share youtube link Modal -->
+<div class="modal" id="share-link-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Share Video on</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-share-link-modal"></button>
+            </div>
+            <div class="modal-body modal-link">
+                <a href="." class="facebook" target="blank"><i class="fab fa-facebook"
+                        onClick="shareToFacebook()"></i></a>
+                <a href="." class="twitter" target="blank"><i class="fab fa-twitter" onClick="shareToTwitter()"></i></a>
+                <a href="." class="linkedin" target="blank"><i class="fab fa-linkedin"
+                        onClick="shareToLinkedin()"></i></a>
+                <a href="." class="envelope" target="blank"><i class="fas fa-envelope" onClick="shareToEmail()"></i></a>
+                <a href="." class="whatsapp" target="blank"><i class="fab fa-whatsapp"
+                        onClick="shareToWhatsapp()"></i></a>
+                <button class="copylink" onClick="copyLink()"><i class="fas fa-link"></i></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test files upload in progress modal -->
+<div class="modal" id="uploadInProgress" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Upload In Progress</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Test information upload in progress, please wait.
+                </p>
+                <div class="progress mt-2 mb-2" style="height: 20px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"
+                        id="uploadProgressBar">0%</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseUploadigModal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Select camera Modal -->
+<div class="modal" id="cameraModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content" id="select-camera-modal">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a Camera</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closecameraModal"></button>
+            </div>
+            <div class="modal-body">
+                <select name="" class="form-control" id="video-source"></select>
+                <div style="color:red;" id="camera-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    id="closecameraModal">Cancel</button>
+                <button type="button" class="btn btn-success" id="choose-camera" data-bs-dismiss="modal">Select</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Get a reference to the select element
+    const videoSourceSelect = document.getElementById("video-source");
+
+    // Function to populate the select element with available camera devices
+    async function populateCameraOptions() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            videoSourceSelect.innerHTML = "";
+
+            devices.forEach((device) => {
+                if (device.kind === "videoinput") {
+                    const option = document.createElement("option");
+                    option.value = device.deviceId;
+                    option.text = device.label || `Camera ${videoSourceSelect.length + 1}`;
+                    videoSourceSelect.appendChild(option);
+                }
+            });
+        } catch (error) {
+            console.error("Error enumerating devices:", error);
+        }
+    }
+
+    // Call the function to populate camera options when the modal is shown
+    document.getElementById("cameraModal").addEventListener("show.bs.modal", populateCameraOptions);
+
+    // Handle the selection of a camera when the "Select" button is clicked
+    document.getElementById("choose-camera").addEventListener("click", () => {
+        const selectedDeviceId = videoSourceSelect.value;
+        // You can use the selectedDeviceId as needed in your application
+    });
+</script>
+
+
+<!-- Creating broadcast in progress -->
+<div class="modal" id="creatingBroadcastModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Setting up recording</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btnCloseCreatingBroadcastModal" style="color: white;"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Error occurred modal -->
+<div class="modal" id="errorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Error Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1rem;">
+                    <i class="bi-x"></i>Check your internet connection, do a hard refresh (Ctrl + F5),
+                    and try again.
+                    If the issue persists please contact the admin.
+                </p>
+                <p id="errorMessage">
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseErrorModal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error occurred modal -->
+<div class="modal" id="livestreamErrorModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">LiveStream Error!!</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="livestreamErrorOccurred" style="font-size: 1rem;">
+                    <i class="bi-x"></i>
+                </p>
+                <p>
+                    <i>For more information on how to activate your youtube account for livestreaming click <a
+                            href="https://support.google.com/youtube/answer/2474026?hl=en&co=GENIE.Platform%3DDesktop&oco=0"
+                            target="_blank" rel="noopener noreferrer">here!</a><i>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseErrorModal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Network Error occurred modal -->
+<div class="modal" id="networkErrorOccurred" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Network Error Modal</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-network-error-occurred-modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1rem;">
+                    <i class="bi-x"></i>Recording stopped due to network error, please do the following.
+                </p>
+                <p>1. Close this modal.</p>
+                <p>2. Check your internet connection.</p>
+                <p>3. Refresh the page on your browser.</p>
+                <p>4. Start the recording process again.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    id="btnCloseErrorModal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Playlist Details Modal -->
+<div class="modal" id="new-playlist-details-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: cen;">Create New Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                    id="close-new-playlist-details-modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-body">
+                    <form id="create-playlist">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Playlist Name</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                                id="p_title-error"></p>
+                            {{ add_playlist.playlist_title }}
+                        </div>
+                        <div class="mb-3" style="display: none;">
+                            <label class="form-label plst required"><strong>Select channel</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                                id="p_channel-error"></p>
+                            <select class='form-control' name="channel" id="selectChannel_1">
+                                {% comment %} <option value="">Select Channel</option> {% endcomment %}
+                            </select>
+                            <div style="color:red;" id="channelname-error"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label plst required"><strong>Select privacy status</strong></label>
+                            <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                                id="p_privacy-error"></p>
+                            <div style='display: flex; justify-content:flex-start; width: 100%'>
+                                {% for radio in add_playlist.privacy_status %}
+                                <div style='padding-right:20px; margin: 0'> {{ radio }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <input type="submit" style="display: none;" class="btn btn-success" id="playlist-submit"
+                                value="Submit">
+                            <button type="submit" class="btn btn-success" id="create-playlist-btn">Add</button>
+                            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist created modal -->
+<div class="modal" id="playlist-created-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Created</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-created-modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 2rem; color: rgb(0, 255, 0);">
+                    The New Playlist was Created!
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Okay</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist creation Error occurred modal -->
+<div class="modal" id="playlist-creation-error-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Creation Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-creation-error-modal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>An error has occurred while creating the new playlist, please do the following:
+                </p>
+                <ol>
+                    <li>Close this modal.</li>
+                    <li>Try to create the playlist again.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="showCreatingNewPlaylistModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Playlist already exists modal -->
+<div class="modal" id="playlist-already-exists-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Playlist Already Exists Error</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="close-playlist-already-exists-modal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 1.25rem; color: rgb(255, 0, 0);">
+                    <i class="bi-x"></i>A playlist with the title you provided already exists, please do the following:
+                </p>
+                <ol>
+                    <li>Close this modal.</li>
+                    <li>Try to create the playlist again, with a different title.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+                    onclick="showCreatingNewPlaylistModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Creating playlist in progress -->
+<div class="modal" id="creatingPlaylistModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Creating Playlist</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"
+                    id="btnCloseCreatingPlaylistModal" hidden></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Select audio Modal -->
+<div class="modal" id="audioModal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select an Audio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeAudioModal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="dropdown">
+                    <select name="" class="form-control" id="audio-source">
+                        <option value="" style='width: 100%'>Select an Audio</option>
+                    </select>
+                    <span class="dropdown-indicator">&#x25BE;</span>
+                </div>
+                <div style="color:red;" id="audio-error"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                    id="closeAudioModal">Cancel</button>
+                <button type="submit" class="btn btn-success" id="choose-audio" data-bs-dismiss="modal">Select</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Channel Modal -->
+<div class="modal" id="add-channel-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Channel Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-add-channel-modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-channel">
+                    {% csrf_token %}
+                    <p style="font-size: 1em; width: 100%; text-align: center; font-style: italic; font-weight: 400;"
+                        id="add-status"></p>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Channel ID</strong></label>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                            id="id-error"></p>
+                        {{ form.channel_id }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required"><strong>Channel Title</strong></label>
+                        <p style="color: rgb(161, 76, 76); font-size: smaller; font-style: italic; font-weight: 400;"
+                            id="title-error"></p>
+                        {{ form.channel_title }}
+                    </div>
+                    <div class="modal-footer">
+                        <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
+                        <button type="submit" class="btn btn-success" id="add-channel-btn">Save</button>
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Preview Recorded video Modal -->
+<div class="modal" id="preview-video-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" id="modal-dialog-video-modal">
+        <div class="modal-content" id="modal-content-video-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modal-title-video-modal">Playback video</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-preview-video-modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body-video-modal">
+                <div class="modal-content" id="modal-content-video-modal">
+                    <div id="youtube-preview"></div>
+                </div>
+                <div class="modal-footer" id="modal-footer-video-modal">
+                    <button class="btn btn-success" id="preview-btn-ok">OK</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                        id="preview-btn-delete">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmationModal_delete" class="modal_delete">
+    <div class="modal-content_delete">
+        <p id="video-delete-mesage" style="color: indianred;">
+            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+            <b>DELETE VIDEO</b>
+        </p>
+        <p id="video-delete-warning" style="color: indianred;">This action canot be undone</p>
+        <div class="modal-buttons_delete">
+            <button onclick="deleteItem_delete()" id="confirm-delete">CONFIRM</button>
+            <button onclick="closeModal_delete()" id="confirm-cancel">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+
+<!-- Small Screen Start recording Modal -->
+<div class="modal" id="start-record-modal" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Channel Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="close-start-record-modal"></button>
+            </div>
+            <div class="modal-body">
+                {% load socialaccount %}
+                {% if user.is_authenticated %}
+                <!-- <div class="authenticated-user"> -->
+                <div class="mb-3">
+                    <div class="lower-nav-item">
+                        <label for="selectChannel" class="hide-desktop mobile">
+                            Channel
+                        </label>
+                        <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+                        <div style="color:red;" id="channelname-error"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="lower-nav-item">
+                        <div class="story-name lower-nav-item">
+                            <label for="test-name" class="hide-desktop mobile">
+                                Title
+                            </label>
+                            <input type="text" name="" id="test-name" placeholder="Title">
+                            <div class="lower-nav-label"></div>
+                            <div style="color:red;" id="test-name-error"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="lower-nav-item">
+                        <!-- single select -->
+                        <label for="selectPlaylist" class="hide-desktop mobile">
+                            Select a playlist
+                        </label>
+                        <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist"
+                            style="width: 80%;">
+                            <option value=""></option>
+                        </select>
+                        <div class="lower-nav-label"></div>
+                        <div style="color:red;" id="playlist-error"></div>
+                        <!-- end single select -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" style="display: none;" class="btn btn-success" id="submit" value="Submit">
+                    <button type="submit" class="btn btn-success" id="add-channel-btn">Save</button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                </div>
+
+                {% else %}
+                <div class="story-name lower-nav-item">
+                    <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with
+                        Google/Select
+                        Channel</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- lower nav Mobile-->
+<!-- <div class="lower-nav small-screen-nav">
+    {% load socialaccount %}
+    {% if user.is_authenticated %}
+    <div class="authenticated-user">
+        <div class="lower-nav-item">
+            <label for="selectChannel" class="hide-desktop record-label">
+                Channel
+            </label>
+            <input type="text" name="" id="selectChannel" value="Channel Loading..." disabled>
+            <div style="color:red;" id="channelname-error"></div>
+        </div>
+        <div class="story-name lower-nav-item">
+            <label for="test-name" class="hide-desktop record-label">
+                Title
+            </label>
+            <input type="text" name="" id="test-name" placeholder="Title">
+            <div class="lower-nav-label"></div>
+            <div style="color:red;" id="test-name-error"></div>
+        </div>
+        <div class="lower-nav-item">
+            <label for="selectPlaylist" class="hide-desktop record-label">
+                Select a playlist
+            </label>
+            <select name="playlist" class="selectPlaylist search-playlist" id="selectPlaylist" style="width: 80%;">
+                <option value=""></option>
+            </select>
+            <div class="lower-nav-label"></div>
+            <div style="color:red;" id="playlist-error"></div>
+        </div>
+        {% else %}
+        <div class="story-name lower-nav-item">
+            <a style="text-decoration: none;" href="{% provider_login_url 'google' %}?next=/">Login with
+                Google/Select
+                Channel</a>
+        </div>
+        {% endif %}
+    </div>
+</div> -->

@@ -1,521 +1,99 @@
-from django.http import HttpResponse
-import os
-import json
-import pymongo
-from googleapiclient.errors import HttpError
-from datetime import datetime
-from datetime import timedelta
+import logging
+from django.core.cache import cache
 from django.shortcuts import redirect
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
+from googleapiclient.errors import HttpError
 from django.contrib.auth import logout
-import logging
+from rest_framework.decorators import authentication_classes
 
-from .views_w import create_user_youtube_object
+from core.auth import APIKeyAuthentication
+from .serializers import (
+    StartBroadcastSerializer,
+    TransitionBroadcastSerializer,
+    CreatePlaylistSerializer
+)
+from .utils import (
+    create_user_youtube_object,
+    get_user_cache_key,
+    start_broadcast,
+    transition_broadcast,
+)
+
 
 logger = logging.getLogger(__name__)
 
-
-def index(request):
-    return HttpResponse(print_index_table())
-
-
-def insert_broadcast(youtube):
-    """
-        Creates a liveBroadcast resource and set its title, scheduled start time,
-        scheduled end time, and privacy status.
-    """
-    # create broadcast time
-    time_delt1 = timedelta(days=0, hours=0, minutes=5)  # ToDo use milliseconds
-    # time_now = datetime.now()
-    time_now = datetime.utcnow()
-    future_date1 = time_now + time_delt1
-    future_date_iso = future_date1.isoformat()
-    videoPrivacyStatus = "private"  # ToDo get this from request
-    testNameValue = "Python tests"  # ToDo get this from request
-    videoTitle = "Test Record Broadcast " + testNameValue + " " + future_date_iso
-    print(future_date_iso)
-
-    request = youtube.liveBroadcasts().insert(
-        part="snippet,contentDetails,statistics,status",
-        body={
-            "status": {
-                "privacyStatus": videoPrivacyStatus,
-                "selfDeclaredMadeForKids": False
-            },
-            "snippet": {
-                "scheduledStartTime": future_date_iso,
-                "title": videoTitle
-            },
-            "contentDetails": {
-                "enableAutoStart": True,
-                "enableAutoStop": True,
-                "closedCaptionsType": "closedCaptionsEmbedded",
-            }
-        }
-    )
-
-    insert_broadcast_response = request.execute()
-    print(insert_broadcast_response)
-
-    snippet = insert_broadcast_response["snippet"]
-
-    print(
-        f'Broadcast ID {insert_broadcast_response["id"]} with title { snippet["title"]} was published at {snippet["publishedAt"]}.')
-
-    return insert_broadcast_response["id"]
-
-
-def insert_stream(youtube):
-    """
-        Creates a liveStream resource and set its title, format, and ingestion type.
-        This resource describes the content that you are transmitting to YouTube.
-    """
-    request = youtube.liveStreams().insert(
-        part="snippet,cdn,contentDetails,status",
-        body={
-            "cdn": {
-                "frameRate": "variable",
-                "ingestionType": "rtmp",
-                "resolution": "variable"
-            },
-            "contentDetails": {
-                "isReusable": False
-            },
-            "snippet": {
-                "title": "A non reusable stream",
-                "description": "A stream to be used once."
-            }
-        }
-    )
-
-    insert_stream_response = request.execute()
-    print('Stream Response ===> ', insert_stream_response)
-
-    snippet = insert_stream_response["snippet"]
-    cdn = insert_stream_response["cdn"]
-    ingestionInfo = cdn["ingestionInfo"]
-
-    print("Stream '%s' with title '%s' was inserted." % (
-        insert_stream_response["id"], snippet["title"]))
-
-    newStreamId = insert_stream_response["id"]
-    newStreamName = ingestionInfo["streamName"]
-    newStreamIngestionAddress = ingestionInfo["rtmpsIngestionAddress"]
-    print("New stream id: ", newStreamId)
-    print("New stream name: ", newStreamName)
-    print("New stream ingestion address: ", newStreamIngestionAddress)
-    newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName
-    print("New stream RTMP url: ", newRtmpUrl)
-
-    stream_dict = {"newStreamId": newStreamId,
-                   "newStreamName": newStreamName,
-                   "newStreamIngestionAddress": newStreamIngestionAddress,
-                   "newRtmpUrl": newRtmpUrl
-                   }
-    return stream_dict
-
-
-def bind_broadcast(youtube, broadcast_id, stream_id):
-    """
-        Binds the broadcast to the video stream. By doing so, you link the video that
-        you will transmit to YouTube to the broadcast that the video is for.
-    """
-    request = youtube.liveBroadcasts().bind(
-        part="id,contentDetails",
-        id=broadcast_id,
-        streamId=stream_id
-    )
-
-    bind_broadcast_response = request.execute()
-
-    print("Broadcast '%s' was bound to stream '%s'." % (
-        bind_broadcast_response["id"],
-        bind_broadcast_response["contentDetails"]["boundStreamId"]))
-
-
-def create_broadcast(request):
-    """
-        Creates a broadcast, it is view based.
-    """
-    youtube = create_user_youtube_object(request)
-    if youtube is None:
-        return None
-    # create broadcast time
-    time_delt1 = timedelta(days=0, hours=0, minutes=5)
-    # time_now = datetime.now()
-    time_now = datetime.utcnow()
-    future_date1 = time_now + time_delt1
-    future_date_iso = future_date1.isoformat()
-    print(future_date_iso)
-
-    # Create broadcast
-    new_broadcast_id = insert_broadcast(youtube)
-
-    # Create stream
-    stream_dict = insert_stream(youtube)
-
-    # Bind livestream and broadcast
-    stream_dict['new_broadcast_id'] = new_broadcast_id
-    stream_id = stream_dict['newStreamId']
-    bind_broadcast(youtube, new_broadcast_id, stream_id)
-
-    # Serializing json
-    json_stream_dict = json.dumps(stream_dict)
-    print(json_stream_dict)
-
-    # return json_stream_dict
-    return HttpResponse(json_stream_dict)
-
-
-def credentials_to_dict(credentials):
-    return {'token': credentials.token,
-            'refresh_token': credentials.refresh_token,
-            'token_uri': credentials.token_uri,
-            'client_id': credentials.client_id,
-            'client_secret': credentials.client_secret,
-            'scopes': credentials.scopes}
-
-
-def print_index_table():
-    return ('<table>' +
-            '<tr><td><a href="/youtube/test">Test an API request</a></td>' +
-            '<td>Submit an API request and see a formatted JSON response. ' +
-            '    Go through the authorization flow if there are no stored ' +
-            '    credentials for the user.</td></tr>' +
-            '<tr><td><a href="/youtube/authorize">Test the auth flow directly</a></td>' +
-            '<td>Go directly to the authorization flow. If there are stored ' +
-            '    credentials, you still might not be prompted to reauthorize ' +
-            '    the application.</td></tr>' +
-            '<tr><td><a href="/youtube/revoke">Revoke current credentials</a></td>' +
-            '<td>Revoke the access token associated with the current user ' +
-            '    session. After revoking credentials, if you go to the test ' +
-            '    page, you should see an <code>invalid_grant</code> error.' +
-            '</td></tr>' +
-            '<tr><td><a href="/youtube/clear">Clear App session credentials</a></td>' +
-            '<td>Clear the access token currently stored in the user session. ' +
-            '    After clearing the token, if you <a href="/test">test the ' +
-            '    API request</a> again, you should go back to the auth flow.' +
-            '</td></tr></table>')
-
-# Create a liveBroadcast resource and set its title, scheduled start time,
-# scheduled end time, and privacy status.
-
-
-def insert_broadcast(youtube, videoPrivacyStatus, testNameValue):
-    """
-        Creates a liveBroadcast resource and set its title, scheduled start time,
-        scheduled end time, and privacy status.
-    """
-    # create broadcast time
-    time_delt1 = timedelta(days=0, hours=0, minutes=0, seconds=1)
-    time_now = datetime.utcnow()
-    future_date1 = time_now + time_delt1
-    future_date_iso = future_date1.isoformat()
-    videoPrivacyStatus = videoPrivacyStatus
-    testNameValue = testNameValue
-    videoTitle = testNameValue + " " + future_date_iso
-    print(future_date_iso)
-
-    request = youtube.liveBroadcasts().insert(
-        part="snippet,contentDetails,statistics,status",
-        body={
-            "status": {
-                "privacyStatus": videoPrivacyStatus,
-                "selfDeclaredMadeForKids": False
-            },
-            "snippet": {
-                "scheduledStartTime": future_date_iso,
-                "title": videoTitle
-            },
-            "contentDetails": {
-                "enableAutoStart": True,
-                "enableAutoStop": True,
-                "closedCaptionsType": "closedCaptionsEmbedded",
-            }
-        }
-    )
-
-    insert_broadcast_response = request.execute()
-    # print(insert_broadcast_response)
-
-    snippet = insert_broadcast_response["snippet"]
-
-    print("Broadcast '%s' with title '%s' was published at '%s'." % (
-        insert_broadcast_response["id"], snippet["title"], snippet["publishedAt"]))
-
-    return insert_broadcast_response["id"]
-
-
-def insert_stream(youtube):
-    """
-        Creates a liveStream resource and set its title, format, and ingestion type.
-        This resource describes the content that you are transmitting to YouTube.
-    """
-
-    request = youtube.liveStreams().insert(
-        part="snippet,cdn,contentDetails,status",
-        body={
-            "cdn": {
-                "frameRate": "variable",
-                "ingestionType": "rtmp",
-                "resolution": "variable"
-            },
-            "contentDetails": {
-                "isReusable": False
-            },
-            "snippet": {
-                "title": "A non reusable stream",
-                "description": "A stream to be used once."
-            }
-        }
-    )
-
-    insert_stream_response = request.execute()
-    # print(insert_stream_response)
-
-    snippet = insert_stream_response["snippet"]
-    cdn = insert_stream_response["cdn"]
-    ingestionInfo = cdn["ingestionInfo"]
-
-    print("Stream '%s' with title '%s' was inserted." % (
-        insert_stream_response["id"], snippet["title"]))
-
-    newStreamId = insert_stream_response["id"]
-    newStreamName = ingestionInfo["streamName"]
-    newStreamIngestionAddress = ingestionInfo["rtmpsIngestionAddress"]
-    print("New stream id: ", newStreamId)
-    print("New stream name: ", newStreamName)
-    print("New stream ingestion address: ", newStreamIngestionAddress)
-    newRtmpUrl = newStreamIngestionAddress + "/" + newStreamName
-    print("New stream RTMP url: ", newRtmpUrl)
-
-    stream_dict = {"newStreamId": newStreamId,
-                   "newStreamName": newStreamName,
-                   "newStreamIngestionAddress": newStreamIngestionAddress,
-                   "newRtmpUrl": newRtmpUrl
-                   }
-    return stream_dict
-
-
-class CreateBroadcastView(APIView):
-    renderer_classes = [JSONRenderer]
+@authentication_classes([APIKeyAuthentication])
+class StartBroadcastView(APIView):
+    """ DRF API that handles requests to start a broadcast """
+    serializer_class = StartBroadcastSerializer
 
     def post(self, request, *args, **kwargs):
         """
-            Creates broadcast using API
+        Creates a broadcast using the API
         """
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            video_privacy_status = serializer.validated_data["video_privacy"]
+            test_name_value = serializer.validated_data["video_title"]
+            playlist_id = serializer.validated_data["playlist_id"]
 
-        print("Request: ", request)
-        print("Request Data: ", request.data)
-        print("Request Data Type: ", type(request.data))
-        # videoPrivacyStatus = "private"
-        # testNameValue = "Test1"
-        videoPrivacyStatus = request.data.get("videoPrivacyStatus")
-        testNameValue = request.data.get("testNameValue")
-        print("videoPrivacyStatus: ", videoPrivacyStatus)
-        print("testNameValue: ", testNameValue)
+            youtube, _ = create_user_youtube_object(request=request)
 
-        try:
-            stream_dict = self.create_broadcast(
-                videoPrivacyStatus, testNameValue, request)
-            # stream_dict = {"Hello":"Testing for now!"}
-            print("stream_dict: ", stream_dict)
-        except HttpError as e:  # Exception as e:
-            # HttpError as e:
-            error_data = {
-                'message': e.reason,
-            }
-            print(f'Broadcast Error: {error_data}')
-            return Response(error_data, status=status.HTTP_403_FORBIDDEN)
-
-        return Response(stream_dict, status=status.HTTP_201_CREATED)
-
-    def create_broadcast(self, videoPrivacyStatus, testNameValue, request):
-        """
-        Creates a broadcast with a live stream bound
-        """
-        print('Creating broadcast... ')
-
-        youtube = create_user_youtube_object(request)
-        if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
-
-        # Check if the user's account has live streaming enabled
-        list_response = youtube.liveBroadcasts().list(
-            part='id,snippet,contentDetails,status',
-            mine=True
-        ).execute()
-        try:
-            channel_id = list_response['items'][0]['snippet']['channelId']
-        except:
-            logger.critical('User does not have a YouTube channel!!!')
-            print('User does not have a YouTube channel!!!')
-            raise Exception("User does not have a YouTube channel")
-
-        # Create a new broadcast
-        new_broadcast_id = insert_broadcast(
-            youtube, videoPrivacyStatus, testNameValue)
-
-        # Create a new stream
-        stream_dict = insert_stream(youtube)
-
-        # Bind the stream to the broadcast
-        stream_dict['new_broadcast_id'] = new_broadcast_id
-        stream_id = stream_dict['newStreamId']
-        bind_broadcast(youtube, new_broadcast_id, stream_id)
-
-        # Serialize the stream dictionary to JSON
-        json_stream_dict = json.dumps(stream_dict)
-        print(json_stream_dict)
-
-        return stream_dict
-
-
-class TransitionBroadcastView(APIView):
-    renderer_classes = [JSONRenderer]
-
-    def post(self, request, *args, **kwargs):
-        """
-            Transitions broadcast using API
-        """
-
-        try:
-            print('Transitionig Broadcast...')
-            print("Request: ", request)
-            print("Request Data: ", request.data)
-            print("Request Data Type: ", type(request.data))
-            # videoPrivacyStatus = "private"
-            # testNameValue = "Test1"
-            the_broadcast_id = request.data.get("the_broadcast_id")
-            print("the_broadcast_id: ", the_broadcast_id)
-
-            transition_response = transition_broadcast(
-                the_broadcast_id, request)
-            # transition_response = {"Hello":"Testing for now!"}
-            print("transition_response: ", transition_response)
-
-            return Response(transition_response, status=status.HTTP_200_OK)
-        except Exception as e:
-            error = {'Error': str(e)}
-            return Response(error, status=status.HTTP_400_BAD_REQUEST)
-
-
-def transition_broadcast(the_broadcast_id, request):
-
-    youtube = create_user_youtube_object(request)
-    if youtube is None:
-        raise AttributeError('youtube object creation failed!!')
-
-    request = youtube.liveBroadcasts().transition(
-        broadcastStatus="complete",
-        id=the_broadcast_id,
-        part="id,snippet,contentDetails,status"
-    )
-
-    broadcast_transition_response = request.execute()
-    print("broadcast_transition_response: ", broadcast_transition_response)
-    video_id = broadcast_transition_response['id']
-    print('====== video ID => ', video_id)
-
-    return broadcast_transition_response
-
-
-class PlaylistItemsInsertView(APIView):
-    """
-        Handles requests to insert a video into a youtube channel
-        playlist
-    """
-    renderer_classes = [JSONRenderer]
-
-    def post(self, request, *args, **kwargs):
-        try:
-            # print("Request: ", request)
-            print("Request Data: ", request.data)
-
-            # Get the video and playlist data
-            the_video_id = request.data.get("videoId")
-            the_playlist_id = request.data.get("playlistId")
-            print("the_video_id: ", the_video_id)
-            print("the_playlist_id: ", the_playlist_id)
-
-            youtube = create_user_youtube_object(request)
             if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-            # Make the insert request
-            request = youtube.playlistItems().insert(
-                part="snippet",
-                body={
-                    "snippet": {
-                        "playlistId": the_playlist_id,
-                        "position": 0,
-                        "resourceId": {
-                            "kind": "youtube#video",
-                            "videoId": the_video_id
-                        }
-                    }
-                }
-            )
-            response = request.execute()
+            stream_dict = start_broadcast(video_privacy_status, test_name_value, playlist_id, youtube)
 
-            return Response(response, status=status.HTTP_200_OK)
+            if "error" in stream_dict:
+                return Response(stream_dict, status=status.HTTP_400_BAD_REQUEST)
 
-        except Exception as err:
-            print("Error while inserting video into playlist: " + str(err))
-            return Response(str(err), status=status.HTTP_400_BAD_REQUEST)
+            # Cache the stream dictionary, manually deleted in the consumer after transitioning
+            cache.set(f'stream_dict{request.user.id}', stream_dict, 6 * 60 * 60)
+
+            return Response(stream_dict, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def get_user_playlists_from_db(current_user_id):
-    """
-      Gets all playlists for the current user from a db,
-      the playlist has to be enabled for the user.
-      current_user_id is a unique identifier for the
-      current user.
-    """
+@authentication_classes([APIKeyAuthentication])
+class TransitionBroadcastView(APIView):
+    """ DRF API that handles requests to transition a broadcast """
+    serializer_class = TransitionBroadcastSerializer
 
-    # set up mongodb access
-    mongo_client = pymongo.MongoClient(os.getenv("DATABASE_HOST"))
-    db = mongo_client[os.getenv("DATABASE_NAME")]
-    collection = db["user_youtube_playlists"]
+    def post(self, request, *args, **kwargs):
+        """Transitions a broadcast using the API"""
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            broadcast_id = serializer.validated_data["broadcast_id"]
+            broadcast_status = serializer.validated_data["broadcast_status"]
 
-    # Query to get enabled playlists for user
-    user_query = {"user_id": "Walter", "playlist_enabled": True}
+            youtube, _ = create_user_youtube_object(request=request)
 
-    # Get the playlists documents
-    playlists_documents = collection.find(user_query)
+            if youtube is None:
+                return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    return playlists_documents
+            transition_dict = transition_broadcast(broadcast_id, broadcast_status, youtube=youtube)
+            if "error" in transition_dict:
+                return Response(transition_dict, status=status.HTTP_400_BAD_REQUEST)
 
+            return Response(transition_dict, status=status.HTTP_201_CREATED)
 
-def get_todays_playlist_title():
-    """
-        Creates the title of current day's playlist.
-    """
-    # Construct playlist title using date
-    current_date_and_time = datetime.now()
-
-    date_string = current_date_and_time.strftime('%d %B %Y')
-    # print("date_string: ",date_string)
-
-    playlist_title = date_string + " Daily Playlist"
-    # print("playlist_title: ",playlist_title)
-
-    return playlist_title
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def fetch_playlists_with_pagination(youtube_object):
     """
-        Fetches playlists with the help of pagination
+    Fetches playlists with the help of pagination
+    :param youtube_object: Object for accessing YouTube API
+    :return: List of fetched playlists
     """
     fetch_playlists = True
     playlists = []
     page_token = ""
-    # count = 0
 
-    # Fetch the playlists
     while fetch_playlists:
         request = youtube_object.playlists().list(
             part="snippet,contentDetails",
@@ -525,116 +103,83 @@ def fetch_playlists_with_pagination(youtube_object):
         )
         response = request.execute()
 
-        # Get next page token
-        if "nextPageToken" in response.keys():
+        if "nextPageToken" in response:
             page_token = response['nextPageToken']
         else:
             fetch_playlists = False
 
-        # Add current page's playlists
         playlists.extend(response['items'])
-
-    # Return fetched playlists
     return playlists
 
+  
+# Created the function to be used by FetchPlaylistsView and CreatePlaylistView.
+# CreatePlaylistView uses it to reset the cache after add a new playlist.
+# FetchPlaylistsView uses it to fetch playlists if not found in cache.
+def fetch_and_add_playlist_to_cache(request, cache_key):
 
+    # Get the user's youtube object
+    youtube, credential = create_user_youtube_object(request)
+    if youtube is None:
+        return Response({'Error': 'Authentication error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Get the playlists
+    playlists = fetch_playlists_with_pagination(youtube)
+
+    # Check if the playlist is empty
+    if not playlists:
+        return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
+
+    user_playlists = {}
+    todays_playlist_dict = {}
+    channel_title = ""
+
+    for playlist in playlists:
+        playlist_id = playlist["id"]
+        title = playlist["snippet"]["title"]
+
+        if "Daily Playlist" not in title:
+            user_playlists[playlist_id] = title
+
+        channel_title = playlist["snippet"]["channelTitle"]
+
+    youtube_details = {
+        'channel_title': channel_title,
+        'user_playlists': user_playlists,
+        'todays_playlist_dict': todays_playlist_dict
+    }
+
+    # Cache the response, expires in 6 hours
+    cache.set(cache_key, youtube_details, 6 * 60 * 60)
+    return youtube_details
+  
+@authentication_classes([APIKeyAuthentication])
 class FetchPlaylistsView(APIView):
     """
-        Handles requests to get the current youtube channel's
-        playlists
+    Handles requests to get the current YouTube channel's playlists
     """
 
     renderer_classes = [JSONRenderer]
 
     def get(self, request, *args, **kwargs):
         try:
-            youtube = create_user_youtube_object(request)
-            if youtube is None:
-                raise AttributeError('youtube object creation failed!!')
+            # Get the user object
+            user = request.user
 
-            print('fetching playlist with pagination...')
-            # Fetch all playlists with pagination
-            playlists = fetch_playlists_with_pagination(youtube)
+            # Check the cache for the user's playlists
+            cache_key = get_user_cache_key(user.id, '/fetchplaylists/api/')
+            cached_response = cache.get(cache_key, None)
 
-            # print('===== playlist count ===> ', len(playlists))
+            # # Return the cached response if it exists
+            if cached_response is not None:
+                return Response(cached_response, status=status.HTTP_200_OK)
 
-            # Check if the playlist is empty
-            if len(playlists) == 0:
-                print("The playlist is empty.")
-                return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
-            else:
-                # playlist id and title dictionary
-                user_playlists = {}
-                todays_playlist_dict = {}
 
-                # today's playlist title
-                todays_playlist_title = get_todays_playlist_title()
+            youtube_details = fetch_and_add_playlist_to_cache(request, cache_key)
 
-                # Current channel title
-                channel_title = ""
-                # Iterating through the json list
-                for playlist in playlists:
-                    id = playlist["id"]
-                    # print("Playlist ID = ", id)
-                    title = playlist["snippet"]["title"]
-                    # Filter out daily playlists
-                    if "Daily Playlist" not in title:
-                        user_playlists[id] = title
-                    elif todays_playlist_title == title:
-                        todays_playlist_dict["todays_playlist_id"] = id
-                        todays_playlist_dict["todays_playlist_title"] = title
+            return Response(youtube_details, status=status.HTTP_200_OK)
 
-                    # Current channel title
-                    channel_title = playlist["snippet"]["channelTitle"]
-
-                # Dictionary with all necessary data
-                youtube_details = {'channel_title': channel_title,
-                                   'user_playlists': user_playlists,
-                                   'todays_playlist_dict': todays_playlist_dict}
-
-                return Response(youtube_details, status=status.HTTP_200_OK)
-
-                # return Response(user_playlists, status=status.HTTP_200_OK)
         except Exception as err:
-            print("Error while fetching playlists: " + str(err))
-            return Response({'Error': str(err)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-def insert_video_into_playlist(request, the_video_id, the_playlist_id):
-    """
-        Handles requests to insert a video into a youtube channel
-        playlist
-    """
-    try:
-        print("the_video_id: ", the_video_id)
-        print("the_playlist_id: ", the_playlist_id)
-
-        youtube = create_user_youtube_object(request)
-        if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
-
-        # Make the insert request
-        request = youtube.playlistItems().insert(
-            part="snippet",
-            body={
-                "snippet": {
-                    "playlistId": the_playlist_id,
-                    "position": 0,
-                    "resourceId": {
-                        "kind": "youtube#video",
-                        "videoId": the_video_id
-                    }
-                }
-            }
-        )
-        response = request.execute()
-
-        return True
-
-    except Exception as err:
-        error_msg = "Error while inserting video into playlist: " + str(err)
-        print(error_msg)
-        raise Exception(error_msg)
+            return Response({'Error': 'Error occured, unable to fetch playlist'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 def create_playlist(playlist_title, playlist_description, playlist_privacy_status, request):
@@ -642,9 +187,9 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
     Handles requests to create a playlist
     """
     try:
-        youtube = create_user_youtube_object(request)
+        youtube, _ = create_user_youtube_object(request=request)
         if youtube is None:
-            raise AttributeError('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
         # Check if a playlist with provided title exists
         playlists = fetch_playlists_with_pagination(youtube)
@@ -672,22 +217,19 @@ def create_playlist(playlist_title, playlist_description, playlist_privacy_statu
 
     except HttpError as err:
         error_msg = f"HTTP error occurred while creating playlist: {err}"
-        print(error_msg)
         raise Exception(error_msg)
 
     except Exception as err:
         error_msg = f"Error occurred while creating playlist: {err}"
-        print(error_msg)
         raise Exception(error_msg)
 
 
+@authentication_classes([APIKeyAuthentication])
 class CreatePlaylistView(APIView):
     """
         DRF API that handles requests to create youtube playlists
     """
-
-    renderer_classes = [JSONRenderer]
-
+    serializer_class = CreatePlaylistSerializer
     def post(self, request, *args, **kwargs):
         try:
             # Get the new playlist information
@@ -699,18 +241,23 @@ class CreatePlaylistView(APIView):
 
             # create playlist
             response = create_playlist(title, description, privacy, request)
-            # print("Playlist creation response: ",response)
-
             if response:
+                # Get the user object
+                user = request.user
+
+                # Fetch and add new playlists to cache.
+                cache_key = get_user_cache_key(user.id, '/fetchplaylists/api/')
+                fetch_and_add_playlist_to_cache(request, cache_key)
+
                 msg = {'CreatePlaylistResponse': "Playlist created"}
                 return Response(msg, status=status.HTTP_200_OK)
             else:
                 msg = {'CreatePlaylistResponse': "Failed to create playlist"}
-                return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
+                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
 
         except Exception as err:
             error_msg = "Error while creating playlist: " + str(err)
-            print(error_msg)
+            print("Error Message", error_msg)
 
             if "already exists!" in error_msg:
                 return Response(error_msg, status=status.HTTP_409_CONFLICT)

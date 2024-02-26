@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<!-- library_base.html -->
+<head>
+    {% block title %}
+    {% endblock title %}
+
+    <!-- favicon -->
+    <link rel="shortcut icon" href="{%  static 'images/favicon.webp' %}">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS New --includes datatables -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.12.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.3.js"
+        integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.12.1/js/dataTables.bootstrap5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- for library page -->
+    <link rel="stylesheet" href="{% static 'css/library_style.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <!-- Custom css -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/small-screen.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome-free-6.2.0-web/css/all.css' %}">
+
+    {% block css %}
+    {% endblock css %}
+    {% if user.is_authenticated %}
+    <script>
+        var isAuthenticated = true;
+    </script>
+    {% else %}
+    <script>
+        var isAuthenticated = false;
+    </script>
+    {% endif %}
+
+</head>
+
+<body>
+    {% include "header.html" %}
+    {% block body %}
+    {% endblock body %}
+    {% include "youtube_copyright.html" %}
+
+    <script>
+        $(document).ready(function () {
+            $('#selectPlaylist').select2({
+                placeholder: "Playlist",
+                allowClear: true
+            });
+        });
+    </script>
+    {% block index_js %}
+    {% endblock %}
+</body>
+</html>

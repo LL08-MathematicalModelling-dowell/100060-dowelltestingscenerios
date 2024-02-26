@@ -1,23 +1,23 @@
+from django.contrib import admin
 from django.db import models
-from django.contrib.auth.models import User
-from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
 
 
-class UserYoutubePlaylists(models.Model):
-    """
-        Stores users and their youtube playlists
-    """
-    user_id = models.CharField(max_length=1024, blank=False)
-    playlist_id = models.CharField(max_length=1024, blank=False)
-    playlist_title = models.CharField(max_length=1024, blank=False)
-    # whether playlist is enabled for the user
-    playlist_enabled = models.BooleanField(blank=False)
+class UserProfile(models.Model):
+    """ User Profile Model """
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    api_key = models.CharField(max_length=40, unique=True, blank=True, null=True)
+    credential = models.JSONField()
 
-    class Meta:
-        db_table = 'user_youtube_playlists'
+    @admin.display(description='User')
+    def user__username(self):
+        return self.user.username
+
+    def __str__(self):
+        return f'{self.user.username} {self.user.first_name}'
 
 
-class ChannelsRecord(models.Model):
+class ChannelRecord(models.Model):
     """
         Stores YouTube channels information.
     """
@@ -25,29 +25,8 @@ class ChannelsRecord(models.Model):
     channel_title = models.CharField(max_length=50, blank=False, unique=True)
     channel_credentials = models.TextField(default="")
     timestamp = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         db_table = 'channels_records'
 
     def __str__(self):
         return self.channel_title
-
-
-class PlaylistsRecord(models.Model):
-    """
-        Stores daily playlists information.
-    """
-    playlist_id = models.CharField(max_length=250, blank=False, unique=True)
-    playlist_title = models.CharField(max_length=250, blank=False, unique=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'playlists_records'
-
-
-class YoutubeUserCredential(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    credential = models.JSONField()
-
-    def __str__(self):
-        return f'{self.user.username} {self.user.first_name}'

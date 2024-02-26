@@ -1,6 +1,6 @@
-{% extends 'base.html' %}
+{% extends 'library_base.html' %}
 {% load static %}
-
+<!-- library.html -->
 {% block css %}
 <style>
   body {
@@ -17,71 +17,93 @@
 <title>Library</title>
 {% endblock title %}
 
-{% block index_js %}
-{% if not index_js_loaded %}
-<script src="{% static '/js/index.js' %}"></script>
-{% with index_js_loaded=True %}
-{% endwith %}
-{% endif %}
-{% endblock %}
-
 {% block body %}
-
-<div class="container" style="display: flex; flex-direction: column; margin: 40px; align-content: space-between;" >
-  <div class="row" style="display: flex; flex-direction: row; align-content: space-between; padding: 20px;">
-    <div class="col-lg-4">
-      <div class="section">
-        <h4>Select Playlist</h4>
-        <div id="playlist-select">
-          <select id="userLibraryPlaylist" class="form-control"></select>
-        </div>
+<div class="library-container">
+  <!-- video container -->
+  <div class="library-video-container">
+    <!-- YouTube IPlayer -->
+      <div class="player" id="youtube_player">
+          <iframe src="https://www.youtube.com/embed/Iv8mg2iFWYA" frameborder="0" allowfullscreen></iframe>
       </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="section">
-        <h4>All Videos</h4>
-        <div id="video-select">
-          <select id="all_video" class="form-control"></select>
-        </div>
+      <div class="single-video-title">
+      {% comment %} <div class="single-video-title fs-4 fw-bold"> {% endcomment %}
+        <h3 class="play-video-title" >About DoWell UX Living Lab</h3>
       </div>
-    </div>
-  </div>
-  <div>
-    <div class="">
-      <div class="section">
-        <h4>Player</h4>
-        <div id="player-container">
-          <div id="player"></div>
-          <div id="player-controls">
-            <!-- <button id="download-button" disabled>Download</button> -->
-            <button id="delete-button" onclick="openModal_delete()">Delete Video</button>
+      <div class="single-video-footer">
+        <div class="video-footer-top">
+          <div class="video-author">
+            <div class="">
+              <img class="img-profile media-figure" src="https://yt3.ggpht.com/ytc/APkrFKZXQA_NYMO_UZLLp282-49JTY7TgJ7iajU-bCbH=s88-c-k-c0x00ffffff-no-rj" alt="">
+            </div>
+            <h4 id="channelName">DoWell Research</h4>
+          </div>
+        </div>
+        <div class="video-footer-bottom">
+        <div class="video-privacy">
+          <h5 id="playingvideo_privacy">Privacy: <span>Unlisted</span></h5>
+        </div>
+          <p class="likes">9.7k...</p>
+          <p class="subscriber">186 subscribers</p>
+          <div class="library-share-btn">
+            <button class="library-share" onClick="shareLibraryLinkModal()">Share</button>
           </div>
         </div>
       </div>
+  </div>
+  <!-- end video container -->
+  <!--  playlist container -->
+  <div class="playlist-video-container">
+    <div class="video-title-container">
+      <div class="library-header">
+        <h2>Videos</h2>
+        <div  id="playlisttitle">Selected Playlist: </div>
+        <!--<h3>Selected Playlist: <span>On the Rock</span></h3>-->
+      </div>
+    <div class="video-list-container container_scroll_bar" id="videosContainer">
+      <!-- single list -->
+      {% comment %} <div class="single-video-item">
+        <div class="video-img">
+          <img src="./img/dowell logo.jpg" alt="">
+        </div>
+        <div class="video-list-title">
+          <p>Camera_Screen_recording 2023-10-09T14:24:56.299282</p>
+        </div>
+      </div> {% endcomment %}
+      <!-- end single list -->
+    </div>
+    <br>
+    <button class="showmore" id="MorevideosButton">Show More</button>
+      
+    </div>
+    <!-- all playlist container -->
+    <div class="all-playlist">
+      <div class="library-header">
+        <h2>All Playlists</h2>
+      </div>
+      <div class="video-list-container container_scroll_bar" id="playlistContainer">
+      <!-- single list -->
+      {% comment %} <div class="single-video-item">
+        <div class="video-img">
+          <img src="./img/dowell logo.jpg" alt="">
+        </div>
+        <div class="video-list-title">
+          <p>On the Rock</p>
+        </div>
+      </div> {% endcomment %}
+      <!-- end single list -->
+    </div>
+    <br>
+    <button class="showmore" id="showMoreButton">Show More</button>
     </div>
   </div>
-</div> 
-
-<!-- =================================================================================== -->
-<div id="confirmationModal_delete" class="modal_delete">
-  <div class="modal-content_delete">
-      <p style="color: indianred;">Are you sure you want to delete this video?</p>
-      <div class="modal-buttons_delete">
-          <button onclick="deleteItem_delete()" id="confirm-delete">Yes</button>
-          <button onclick="closeModal_delete()" id="confirm-cancel">No</button>
-      </div>
-  </div>
+  <!-- end playlist container -->
 </div>
-<!-- ====================================================================================== -->
+{% include 'modals.html' %}
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script src="{% static '/js/library.js' %}"></script>
+<script> const csrfToken = "{{ csrf_token }}"; </script>
 
-<!-- Application JavaScript -->
-
-{#script for player #}
-<script>
-  let player = document.getElementById('player');
-  const deleteButton = document.getElementById('delete-button');
-  deleteButton.addEventListener('click', () => {
-    // Handle delete functionality
-  });
-</script>
 {% endblock body %}

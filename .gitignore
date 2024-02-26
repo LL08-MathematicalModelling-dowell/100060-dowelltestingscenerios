@@ -11,5 +11,7 @@ testrecorder/youtube/credentials-old.json
 testrecorder/.env
 env
 venv
+
 testrecorder/staticfiles
 Automation/client_secrets.json
+
