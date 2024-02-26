@@ -48,26 +48,34 @@ CORS_ALLOWED_ORIGIN = [
 # Application definition
 
 INSTALLED_APPS = [
+    # Django Apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'home.apps.HomeConfig',
-    'rest_framework',
-    'file_app',
-    'channels',
-    'app_websocket',
-    'youtube',
-    'corsheaders',
-    'voc_stories_websocket',
     'django.contrib.sites',
+
+    # Third-party Apps
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'channels',
+    'rest_framework',
+    'drf_yasg',
+
+    # Custom Apps
+    'app_websocket',
+    'core',
+    'corsheaders',
+    'file_app',
+    'home.apps.HomeConfig',
+    'voc_stories_websocket',
+    'youtube',
 ]
+
 
 SITE_ID = 1
 
@@ -135,34 +143,27 @@ CHANNEL_LAYERS = {
     }
 }
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {
-#             "hosts": [("localhost", 6379)],
-#         },
-#     },
-# }
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 
 DATABASES = {
     'default': {
-        'ENGINE': 'djongo',
-        'NAME': os.getenv("DATABASE_NAME"),
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': os.getenv("DATABASE_HOST")
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'djongo',
+#         'NAME': os.getenv("DATABASE_NAME"),
+#         'ENFORCE_SCHEMA': False,
+#         'CLIENT': {
+#             'host': os.getenv("DATABASE_HOST")
+#         }
+#     }
+# }
 
 '''
 This block of code was added to fixed a bug/shortfall in the Djongo liberary
@@ -195,6 +196,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+AUTH_USER_MODEL = "core.User"
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -223,7 +227,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static'),
 # ]
-
 
 # Temporary files directory
 TEMP_FILES_ROOT = os.path.join(BASE_DIR, "temp")
@@ -256,7 +259,6 @@ AUTHENTICATION_BACKENDS = [
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -265,4 +267,12 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
+}
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'core.auth.APIKeyAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
 }

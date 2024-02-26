@@ -88,6 +88,7 @@ let timeInterval;
 let totalTime = 0;
 
 
+
 if (window.innerWidth < 768) {
   $(".mobile-menu").hide();
   $("#menu-icon").on("click", function () {
@@ -417,10 +418,10 @@ async function stopRecording(errorOccurred = false) {
 
     recordinginProgress = false;
 
-    resetOnStartRecording();
+    resetOnStopRecording();
 
-    if (!errorOccurred) {
-      try{
+    if (!errorOccurred && broadcastStoppedSuccessfully) {
+      try {
         const recordWebcam = cameraCheckbox.checked;
         const recordScreen = screenCheckbox.checked;
 
@@ -737,16 +738,23 @@ async function startRecording() {
 
   try {
     [socket, socketType] = await createAllsockets();
-    if (!socket) {
+    if (socket === null) {
+      resetStateOnError();
       throw new Error('No socket connection!');
     } else {
       showCreatingBroadcastModal(true);
-      broadcastCreated = await createBroadcast(socket);
+      broadcastCreated = await startBroadcast();
+
+
 
       if (!broadcastCreated) {
         stopRecording();
-        throw new Error('Broadcast not created!');
+        resetStateOnError();
+        showCreatingBroadcastModal(false);
+        return;
       }
+      sendRTMPURL(socket);
+      await displayUtilities();
 
       showCreatingBroadcastModal(false);
 
@@ -795,7 +803,7 @@ async function startRecording() {
     document.getElementById("app-status").innerHTML = msg;
     console.error(errorMessage);
     resetStateOnError();
-    showErrorModal();
+    // showErrorModal(message = errorMessage);
   }
 }
 
@@ -837,7 +845,7 @@ async function validateAll() {
       // Use the environment camera
       currentCamera = 'environment';
       videoConstraints.facingMode = currentCamera;
-      currentCameraIsValid = false; // Indicate that currentCamera is not valid
+      currentCameraIsValid = false;
     } else if (selectVideo.value === 'user') {
       // Use the user camera
       currentCamera = 'user';
@@ -943,7 +951,7 @@ async function validateModal() {
       .catch((err) => {
         console.error("Start recording error: ", err);
         resetStateOnError();
-        showErrorModal();
+        // showErrorModal();
       });
   }
 }
@@ -961,15 +969,16 @@ async function sendAvailableData(testRecordingData = null) {
     document.querySelector('.create-playlist-btn').style.display = 'block';
     document.querySelector(".video-title").innerHTML = "";
 
-    const csrftoken = await getCookie('csrftoken');
-
-    // status.innerText = "STATUS: Uploading files to the server...";
 
     if (testRecordingData !== null) {
       const fileUploadUrl = '/file/upload/';
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `API-KEY ${apiKey}`,
+      }
       const response = await fetch(fileUploadUrl, {
         method: 'POST',
-        headers: { 'X-CSRFToken': csrftoken },
+        headers: headers,
         body: testRecordingData
       });
 
@@ -977,8 +986,6 @@ async function sendAvailableData(testRecordingData = null) {
       const responseStatus = response.status;
 
       if (responseStatus === 201) {
-        // status.innerHTML = "STATUS: Record data uploaded successfully!";
-
         testNameValue = null;
         testRecordingData = null;
 
@@ -1032,8 +1039,8 @@ async function resetStateOnError() {
   const recordScreen = screenCheckbox.checked;
 
   // Update application status
-  msg = "STATUS: Recording stopped due to error.";
-  document.getElementById("app-status").innerHTML = msg;
+  // msg = "STATUS: Recording stopped due to error.";
+  // document.getElementById("app-status").innerHTML = msg;
 
   // Stop video display tracks
   stopVideoElemTracks(video);
@@ -1252,13 +1259,9 @@ async function createWebsocket(recordWebcam, recordScreen) {
   const endpoint = getWebsocketEndpoint();
 
   let socket = new WebSocket(endpoint);
-  // let pingInterval;
-  // let pongTimeout;
 
   socket.onopen = (event) => {
     handleSocketOpen(socket, socketType);
-    // pingInterval = setupPingInterval(socket);
-    // pongTimeout = setupPongTimeout();
   };
 
   socket.onmessage = (event) => {
@@ -1269,7 +1272,7 @@ async function createWebsocket(recordWebcam, recordScreen) {
     await handleSocketError(socket, recordWebcam, recordScreen);
   };
 
-  socket.onclose = (evt) => {
+  socket.onclose = (event) => {
     handleSocketClose();
   };
 
@@ -1285,33 +1288,9 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
   function getWebsocketEndpoint() {
     const wsStart = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-    return wsStart + window.location.host + "/ws/app/";
+    return `${wsStart}${window.location.host}/ws/app/?api_key=${apiKey}`;
   }
 
-  function setupPingInterval(socket) {
-    return setInterval(() => {
-      if (socket.readyState === WebSocket.OPEN) {
-        socket.send('ping');
-      }
-    }, 15000);
-  }
-
-  function setupPongTimeout() {
-    return setTimeout(async () => {
-      if (recordinginProgress) {
-        // Only stop recording if it's in progress
-        // await stopRecording(errorOccured = true);
-        handLeNotification();
-        // console.log('WebSocket reconnection failed after multiple attempts');
-      }
-    }, 300000);
-  }
-
-  // Clearing the pongTimeout
-  function clearPongTimeout() {
-    clearTimeout(pongTimeout);
-  }
-  
   function handleSocketOpen(socket, socketType) {
     const mediaFileName = `${testNameValue}_${filesTimestamp}_${socketType}.webm`;
     const socketMsg = `FILENAME,${mediaFileName}`;
@@ -1326,10 +1305,6 @@ async function createWebsocket(recordWebcam, recordScreen) {
       recordinginProgress = true;
       document.getElementById("app-status").innerHTML = "STATUS: Recording in Progress.";
     }
-    // if (receivedMsg.includes('pong')) {
-    //   clearPongTimeout(pongTimeout);
-    //   // pongTimeout = setupPongTimeout();
-    // }
   }
 
   async function handleSocketError(event, recordWebcam, recordScreen) {
@@ -1339,26 +1314,28 @@ async function createWebsocket(recordWebcam, recordScreen) {
       const maxReconnectionAttempts = 3;
       let reconnectionAttempts = 0
 
-      for (;reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
+      for (; reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
         try {
           [socket, socketType] = await createWebsocket(recordWebcam, recordScreen);
-          recordinginProgress = true;
-          console.log('WebSocket reconnected successfully');
-          break;
+          if (socket.readyState === WebSocket.OPEN) {
+            recordinginProgress = true;
+            console.log('WebSocket reconnected successfully');
+            break;
+          }
         } catch (error) {
-          console.error('WebSocket reconnection attempt failed:', error);
+          if (reconnectionAttempts === maxReconnectionAttempts) {
+            // Only stop recording if it's in progress
+            console.error('WebSocket reconnection attempt failed:', error);
+            await stopRecording(errorOccured = true);
+            handLeNotification();
+          }
         }
+
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      if (reconnectionAttempts === maxReconnectionAttempts) {
-        // Only stop recording if it's in progress
-        await stopRecording();
-        handLeNotification();
-        // console.log('WebSocket reconnection failed after multiple attempts');
-      }
     } else {
-      await stopRecording(errorOccured=true);
+      await stopRecording(errorOccured = true);
       recordinginProgress = false;
       document.getElementById("app-status").innerHTML = "STATUS: WebSocket creation error.";
       console.error("WebSocket creation error: ", event.message);
@@ -1395,11 +1372,11 @@ async function createWebsocket(recordWebcam, recordScreen) {
 }
 
 function handLeNotification(
-  title="Recording Stopped",
-  body="WebSocket Connection Lost\nDon't worry, your recording is safe and uploaded succesfully"
-  ) {
+  title = "Recording Stopped",
+  body = "WebSocket Connection Lost but don't worry, your recording is safe and uploaded succesfully"
+) {
   if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, { body: body});
+    new Notification(title, { body: body });
   }
 }
 
@@ -1407,107 +1384,96 @@ function handLeNotification(
 // ==========================================================================================
 // ========================  CREATE YOUTUBE BROADCAST =======================================
 // ==========================================================================================
-async function createBroadcast(socket) {
+
+/**
+ * Starts the broadcast by making a POST request to the create broadcast API.
+ * Param: The WebSocket object.
+ * Returns: A Promise that resolves to true if the broadcast is created successfully, false otherwise.
+ */
+async function startBroadcast() {
+  // Get the status bar element
+  const statusBar = document.getElementById("app-status");
+
+  // Define the API endpoint and broadcast data
   const url = "/youtube/createbroadcast/api/";
   const broadcastData = {
-    videoPrivacyStatus: videoPrivacyStatus,
-    testNameValue: testNameValue,
-    channelTitle: currentChannelTitle
+    video_privacy: videoPrivacyStatus,
+    video_title: testNameValue,
+    playlist_id: document.getElementById("selectPlaylist").value.trim(),
   };
 
-  const csrftoken = await getCookie('csrftoken');
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-  myHeaders.append('X-CSRFToken', csrftoken);
-
+  // Initialize the flag for broadcast creation status
   broadcastCreated = false;
 
   try {
+    // Get CSRF token and set headers
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `API-KEY ${apiKey}`,
+    }
     const response = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(broadcastData),
-      headers: myHeaders
+      headers: headers
     });
 
-    if (response.status !== 201) {
-      if (response.status === 403) {
-        const data = await response.json();
-        console.error(`Error: ${data.message}`);
-        let errMsg = data.message;
+    if (!response.ok) {
+      // Parse the error data from the response
+      const data = await response.json();
 
-        stopRecording();
-        resetStateOnError();
-
-        if (errMsg === 'The user is not enabled for live streaming.') {
-          errMsg = 'This YouTube account is not enabled for live streaming.';
-        }
-        showErrorModal(errMsg);
-      } else {
-        throw new Error("Error when creating broadcast!");
-      }
+      // Display the error in the status bar
+      statusBar.innerHTML = `ERROR: ${data.error}`;
+      throw new Error(data.error);
     } else {
+      // Parse the JSON response for successful broadcast creation
       const json = await response.json();
-      const { newStreamId, newStreamName, newStreamIngestionAddress, new_broadcast_id } = json;
-      newRtmpUrl = `rtmp://a.rtmp.youtube.com/live2/${newStreamName}`;
+      const { new_stream_name, new_broadcast_id, new_rtmp_url } = json;
+
       newBroadcastID = new_broadcast_id;
+      newRtmpUrl = new_rtmp_url;
 
-      // Insert the video into playlist
-      const videoInserted = await insertVideoIntoPlaylist(socket);
-      if (!videoInserted) {
-        throw new Error("Error when inserting video into playlist!");
-      }
-
+      // Set the flag to indicate successful broadcast creation
       broadcastCreated = true;
-
-      return broadcastCreated;
     }
   } catch (error) {
-    console.error("Broadcast creation error: ", error);
-    resetStateOnError();
-    showErrorModal();
-
-    return broadcastCreated;
+    // Handle any unexpected errors
+    statusBar.innerHTML = `ERROR: ${error.message}`;
   }
+  // Return the flag indicating whether the broadcast is created successfully
+  return broadcastCreated;
 }
+
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
 // ==========================================================================================
-async function endBroadcast() {
+
+async function tranisionBroadcast(socket) {
   let broadcastStoppedSuccessfully = false;
-  const url = "/youtube/transitionbroadcast/api/";
-  const broadcastData = {
-    the_broadcast_id: newBroadcastID,
-    channel_title: currentChannelTitle
-  };
 
-  const csrftoken = await getCookie('csrftoken');
-  const myHeaders = new Headers();
-  myHeaders.append('Accept', 'application/json');
-  myHeaders.append('Content-type', 'application/json');
-  myHeaders.append('X-CSRFToken', csrftoken);
+  socket.send('command,end_broadcast');
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      body: JSON.stringify(broadcastData),
-      headers: myHeaders
-    });
-
-    if (response.status === 200) {
-      const json = await response.json();
+  socket.onmessage = (event) => {
+    const message = (event.data);
+    if (message.includes('Success')) {
+      broadcastStoppedSuccessfully = true;
       const previewButton = document.getElementById('playback-video-button');
       previewButton.style.display = 'block';
-      broadcastStoppedSuccessfully = true;
-
-      return broadcastStoppedSuccessfully;
     } else {
-      return broadcastStoppedSuccessfully;
+      broadcastStoppedSuccessfully = false;
     }
-  } catch (error) {
-    return broadcastStoppedSuccessfully;
   }
+  return broadcastStoppedSuccessfully;
+}
+
+async function endBroadcast() {
+  let broadcastStoppedSuccessfully = false;
+
+  if (recordinginProgress && socket.readyState === WebSocket.OPEN) {
+    broadcastStoppedSuccessfully = await tranisionBroadcast(socket);
+  }
+
+  return broadcastStoppedSuccessfully;
 }
 
 async function goToPage(event) {
@@ -1588,39 +1554,6 @@ async function showErrorModal(liveStreamError = null, message = null) {
       messageDisplay.innerHTL = message
     }
     errorModal.show();
-  }
-}
-
-// Timer to check network status every second
-networkTimer = setInterval(() => {
-  checkNetworkStatus();
-}, 1000) // each 1 second
-
-// Function to check network status
-async function checkNetworkStatus() {
-  let currentDateTime = new Date();
-  let resultInSeconds = currentDateTime.getTime() / 1000;
-  let timeNow = resultInSeconds;
-  if (msgRcvdFlag === true) {
-    lastMsgRcvTime = timeNow;
-    msgRcvdFlag = false;
-  } else {
-    if (recordinginProgress === false) {
-      lastMsgRcvTime = timeNow;
-    } else if ((timeNow - lastMsgRcvTime) > 25) { // More than 25 secs
-      msgRcvdFlag = false;
-      lastMsgRcvTime = timeNow;
-      // Stop recording due to network problem
-      //clearInterval(networkTimer);
-      // stopStreams();
-      // resetStateOnError();
-      //alert("Recording stopped due to network problem");
-      //let errorModal = new bootstrap.Modal(document.getElementById('networkErrorOccurred'));
-      //errorModal.show();
-
-      // Show system tray notification and alert
-      // showNetworkErrorOccurredModal();
-    }
   }
 }
 
@@ -1710,10 +1643,7 @@ async function createAllsockets() {
     [socketX, socketTypeX] = await createWebsocket(recordWebcam, recordScreen);
     return [socketX, socketTypeX];
   } catch (err) {
-    console.error("Error while creating sockets: " + err.message);
-    // Tell user, stop the recording.
-    resetStateOnError();
-    showErrorModal();
+    return [null, null];
   }
 }
 
@@ -1742,46 +1672,6 @@ async function stopVideoElemTracks(videoElem) {
     console.error("Error while stopping video display tracks: ", error.message)
   }
 }
-async function insertVideoIntoPlaylist(socket) {
-  const playlistItemsInsertURL = '/youtube/playlistitemsinsert/api/';
-  const csrftoken = await getCookie('csrftoken');
-  let video_inserted = false;
-  let selectedPlaylist = document.getElementById("selectPlaylist").value.trim();
-
-  try {
-    const response = await fetch(playlistItemsInsertURL, {
-      method: 'POST',
-      body: JSON.stringify({
-        videoId: newBroadcastID,
-        playlistId: selectedPlaylist,
-        channel_title: currentChannelTitle
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-        'X-CSRFToken': csrftoken
-      }
-    });
-
-    const json = await response.json();
-    const responseStatus = response.status;
-
-    if (responseStatus === 200) {
-      document.getElementById("app-status").innerHTML = "STATUS: Video Inserted Into User Playlist.";
-
-      sendRTMPURL(socket);
-
-      displayUtilities();
-
-      return video_inserted = true;
-    } else {
-      throw new Error("Failed to insert video into user playlist!");
-    }
-
-  } catch (error) {
-    document.getElementById("app-status").innerHTML = "ERROR: Failed to Insert Video Into User Playlist.";
-    return video_inserted;
-  }
-}
 
 // Sends an RTMP URL to the websocket
 async function sendRTMPURL(socket) {
@@ -1796,7 +1686,6 @@ async function sendRTMPURL(socket) {
     } else {
       await socket.send(newRtmpUrl);
     }
-
   } else {
   console.log("Attempting websocket reconnection...");
   // If the socket is not in an open state, attempt reconnection
@@ -1999,7 +1888,6 @@ async function createNewPlaylist() {
     let responseStatus = null;
 
     const form = document.getElementById("create-playlist");
-    const csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
     const channel = document.getElementById("selectChannel").value;
     const title = document.getElementById("playlist_title_modal").value;
     const privacy = document.querySelector('input[name="privacy_status"]:checked').value;
@@ -2010,6 +1898,10 @@ async function createNewPlaylist() {
       return;
     }
 
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `API-KEY ${apiKey}`,
+    }
     const response = await fetch(createPlaylistURL, {
       method: 'POST',
       body: JSON.stringify({
@@ -2018,10 +1910,7 @@ async function createNewPlaylist() {
         new_playlist_privacy: privacy,
         channel_title: channel
       }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-        "X-CSRFToken": csrf_token
-      }
+      headers: headers
     });
 
     responseStatus = response.status;
@@ -2164,61 +2053,6 @@ channel_title.addEventListener('keyup', () => {
 }
 );
 
-document.getElementById("add-channel-btn").addEventListener("click", async function (event) {
-  event.preventDefault();
-
-  const idMsg = 'Invalid channel ID format'
-  const titleMsg = "Title should not include a dot(.) and be at least 3 and at most 50 characters";
-  // const credentialMsg = 'Invalid credential format';
-  let channelId = document.getElementById("channel_id_modal").value;
-  let channelTitle = document.getElementById("channel_title_modal").value;
-  // let channelCredentials = document.getElementById("channel_credentials_modal").value;
-  const idError = document.getElementById('id-error');
-  const titleError = document.getElementById('title-error');
-  // const credentialError = document.getElementById('credential-error');
-  let valid_input = true;
-
-  if (!channelId.match(/^UC[a-zA-Z0-9-_]{22}$/)) {
-    idError.innerText = idMsg;
-    valid_input = false;
-  }
-  if (!channelTitle.match(/^[a-zA-Z0-9_ -]{3,50}$/)) {
-    titleError.innerText = titleMsg;
-    valid_input = false;
-  }
-  if (valid_input) {
-    const form = document.getElementById("add-channel");
-    const formData = new FormData(form);
-    fetch("/", {
-      method: 'POST',
-      body: formData
-    })
-      .then(async response => {
-        const resp = await response.json()
-        const { channel_id, channel_title, channel_credential } = resp;
-        if (channel_id) {
-          idError.innerText = channel_id[0]
-        }
-        if (channel_title) {
-          titleError.innerText = channel_title[0]
-        }
-        if (channel_credential) {
-          credentialError.innerText = channel_credential[0]
-        }
-        if ('message' in resp) {
-          if (resp['message'] === 'Invalid channel!') {
-            document.getElementById('add-status').style.color = 'rgb(161, 76, 76)';
-            document.getElementById('add-status').innerText = resp['message'];
-          } else {
-            document.getElementById('add-status').style.color = 'rgb(72, 174, 128)';
-            document.getElementById('add-status').innerText = resp['message'];
-          }
-          // console.log(resp['message'])
-        }
-      })
-  }
-})
-
 document.getElementById("create-playlist-btn").addEventListener("click", async function (event) {
   event.preventDefault();
   handleCreatePlaylistRequest();
@@ -2266,10 +2100,15 @@ function displayUtilities() {
 // #################################################################################
 async function fetchUserChannel() {
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `API-KEY ${apiKey}`,
+    }
+
     const channelsApiUrl = '/youtube/channels/api';
     let statusBar = document.getElementById("app-status");
 
-    const response = await fetch(channelsApiUrl, {method: 'GET'});
+    const response = await fetch(channelsApiUrl, { method: 'GET', headers: headers });
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -2336,7 +2175,11 @@ async function fetchUserPlaylists() {
   const selectUserPlaylist = document.querySelector(".selectPlaylist");
 
   try {
-    const response = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `API-KEY ${apiKey}`,
+    }
+    const response = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers });
 
     if (response.ok) {
       if (response.status === 204) {
@@ -2377,13 +2220,15 @@ async function fetchUserPlaylists() {
 // #################################################################################
 
 async function load_gallery() {
-  // console.log('welcome Load Gallery Function');
-  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET' });
+  const headers = {
+    'Authorization': `API-KEY ${apiKey}`,
+    'Content-Type': 'application/json'
+  }
+  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers });
 
   if (playlistsResponse.ok) {
     const playlistsData = await playlistsResponse.json();
     let playlistsDict = playlistsData.user_playlists;
-    // console.log('playlistsDict :', playlistsDict);
     const playlistIds = Object.keys(playlistsDict);
 
     // Display playlist names in the HTML select tag
@@ -2427,28 +2272,28 @@ async function play_first_video() {
 }
 
 async function load_videos(playlist_id) {
-  // console.log('welcome Load Videos');
-  let response = await fetch('/youtube/videos/api/', { method: 'GET' });
+  const headers = {
+    'Authorization': `API-KEY ${apiKey}`,
+    'Content-Type': 'application/json'
+  }
+  let response = await fetch('/youtube/videos/api/', { method: 'GET', headers: headers });
 
   if (response.ok) {
     const playlistItemsData = await response.json();
     let playlist_videos = playlistItemsData;
-    // console.log('playlist_videos 3698 :', playlist_videos);
     if (playlist_videos.length === 0) {
       console.log('No videos found in the playlist.');
       return;
     }
 
     let playlistObject = playlist_videos.find(videoObject => videoObject['playlistId'] === playlist_id);
-    // console.log('playlist objects >>> ', playlistObject)
     let playlistVideos = playlistObject.videos;
-    // console.log('playlist_videos 3698 :', playlistVideos);
     if (playlistVideos.length === 0) {
       console.log('No videos found in the playlist.');
       return;
     }
 
-    const videos = []; // Array to store the videos
+    const videos = [];
 
     // Iterate over the playlist videos and extract necessary information
     playlistVideos.forEach(video => {
@@ -2467,11 +2312,8 @@ async function load_videos(playlist_id) {
       // Add the video object to the videos array
       videos.push(videoObject);
     });
-    videos
-    // console.log('Videos 3724:', videos)
-    // Populate the select element with video titles
     const selectElement = document.getElementById('all_video');
-    selectElement.innerHTML = ''; // Clear existing options
+    selectElement.innerHTML = '';
     videos.forEach(video => {
       const option = document.createElement('option');
       option.value = video.id;
@@ -2483,7 +2325,6 @@ async function load_videos(playlist_id) {
       const selectedVideoId = this.value;
 
       selected_Video_Id = selectedVideoId;
-      // console.log('selected video id > ', selected_Video_Id);
 
       const selectedVideo = videos.find(video => video.id === selectedVideoId);
       if (selectedVideo) {
@@ -2495,7 +2336,6 @@ async function load_videos(playlist_id) {
 }
 
 async function play(videoId, playerElementID = 'player') {
-  // console.log('Playing video:', title, 'with videoId:', videoId)
   const playerElement = document.getElementById(playerElementID);
   if (!window.YT) {
     const tag = document.createElement('script');
@@ -2517,14 +2357,13 @@ async function play(videoId, playerElementID = 'player') {
       events: {
         onReady: function (event) {
           event.target.playVideo();
-          // console.log('Playing video:', title);
         }
       }
     });
   }
 }
 
-function resetOnStartRecording() {
+function resetOnStopRecording() {
   // show record button
   document.querySelector('.record-btn').style.display = 'block';
   // reset video title 
@@ -2553,6 +2392,7 @@ const youtubePreview = document.getElementById('youtube-preview');
 const video_Id = newBroadcastID;
 
 
+
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
@@ -2576,8 +2416,6 @@ function openModal(videoId) {
 
 async function previewVideo() {
   const video_Id = newBroadcastID;
-  // console.log('==== Video Id >>> ', video_Id);
-
   // Close modal if open
   btnCloseVideoPreviewModal.click();
 
@@ -2602,8 +2440,6 @@ async function previewVideo() {
 async function deleteVideo(video_Id) {
 
   let csrftoken = await getCookie('csrftoken');
-  // console.log('video id ', video_Id)
-  // Function to handle the fetch response
   function handleResponse(response) {
     if (response.ok) {
       // Successful response
@@ -2626,13 +2462,14 @@ async function deleteVideo(video_Id) {
     }
   }
 
+  const headers = {
+    'Content-Type': 'application/json',
+    'Authorization': `API-KEY ${apiKey}`,
+  }
   // Fetch request to delete the video
   fetch('/youtube/delete-video/api/', {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken,
-    },
+    headers: headers,
     body: JSON.stringify({
       video_id: video_Id,
     }),
@@ -2641,8 +2478,6 @@ async function deleteVideo(video_Id) {
     .then(data => {
       // // Success response
       console.log('Video deleted succesfully');
-      // console.log('Delete Response Message >> ', data.message);
-      // console.log('Delete data.response >> ', data.response);
     })
     .catch(error => {
       // Error response
@@ -2655,7 +2490,6 @@ function openModal_delete() {
   const modal = document.getElementById('confirmationModal_delete');
   modal.style.display = 'block';
   if (window.location.pathname === '/library/' && isAuthenticated) {
-    // console.log('selected video id > ', selected_Video_Id);
   }
 }
 
