@@ -2,7 +2,7 @@
 from youtube.utils import transition_broadcast
 from youtube.models import UserProfile
 import os
-import subprocess
+# import subprocess
 import asyncio
 import django
 from channels.consumer import AsyncConsumer
@@ -30,28 +30,11 @@ class VideoConsumer(AsyncConsumer):
     """Socket Consumer that accept websocket connection and live stream"""
 
     def __init__(self):
-        self.process_manager = FFmpegProcessManager(send=self.send)
-
-    # async def websocket_connect(self, event):
-    #     try:
-    #         query_string = self.scope.get("query_string", b"").decode("utf-8")
-    #         if query_string:
-    #             api_key = query_string.split('=')[-1]
-
-    #             user = await get_user(api_key)
-    #             if user:
-    #                 self.scope['user'] = user
-    #                 await self.send({"type": "websocket.accept"})
-    #             else:
-    #                 await self.send({"type": "websocket.close", "text": "UnAuthorised"})
-    #                 await self.websocket_disconnect(event)
-    #         else:
-    #             await self.send({"type": "websocket.close", "text": "UnAuthorised"})
-    #             await self.websocket_disconnect(event)
-    #     except UserProfile.DoesNotExist:
-    #         await self.send({"type": "websocket.close", "text": "UnAuthorised"})
-    #         await self.websocket_disconnect(event)
-
+        self.process = None
+        self.rtmpUrl = None
+        self.audio_enabled = False
+        self.receive_event = asyncio.Event()
+     
     async def websocket_connect(self, event):
         try:
             query_string = self.scope.get("query_string", b"").decode("utf-8")
@@ -73,63 +56,57 @@ class VideoConsumer(AsyncConsumer):
             await self.websocket_disconnect(event)
 
     async def websocket_receive(self, event):
-        """Receive message from WebSocket."""
-        if 'text' in event:
-            await self.process_text_event(event['text'])
-        elif 'bytes' in event:
-            await self.process_bytes_event(event['bytes'])
+        """
+        Receive message from WebSocket.
+        Get the event and send the appropriate event
+        """
+        if 'text' in event.keys():
+            data = event['text']
+            if 'browser_sound' in data:
+                self.audio_enabled = True
+                self.rtmpUrl = self.extract_rtmp_url(data)
+                print("Received RTMP url: ", self.rtmpUrl)
+                await self.start_ffmpeg_process()
+                await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
+            elif 'rtmp://a.rtmp.youtube.com' in data or 'rtmps://a.rtmps.youtube.com' in data:
+                self.audio_enabled = False
+                self.rtmpUrl = data
+                # print("Received RTMP url:", self.rtmpUrl)
+                await self.start_ffmpeg_process()
+                await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
+            elif 'ping' in data:
+                print('================ pong response recieved ================')
+                await self.send_ack_message('pong')
 
-    # async def websocket_disconnect(self, event):
-    #     """Handle when websocket is disconnected"""
-    #     self.process_manager.cleanup_on_disconnect(self.scope)
+        if 'bytes' in event.keys() and self.process:
+            # print(event['bytes'])
+            byte_data = event['bytes']
+            if self.process and self.process.returncode is None:
+                try:
+                    self.process.stdin.write(byte_data)
+                    await self.process.stdin.drain()
+                except BrokenPipeError as e:
+                    # Handle the error or take appropriate action
+                    await self.restart_ffmpeg_process()
+                    self.process.stdin.write(byte_data)
+                    await self.process.stdin.drain()
+            else:
+                print("Subprocess has terminated. Cannot write to stdin.")
+                await self.restart_ffmpeg_process()
+                self.process.stdin.write(byte_data)
+                await self.process.stdin.drain()
 
+        # Set the event to signal that websocket_receive has completed
+        self.receive_event.set()
+            
     async def websocket_disconnect(self, event):
-        """Handle when websocket is disconnected"""
-        try:
-            await asyncio.wait_for(self.wait_for_reconnect(), timeout=5)
-            # Reconnection happened within 5 seconds, do nothing
-        except asyncio.TimeoutError:
-            # No reconnection happened within 5 seconds, proceed with cleanup
-            if not self.is_connected:
-                self.process_manager.cleanup_on_disconnect(self.scope)
+        """when websocket disconnects"""
+        self.connection_lost = True
+        print("Websocket disconnected...")
 
-    async def wait_for_reconnect(self):
-        """Wait for a reconnection attempt"""
-        self.is_connected = False  # Mark connection as lost
-        await asyncio.sleep(5)  # Wait for 5 seconds for a reconnection attempt
-        # If this method is not cancelled within 5 seconds, it means no reconnection attempt occurred
-        # Set is_connected back to True if reconnected during this period
-        self.is_connected = True
+        # Wait to hear from `websocket_receive` success before going further.
+        await self.receive_event.wait()
 
-    async def process_text_event(self, text_data):
-        """Process the text event"""
-        if 'browser_sound' in text_data:
-            rtmp_url = self.process_manager.handle_browser_sound(text_data)
-            await self.send_ack_message("RTMP url received: " + rtmp_url)
-        elif 'rtmp://a.rtmp.youtube.com' in text_data or 'rtmps://a.rtmps.youtube.com' in text_data:
-            rtmp_url = self.process_manager.handle_rtmp_url(text_data)
-            await self.send_ack_message("RTMP url received: " + rtmp_url)
-        elif 'command' in text_data:
-            await self.process_command_event(text_data.split(",", 1)[1])
-
-    async def process_command_event(self, command):
-        """Process the command event"""
-        if command == 'end_broadcast':
-            success = self.process_manager.process_manager_cleanup(self.scope)
-            # success = self.process_manager.end_broadcast(self.scope)
-            await self.send({"type": "websocket.send", "text": "Success" if success else "Failed"})
-
-    async def process_bytes_event(self, bytes_data):
-        """Process the bytes event"""
-        self.process_manager.handle_bytes_data(bytes_data)
-
-    async def send_ack_message(self, message):
-        """Send acknowledgement message to frontend"""
-        await self.send({"type": "websocket.send", "text": message})
-
-
-class FFmpegProcessManager:
-    """ Manages the FFmpeg process """
 
     def __init__(self, send=None):
         self.process = None
@@ -220,43 +197,74 @@ class FFmpegProcessManager:
 
             return success
 
-    def start_ffmpeg_process(self):
+    async def start_ffmpeg_process(self):
+        """
+        Starts the rtmp process.
+        """
         try:
             command = self.generate_ffmpeg_command()
-            self.process = subprocess.Popen(
-                command, stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+            self.process = await asyncio.create_subprocess_exec(
+                *command, stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
             )
         except Exception as e:
             print("Error starting FFmpeg process: ", e)
 
+    async def stop_ffmpeg_process(self):
+        """
+        Stops the RTMP process...
+        """
+        if self.process:
+            try:
+                self.process.stdin.close()
+                await asyncio.wait_for(self.process.wait(), timeout=30)
+            except asyncio.TimeoutError:
+                print("Timeout waiting for the subprocess to finish.")
+                await self.stop_ffmpeg_process()
+            except Exception as e:
+                print("Error while closing the subprocess: ", e)
+            finally:
+                self.process = None
+
+    async def restart_ffmpeg_process(self):
+        print("Restarting FFmpeg process...")
+        await self.stop_ffmpeg_process()
+        await self.start_ffmpeg_process()
+
     def generate_ffmpeg_command(self):
-        # common_options = [
-        #     'ffmpeg',
-        #     '-vcodec', 'copy',
-        #     '-acodec', 'aac',
-        #     '-f', 'flv',
-        #     '-preset', 'ultrafast',
-        #     self.rtmp_url,
-        # ]
-        common_options = [
+        """Common FFmpeg command generation based on audio_enabled flag.
+        The command adds streams at almost real-time.
+        """
+        command = [
             'ffmpeg',
-            '-vcodec', 'copy',
-            '-acodec', 'aac',
-            '-f', 'flv',
-            '-preset', 'ultrafast',
-            '-tune', 'zerolatency',  # Enable zerolatency tuning
-            self.rtmp_url,
+            '-i', '-',
+            '-c:v', 'libx264',
+            '-c:a', 'aac',
+            '-f', 'fifo',
+            '-fifo_format', 'flv',
+            '-map', '0:v',
+            '-map', '0:a',
+            '-drop_pkts_on_overflow', '1',
+            '-attempt_recovery', '10',
+            '-recovery_wait_time', '30',
+            self.rtmpUrl
         ]
 
         if not self.audio_enabled:
-            return common_options + [
-                '-f', 'lavfi', '-i', 'anullsrc',
+            # Add additional options if audio is not enabled
+            command = [
+                'ffmpeg',
                 '-i', '-',
-                '-shortest',
-            ]
-
+                '-c:v', 'libx264',
+                '-f', 'fifo',
+                '-fifo_format', 'flv',
+                '-map', '0:v',
+                '-drop_pkts_on_overflow', '1',
+                '-attempt_recovery', '10',
+                '-recovery_wait_time', '30',
+                self.rtmpUrl
+        ]
         return common_options + ['-i', '-']
 
     def extract_rtmp_url(self, data):

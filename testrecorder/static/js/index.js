@@ -1346,8 +1346,27 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
   async function handleSocketClose() {
     recordinginProgress = false;
-    if (recordinginProgress) {
+    // Attempt reconnection here
+    const maxReconnectionAttempts = 3;
+    let reconnectionAttempts = 0;
+
+    for (; reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
+      try {
+        [socket, socketTyp] = await createWebsocket(recordWebcam, recordScreen);
+        recordinginProgress = true;
+        console.log('WebSocket reconnected successfully');
+        return socket;
+      } catch (error) {
+        console.error('WebSocket reconnection attempt failed:', error);
+      }
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    }
+
+    if (reconnectionAttempts === maxReconnectionAttempts) {
+      // Only stop recording if it's in progress
+      await stopRecording();
       handLeNotification();
+      console.log('WebSocket reconnection failed after multiple attempts');
     }
   }
 }
@@ -1656,8 +1675,10 @@ async function stopVideoElemTracks(videoElem) {
 
 // Sends an RTMP URL to the websocket
 async function sendRTMPURL(socket) {
+  showCreatingBroadcastModal(false);
+  // Check if we need to add audio stream
+
   if (socket != null && socket.readyState === WebSocket.OPEN) {
-    // Check if we need to add audio stream
     recordAudio = microphoneStatus();
     if (recordAudio == true) {
       let msg = "browser_sound," + newRtmpUrl;
@@ -1665,7 +1686,25 @@ async function sendRTMPURL(socket) {
     } else {
       await socket.send(newRtmpUrl);
     }
+  } else {
+  console.log("Attempting websocket reconnection...");
+  // If the socket is not in an open state, attempt reconnection
+  socket = await handleSocketClose();
+
+  if (socket != null && socket.readyState === WebSocket.OPEN) {
+    // Check if we need to add an audio stream
+   recordAudio = microphoneStatus();
+
+    if (recordAudio) {
+      let msg = "browser_sound," + newRtmpUrl;
+      await socket.send(msg);
+    } else {
+      await socket.send(newRtmpUrl);
+    }
+
   }
+}
+displayUtilities();
 }
 
 // Creating youtube broadcast modal
@@ -1934,6 +1973,13 @@ async function showPlaylistCreatedModal() {
   // Show modal
   const playlistCreatedModal = new bootstrap.Modal(document.getElementById('playlist-created-modal'));
   playlistCreatedModal.show();
+
+  // Add event listener to the modal for a click event
+  const modalElement = document.getElementById('playlist-created-modal');
+  modalElement.addEventListener('click', () => {
+    // Reload the page upon clicking the modal
+    location.reload();
+  });
 }
 
 // Shows Playlist creation Error occurred modal
