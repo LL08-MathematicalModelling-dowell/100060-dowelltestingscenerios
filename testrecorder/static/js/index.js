@@ -32,9 +32,6 @@ let webcamStream = null;
 let screenStream = null;
 let audioStream = null;
 
-// Assume you have a global variable for your buffer
-let mediaBuffer = [];
-
 let currentCamera = "user";
 let audioConstraints = {
   deviceId: { exact: "default" }
@@ -483,16 +480,11 @@ async function stopRecording(errorOccurred = false) {
  */
 async function recordWebcamStream() {
   try {
-    // console.log('============== inside record wbcam screen ==================');
-
     webcamMediaConstraints = {
       video: videoConstraints,
       audio: true,
     };
     webcamStream = await navigator.mediaDevices.getUserMedia(webcamMediaConstraints);
-
-    // console.log('=========== webcam strream gotten ===================');
-
     video.srcObject = webcamStream;
     video.muted = true;
 
@@ -507,9 +499,6 @@ async function recordWebcamStream() {
       return null;
     }
     webcamRecorder = new MediaRecorder(webcamStream, options);
-
-    // console.log('========== webcam recorder ====================');
-
     return webcamRecorder;
   } catch (err) {
     console.error('Webcam stream error >>> ', err);
@@ -620,7 +609,6 @@ async function newRecordWebcamAndScreen() {
 
     // Get supported media type options
     options = await getSupportedMediaType();
-    // console.log('Video options:', options);
 
     const screenWidth = screen.width;
     const screenHeight = screen.height;
@@ -637,8 +625,6 @@ async function newRecordWebcamAndScreen() {
     const videoTrack = screenStream.getVideoTracks()[0];
     const width = videoTrack.getSettings().width;
     const height = videoTrack.getSettings().height;
-    // console.log('Width:', width);
-    // console.log('Height:', height);
 
     const mergerOptions = {
       width: screenStream.width,
@@ -660,9 +646,6 @@ async function newRecordWebcamAndScreen() {
           width: webcamStreamWidth, height: webcamStreamHeight, mute: true
         });
     }
-    // else {
-    //   console.log('Camera Stream not available or merger height not defined');
-    // }
 
     // Start the merger and set the video source to the merged stream
     await merger.start();
@@ -675,7 +658,6 @@ async function newRecordWebcamAndScreen() {
   } catch (err) {
     // Handle errors during recording
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream.";
-    // console.log("Merged stream recording stoped with the following error >> ", err);
     await stopStreams();
     await resetStateOnError();
 
@@ -1690,24 +1672,24 @@ async function sendRTMPURL(socket) {
       await socket.send(newRtmpUrl);
     }
   } else {
-  console.log("Attempting websocket reconnection...");
-  // If the socket is not in an open state, attempt reconnection
-  socket = await handleSocketClose();
+    console.log("Attempting websocket reconnection...");
+    // If the socket is not in an open state, attempt reconnection
+    socket = await handleSocketClose();
 
-  if (socket != null && socket.readyState === WebSocket.OPEN) {
-    // Check if we need to add an audio stream
-   recordAudio = microphoneStatus();
+    if (socket != null && socket.readyState === WebSocket.OPEN) {
+      // Check if we need to add an audio stream
+      recordAudio = microphoneStatus();
 
-    if (recordAudio) {
-      let msg = "browser_sound," + newRtmpUrl;
-      await socket.send(msg);
-    } else {
-      await socket.send(newRtmpUrl);
+      if (recordAudio) {
+        let msg = "browser_sound," + newRtmpUrl;
+        await socket.send(msg);
+      } else {
+        await socket.send(newRtmpUrl);
+      }
+
     }
-
   }
-}
-displayUtilities();
+  displayUtilities();
 }
 
 // Creating youtube broadcast modal
@@ -2540,34 +2522,3 @@ function removeScreenOption() {
 window.onload = function () {
   removeScreenOption();
 };
-
-
-// Buffer Media Stream function.
-// Takes an input of the streams and stores them in a buffer
-function bufferMediaStreams(webcamStream, screenStream, audioStream) {
-  const mediaRecorderWebcam = new MediaRecorder(webcamStream);
-  const mediaRecorderScreen = new MediaRecorder(screenStream);
-  const mediaRecorderAudio = new MediaRecorder(audioStream);
-
-  // Event listener for webcam stream
-  mediaRecorderWebcam.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      mediaBuffer.push({ type: 'webcam', data: event.data });
-    }
-  };
-
-  // Event listener for screen stream
-  mediaRecorderScreen.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      mediaBuffer.push({ type: 'screen', data: event.data });
-    }
-  };
-
-  // Event listener for audio stream
-  mediaRecorderAudio.ondataavailable = (event) => {
-    if (event.data.size > 0) {
-      mediaBuffer.push({ type: 'audio', data: event.data });
-    }
-  };
-}
-
