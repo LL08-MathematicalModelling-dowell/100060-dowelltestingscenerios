@@ -1,10 +1,7 @@
 import os
-# import subprocess
 import asyncio
 import django
 from channels.consumer import AsyncConsumer
-# import threading
-
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
@@ -12,28 +9,25 @@ django.setup()
 
 class VideoConsumer(AsyncConsumer):
     """
-    Socket Consumer that accept websocket connection and live stream
-     data from frontend and sends this stream to youtube
+    Socket Consumer that accepts websocket connection and live streams
+    data from frontend and sends this stream to YouTube
     """
+
     def __init__(self):
+        super().__init__()
         self.process = None
         self.rtmpUrl = None
         self.audio_enabled = False
-        # self.receive_event = asyncio.Event()
 
     async def websocket_connect(self, event):
         """
         Handle when websocket is connected
-            :param event: websocket connection event
-            :return: None
         """
-        # print("WebSocket connected:", event)
         await self.send({"type": "websocket.accept"})
 
     async def websocket_receive(self, event):
         """
         Receive message from WebSocket.
-        Get the event and send the appropriate event
         """
         if 'text' in event.keys():
             data = event['text']
@@ -50,48 +44,40 @@ class VideoConsumer(AsyncConsumer):
                 await self.start_ffmpeg_process()
                 await self.send_ack_message("RTMP url received: " + self.rtmpUrl)
             elif 'ping' in data:
-                print('================ pong response recieved ================')
+                print('================ pong response received ================')
                 await self.send_ack_message('pong')
 
         if 'bytes' in event.keys() and self.process:
-            # print(event['bytes'])
             byte_data = event['bytes']
-           
             try:
                 self.process.stdin.write(byte_data)
                 await self.process.stdin.drain()
             except (BrokenPipeError, ConnectionResetError) as e:
-                # Handle the error or take appropriate action
                 await self.restart_ffmpeg_process()
                 self.process.stdin.write(byte_data)
                 await self.process.stdin.drain()
 
     async def websocket_disconnect(self, event):
-        """when websocket disconnects"""
+        """Handle websocket disconnection."""
         self.connection_lost = True
         print("Websocket disconnected...")
 
         if self.process:
             try:
-                # Close the stdin of the subprocess to prevent BrokenPipeError
                 self.process.stdin.close()
-                # Wait for the subprocess to finish
                 self.process.wait()
             except Exception as e:
                 print("Error while closing the subprocess: ", e)
             finally:
-                # Set the process attribute to None to indicate no active process
                 self.process = None
 
     def extract_rtmp_url(self, data):
-        """Extract RTMP URL from the data received"""
+        """Extract RTMP URL from the received data."""
         _, rtmp_url = data.split(",", 1)
         return rtmp_url.strip()
 
     async def start_ffmpeg_process(self):
-        """
-        Starts the rtmp process.
-        """
+        """Start the RTMP process."""
         try:
             command = self.generate_ffmpeg_command()
             self.process = await asyncio.create_subprocess_exec(
@@ -104,9 +90,7 @@ class VideoConsumer(AsyncConsumer):
             print("Error starting FFmpeg process: ", e)
 
     async def stop_ffmpeg_process(self):
-        """
-        Stops the RTMP process...
-        """
+        """Stop the RTMP process."""
         if self.process:
             try:
                 self.process.stdin.close()
@@ -120,14 +104,13 @@ class VideoConsumer(AsyncConsumer):
                 self.process = None
 
     async def restart_ffmpeg_process(self):
+        """Restart the FFmpeg process."""
         print("Restarting FFmpeg process...")
         await self.stop_ffmpeg_process()
         await self.start_ffmpeg_process()
 
     def generate_ffmpeg_command(self):
-        """Common FFmpeg command generation based on audio_enabled flag.
-        The command adds streams at almost real-time.
-        """
+        """Generate FFmpeg command based on audio_enabled flag."""
         command = [
             'ffmpeg',
             '-i', '-',
@@ -149,7 +132,6 @@ class VideoConsumer(AsyncConsumer):
                 '-f', 'lavfi', '-i', 'anullsrc',
                 '-i', '-',
                 '-shortest',
-                # '-vcodec', 'copy',
                 '-c:v', 'libx264',
                 '-b:v', '4000k',
                 '-acodec', 'aac',
@@ -163,5 +145,5 @@ class VideoConsumer(AsyncConsumer):
         return command
 
     async def send_ack_message(self, message):
-        """Send acknowledgement message to frontend"""
+        """Send acknowledgment message to frontend."""
         await self.send({"type": "websocket.send", "text": message})
