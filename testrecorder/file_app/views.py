@@ -11,7 +11,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 
-from . import youtube_api
+# from . import youtube_api
 from .models import VpsTestRecord
 from .serializers import (
     VpsFileSerializer,
@@ -273,9 +273,9 @@ class CreateBroadcastView(APIView):
     def post(self, request, *args, **kwargs):
         videoPrivacyStatus = "private"
         testNameValue = "Test1"
-        stream_dict = youtube_api.create_broadcast(
-            videoPrivacyStatus, testNameValue)
-        print("stream_dict: ", stream_dict)
+        # stream_dict = youtube_api.create_broadcast(
+        #     videoPrivacyStatus, testNameValue)
+        # print("stream_dict: ", stream_dict)
 
         return Response("Bytes Received", status=status.HTTP_201_CREATED)
 

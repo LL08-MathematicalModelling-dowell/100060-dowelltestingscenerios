@@ -183,7 +183,7 @@ class VideoConsumer(AsyncConsumer):
                 '-shortest',
                 # '-vcodec', 'copy',
                 '-c:v', 'libx264',
-                '-b:v', '4000k',
+                '-b:v', '4k',
                 '-acodec', 'aac',
                 '-drop_pkts_on_overflow', '1',
                 '-attempt_recovery', '10',

@@ -1,12 +1,12 @@
 # UX Live
 
-UX Live is a sophisticated Django application designed to facilitate live streaming from the client's camera, screen, and audio directly to the user's YouTube channel. This powerful tool is built on the Django framework, leveraging Django REST framework, Django Channels, and Google AllAuth for seamless integration and a robust streaming experience.
+UX Live is a sophisticated Django application designed to facilitate live streaming from the client's camera, screen, and audio directly to the user's YouTube channel. This powerful tool is built on the Django framework, leveraging Django REST framework, Django Channels, and Google OAuth for seamless integration and a robust streaming experience.
 
 ## Features
 
 - **Live Streaming Capabilities:** Capture live camera, screen, and audio content from the user's device.
 - **YouTube Integration:** Stream content effortlessly to the user's personal YouTube channel.
-- **User Management:** Employs Google AllAuth for user authentication and account management.
+- **User Management:** Employs Google OAuth for user authentication and account management.
 - **Dynamic Channel Creation:** The application automatically generates a channel for users when initiating a stream.
 
 ## Requirements
@@ -17,7 +17,8 @@ To run UX Live, ensure you have the following installed:
 - Django
 - Django REST framework
 - Django Channels
-- Google AllAuth
+- Google OAuth
+- A YouTube channel with streaming activated.
 - Other required dependencies can be found in the `requirements.txt` file.
 
 ## Installation
@@ -48,8 +49,27 @@ Follow these steps to set up UX Live on your local machine:
 
 
 4. **Configuration:**
-- Obtain Google AllAuth credentials and API keys and add them to the appropriate settings file.
+- Obtain Google OAuth credentials and API keys and add them to the appropriate settings file.
 - Configure the application for YouTube API access.
+- Create a .env file with the following variables:
+```
+    SECRET_KEY='YOUR_DJANGO_SECRET_KEY'
+    DATABASE_NAME='YOUR_DATABASE_NAME'
+    DATABASE_HOST='YOUR_DATABSE_HOST'
+    CLIENT_ID='GOOGLE_OAUTH_CLIENT_ID'
+    CLIENT_SECRET='GOOGLE_OAUTH_CLIENT_SECRET'
+```
+- If your application refuse to redirect to google login, you may need to add the below code to the `SOCIALACCOUNT_PROVIDERS` variable in `settings.py` file :
+```
+'APP': {
+            'client_id': os.environ['CLIENT_ID'],
+            'secret': os.environ['CLIENT_SECRET'],
+        },
+```
+- Look for and uncomment the below line in `settings.py`. This enables you to be able to login using your localhost with SSL.
+```
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+```
 
 5. **Run the development server:**
 ```
@@ -60,7 +80,7 @@ Follow these steps to set up UX Live on your local machine:
 
 ## Usage
 
-1. **Sign-in:** Log in using your Google account via Google AllAuth.
+1. **Sign-in:** Log in using your Google account via Google OAuth.
 2. **Start a New Stream:** Initiate a new stream from the interface.
 3. **Permission Granting:** Allow necessary permissions for accessing camera, screen, and audio.
 4. **YouTube Channel Setup:** Enter YouTube channel details or create a new channel.

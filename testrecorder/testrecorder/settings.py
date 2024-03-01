@@ -123,6 +123,10 @@ SOCIALACCOUNT_PROVIDERS = {
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/youtube.readonly"
         ],
+        # 'APP': {
+        #         'client_id': os.environ['CLIENT_ID'],
+        #         'secret': os.environ['CLIENT_SECRET'],
+        #     },
         'AUTH_PARAMS': {
             'access_type': 'offline',
             'prompt': 'consent',
@@ -131,7 +135,7 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 SOCIALACCOUNT_STORE_TOKENS = True
-ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
+# ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 
 WSGI_APPLICATION = 'testrecorder.wsgi.application'
