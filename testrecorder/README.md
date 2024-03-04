@@ -47,8 +47,15 @@ Follow these steps to set up UX Live on your local machine:
     python manage.py migrate
 ```
 
-
 4. **Configuration:**
+- Add this line to the bottom (just before the return statement) of allauth.socialaccounts.providers.oauth2.views.OAuth2Adapter:parse_token method (This method can be found in your `venv` file):
+
+```
+# Get user token info
+from django.core.cache import cache
+# save token data in the cache for futher use in the code
+cache.set('oauth_data', token)
+```
 - Obtain Google OAuth credentials and API keys and add them to the appropriate settings file.
 - Configure the application for YouTube API access.
 - Create a .env file with the following variables:
@@ -59,7 +66,7 @@ Follow these steps to set up UX Live on your local machine:
     CLIENT_ID='GOOGLE_OAUTH_CLIENT_ID'
     CLIENT_SECRET='GOOGLE_OAUTH_CLIENT_SECRET'
 ```
-- If your application refuse to redirect to google login, you may need to add the below code to the `SOCIALACCOUNT_PROVIDERS` variable in `settings.py` file :
+- If your application refuse to redirect to google login, you may need to uncomment the below lines in `SOCIALACCOUNT_PROVIDERS` variable in `settings.py` file :
 ```
 'APP': {
             'client_id': os.environ['CLIENT_ID'],
@@ -77,6 +84,31 @@ ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 ```
 
 6. Access the application at `http://localhost:8000` in your web browser.
+
+
+## Running with Docker
+
+- You need to first of all change the `127.0.0.1` to `redis` in `CACHES` variable. It would now look like this:
+
+```
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://redis:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+```
+
+- ***Run Docker-Compose:*** Since the app is communicating with redis in the docker container on the same network, we have made use of docker-compose. Run the below command:
+
+```
+docker-compose build
+docker-compose up
+```
 
 ## Usage
 

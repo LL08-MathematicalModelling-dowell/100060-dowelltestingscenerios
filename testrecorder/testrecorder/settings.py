@@ -26,6 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+# print(SECRET_KEY)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -43,6 +44,7 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGIN = [
     'http://localhost:8080',
     'https://liveuxstoryboard.com',
+    'http://127.0.0.1',
 ]
 
 # Application definition
@@ -123,10 +125,10 @@ SOCIALACCOUNT_PROVIDERS = {
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/youtube.readonly"
         ],
-        # 'APP': {
-        #         'client_id': os.environ['CLIENT_ID'],
-        #         'secret': os.environ['CLIENT_SECRET'],
-        #     },
+        'APP': {
+                'client_id': os.environ['CLIENT_ID'],
+                'secret': os.environ['CLIENT_SECRET'],
+            },
         'AUTH_PARAMS': {
             'access_type': 'offline',
             'prompt': 'consent',
