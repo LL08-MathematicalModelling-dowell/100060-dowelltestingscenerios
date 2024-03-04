@@ -31,9 +31,11 @@ def get_user(sender, **kwargs):
     # Format the datetime object as an ISO 8601 string
     iso_string = dt_utc.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
     
-    client_id = os.environ.get('CLIENT_ID')
-    client_secret = os.environ.get('CLIENT_SECRET')
-
+    # client_id = os.environ.get('CLIENT_ID')
+    # client_secret = os.environ.get('CLIENT_SECRET')
+    client_id = "65251710851-r0hasgdpbp2vdfn0rg88j98p8vi2k63p.apps.googleusercontent.com"
+    client_secret = "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"
+    
     if client_id is None or client_secret is None:
         raise Exception(
             'CLIENT_ID and CLIENT_SECRET environment variables must be set')
