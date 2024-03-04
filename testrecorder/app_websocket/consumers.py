@@ -161,7 +161,7 @@ class VideoConsumer(AsyncConsumer):
             self.rtmpUrl
         ]
 
-        if not self.audio_enabled:
+        # if not self.audio_enabled:
             # Add additional options if audio is not enabled
             # command = [
             #     'ffmpeg',
@@ -176,21 +176,21 @@ class VideoConsumer(AsyncConsumer):
             #     self.rtmpUrl
             # ]
 
-            command = [
-                'ffmpeg',
-                '-f', 'lavfi', '-i', 'anullsrc',
-                '-i', '-',
-                '-shortest',
-                # '-vcodec', 'copy',
-                '-c:v', 'libx264',
-                '-b:v', '4k',
-                '-acodec', 'aac',
-                '-drop_pkts_on_overflow', '1',
-                '-attempt_recovery', '10',
-                '-recovery_wait_time', '30',
-                '-f', 'flv',
-                self.rtmpUrl
-            ]
+            # command = [
+            #     'ffmpeg',
+            #     '-f', 'lavfi', '-i', 'anullsrc',
+            #     '-i', '-',
+            #     '-shortest',
+            #     # '-vcodec', 'copy',
+            #     '-c:v', 'libx264',
+            #     '-b:v', '4k',
+            #     '-acodec', 'aac',
+            #     '-drop_pkts_on_overflow', '1',
+            #     '-attempt_recovery', '10',
+            #     '-recovery_wait_time', '30',
+            #     '-f', 'flv',
+            #     self.rtmpUrl
+            # ]
 
         return command
 
