@@ -32,6 +32,9 @@ let webcamStream = null;
 let screenStream = null;
 let audioStream = null;
 
+// Assume you have a global variable for your buffer
+let mediaBuffer = [];
+
 let currentCamera = "user";
 let audioConstraints = {
   deviceId: { exact: "default" }
@@ -768,8 +771,28 @@ async function startRecording() {
         $('.lower-nav').fadeOut('slow');
 
         streamRecorder.ondataavailable = (event) => {
-          if ((recordinginProgress && event.data.size > 0) && (socket.readyState === WebSocket.OPEN)) {
-            socket.send(event.data);
+          if (recordinginProgress && event.data.size > 0) {
+             mediaBuffer.push(event.data)
+             
+             if (navigator.onLine){
+                if (socket.readyState === WebSocket.OPEN) {
+                  // Send buffered data if there's internet connection and the socket is open
+                  sendDataBuffer();
+              }
+             } else {
+              // console.log("Thou art Offline")
+             }
+          }
+       };
+
+        streamRecorder.onstop = () => {
+          recordinginProgress = false;
+          document.getElementById("app-status").innerHTML = "STATUS: Recording stopped.";
+      
+          if (navigator.onLine && socket.readyState === WebSocket.OPEN) {
+            // Send any remaining buffered data
+            // console.log("Send any remaining buffered data")
+            sendDataBuffer();
           }
         };
 
@@ -790,6 +813,15 @@ async function startRecording() {
     resetStateOnError();
     // showErrorModal(message = errorMessage);
   }
+
+  async function sendDataBuffer() {
+    while (mediaBuffer.length > 0) {
+       const data = mediaBuffer.shift(); // Get and remove the first item from the buffer
+       console.log("Sending data to socket, data: ")
+       console.log(data)
+       await socket.send(data);
+    }
+ }
 }
 
 /**
