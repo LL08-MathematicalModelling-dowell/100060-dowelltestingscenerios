@@ -1,0 +1,135 @@
+video {
+    margin-top: 20px;
+    max-width: 90%;
+    border: 3px solid #0d98ba;
+    width: 60%;
+    height: 440px;
+    max-height: 700px;
+}
+
+/* ============================================= */
+body {
+    background-color: #121212;
+    color: #ffffff;
+    font-family: 'Arial', sans-serif;
+    background-image: url('/images/bg.jpg');
+    color: white;
+    height: 100vh;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.header,
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #121212;
+    opacity: .6;
+
+}
+
+.stream-container {
+    text-align: center;
+    padding: 20px;
+}
+
+#stream-playback {
+    width: 60%;
+    height: 440px;
+    max-height: 700px;
+}
+
+#live-indicator {
+    color: red;
+}
+
+.profile-settings button,
+.status-indicator div,
+.profile-settings div {
+    margin-left: 10px;
+}
+
+.profile-settingss {
+    display: flex;
+    align-items: center;
+}
+
+.profile-settingss button,
+.profile-settingss div {
+    margin-left: 10px;
+
+}
+
+.profile-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #ddd;
+    overflow: hidden;
+    object-fit: cover;
+}
+
+button {
+    padding: 5px 10px;
+    margin: 5px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #ccc;
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+}
+
+#stream-status {
+    color: green;
+}
+
+
+
+.icon-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.icon-button svg {
+    width: 24px;
+    height: 24px;
+    /* Adjust size as needed */
+    fill: #fff;
+    /* Icon color */
+}
+
+.icon-button span {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #fff;
+    /* Text color */
+}
+
+.icon-button label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Additional styling for the checkbox and label if needed */
+
+
+.active {
+    background-color: #4CAF50;
+    /* Green background to indicate active */
+}

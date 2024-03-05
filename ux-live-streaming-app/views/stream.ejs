@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Stream Options</title>
+  <link rel="stylesheet" href="/stylesheets/styles.css">
+</head>
+
+<body>
+  <div class="header">
+    <div id="stream-timer">00:00:00</div>
+    <div id="live-indicator" onclick="toggleLiveIndicator()">LIVE</div>
+    <div class="profile-settings">
+      <!-- Share Camera -->
+      <div class="icon-button" id="camera" onclick="toggleCamera()">
+        <div class="cam-choice">
+          <svg id="cam-off" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-camera-video-off" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M10.961 12.365a2 2 0 0 0 .522-1.103l3.11 1.382A1 1 0 0 0 16 11.731V4.269a1 1 0 0 0-1.406-.913l-3.111 1.382A2 2 0 0 0 9.5 3H4.272l.714 1H9.5a1 1 0 0 1 1 1v6a1 1 0 0 1-.144.518zM1.428 4.18A1 1 0 0 0 1 5v6a1 1 0 0 0 1 1h5.014l.714 1H2a2 2 0 0 1-2-2V5c0-.675.334-1.272.847-1.634zM15 11.73l-3.5-1.555v-4.35L15 4.269zm-4.407 3.56-10-14 .814-.58 10 14z" />
+          </svg>
+
+          <svg id="cam-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-camera-video" viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+              d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z" />
+          </svg>
+        </div>
+        <span>Share Camera</span>
+      </div>
+
+      <!-- Share Screen -->
+      <div class="icon-button" id="screen" onclick="toggleScreenShare()">
+        <svg viewBox="0 0 24 24">
+          <path d="M..." />
+        </svg>
+        <span>Share Screen</span>
+      </div>
+
+      <!-- Share Both -->
+      <div class="icon-button" id="both" onclick="toggleBoth()">
+        <svg viewBox="0 0 24 24">
+          <path d="M..." />
+        </svg>
+
+        <svg viewBox="0 0 24 24">
+          <path d="M..." />
+        </svg>
+        <span>Share Both</span>
+      </div>
+
+      <!-- Include Audio -->
+      <div class="icon-button" id="audio-container" onclick="toggleAudio()">
+        <div class="mic-choice">
+          <svg id="mic-off" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-mic-mute" viewBox="0 0 16 16">
+            <path
+              d="M13 8c0 .564-.094 1.107-.266 1.613l-.814-.814A4 4 0 0 0 12 8V7a.5.5 0 0 1 1 0zm-5 4c.818 0 1.578-.245 2.212-.667l.718.719a5 5 0 0 1-2.43.923V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 1 0v1a4 4 0 0 0 4 4m3-9v4.879l-1-1V3a2 2 0 0 0-3.997-.118l-.845-.845A3.001 3.001 0 0 1 11 3" />
+            <path
+              d="m9.486 10.607-.748-.748A2 2 0 0 1 6 8v-.878l-1-1V8a3 3 0 0 0 4.486 2.607m-7.84-9.253 12 12 .708-.708-12-12z" />
+          </svg>
+          <!-- <img id="mic-on" src="images/mic.svg" alt="Microphone on" style="background-color: aliceblue;">
+          <img id="mic-off" src="images/mic-mute.svg" alt="Microphone on" style="background-color: aliceblue;"> -->
+
+          <svg id="mic-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+            class="bi bi-mic" viewBox="0 0 16 16">
+            <path
+              d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5" />
+            <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3" />
+          </svg>
+        </div>
+        <span>Audio</span>
+      </div>
+
+      <!-- Settings -->
+      <div class="icon-button" id="settings-btn">
+        <!-- SVG and span for Settings -->
+      </div>
+    </div>
+    <!-- Profile -->
+    <div class="icon-button" id="profile-btn">
+      <% if (user) { %>
+        <div class="profile-img">
+          <img src="<%= user.image %>" alt="Profile Picture">
+        </div>
+        <% } else { %>
+          <!-- SVG and span for Profile for non-logged-in users -->
+          <% } %>
+            <span>Profile</span>
+    </div>
+  </div>
+
+  <div class="user-profile">
+    <% if (user) { %>
+      <img src=<%=user.image %> alt="Profile Picture">
+      <span>Welcome, <%= user.displayName %></span>
+      <% } else { %>
+        <span>Welcome, Guest: <%= user %></span>
+        <% } %>
+  </div>
+
+  <div class="stream-container">
+    <video id="preview" autoplay controls playsinline></video>
+
+  </div>
+
+  <div class="footer">
+    <div id="youtube-brand">DEVELOPED WITH YOUTUBE</div>
+    <div class="profile-settingss">
+      <button id="start-btn"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+          class="bi bi-record-circle" viewBox="0 0 16 16">
+          <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+          <path d="M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0" />
+        </svg>Start</button>
+      <button id="stop-btn">Stop</button>
+      <button id="pause-btn">Pause</button>
+    </div>
+    <div class="status-indicator">
+      <div id="stream-status">Offline</div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+  </script>
+
+  <script src="/javascripts/stream.js"></script>
+
+  <script>
+    // Toggle camera function
+    function toggleCamera() {
+      const cameraIcon = document.getElementById('camera');
+      cameraIcon.classList.toggle('active');
+      // Additional functionality to actually start/stop camera share goes here
+    }
+
+    // Toggle screen share function
+    function toggleScreenShare() {
+      const screenIcon = document.getElementById('screen');
+      screenIcon.classList.toggle('active');
+      // Additional functionality to actually start/stop screen share goes here
+    }
+
+    // Toggle sharing both camera and screen
+    function toggleBoth() {
+      const bothIcon = document.getElementById('both');
+      bothIcon.classList.toggle('active');
+      // This should likely toggle both the camera and screen share functionalities
+    }
+
+    // Toggle audio function
+    function toggleAudio() {
+      const audioIcon = document.getElementById('audio-container');
+      audioIcon.classList.toggle('active');
+      // Additional functionality to actually mute/unmute goes here
+    }
+
+    // Function to update live indicator - assuming toggling visibility
+    function toggleLiveIndicator() {
+      const liveIndicator = document.getElementById('live-indicator');
+      liveIndicator.classList.toggle('active');
+      // Possibly start/stop live stream
+    }
+  </script>
+
+</body>
+
+</html>
