@@ -2,6 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const playlistService = require('../src/services/youtubeService');
+const { startBroadcast } = require('../src/services/startBroadcast');
 
 // Ensure you have session management set up correctly to use req.session
 
@@ -52,6 +53,37 @@ router.get('/playlists/all', async (req, res) => {
     return res.json(allPlaylists);
   } catch (error) {
     return res.status(500).json({ error: 'Failed to fetch all playlists' });
+  }
+});
+
+router.post('/startbroadcast', async (req, res) => {
+  const {
+    videoPrivacyStatus, videoTitle, playlistId,
+  } = req.body;
+
+  if (!req.session.user || !req.session.user.accessToken) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const { accessToken } = req.session.user;
+
+  // Ensure all required fields are provided
+  if (!accessToken || !videoPrivacyStatus || !videoTitle) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // Start the broadcast
+    const result = await startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playlistId);
+
+    if (result.error) {
+      return res.status(500).json({ error: result.error });
+    }
+
+    // Respond back with the result
+    return res.json(result);
+  } catch (error) {
+    console.error('Error starting broadcast:', error);
+    return res.status(500).json({ error: 'Failed to start broadcast' });
   }
 });
 

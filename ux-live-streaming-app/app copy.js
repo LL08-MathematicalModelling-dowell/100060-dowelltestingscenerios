@@ -5,16 +5,11 @@ const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
-// const ffmpeg = require('fluent-ffmpeg');
-const bodyParser = require('body-parser');
-const gst = require('gstreamer-superficial');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
-const { startBroadcast } = require('./src/services/startBroadcast');
+const ffmpeg = require('fluent-ffmpeg');
 require('dotenv').config();
-
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const streamRoutes = require('./routes/streamRoutes');
-const youtubeRoutes = require('./routes/youtubeRoute');
+const playlistRoutes = require('./routes/playlistRoutes');
 const User = require('./models/User');
 
 const app = express();
@@ -27,8 +22,6 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
-
-app.use(bodyParser.json());
 
 // Rate limiting middleware
 const apiLimiter = rateLimit({
@@ -120,7 +113,9 @@ app.get(
   '/auth/google/callback',
   // passport.authenticate('google', { failureRedirect: '/' }),
   (req, res) => {
+    // Assuming the user object is stored in req.user after successful authentication
     if (req.user) {
+      // Update the session with the user details
       req.session.user = req.user;
     }
     console.log(`Session user after auth: ${JSON.stringify(req.session.user)}`);
@@ -128,40 +123,15 @@ app.get(
   },
 );
 
+
+app.use('/api/stream', streamRoutes);
+app.use('/youtube', playlistRoutes);
 app.get('/', (req, res) => res.send(`Home Page user: ${req.user}`));
 app.get('/stream', (req, res) => res.render('stream', { user: req.user }));
-app.use('/api/stream', streamRoutes);
-app.use('/youtube', youtubeRoutes);
 
 app.get('/auth/logout', (req, res) => {
   req.logout(() => console.log('user logged out'));
   res.redirect('/');
-});
-
-app.post('/startBroadcast', async (req, res) => {
-  const {
-    accessToken, videoPrivacyStatus, videoTitle, playlistId,
-  } = req.body;
-
-  // Ensure all required fields are provided
-  if (!accessToken || !videoPrivacyStatus || !videoTitle) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  try {
-    // Start the broadcast
-    const result = await startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playlistId);
-
-    if (result.error) {
-      return res.status(500).json({ error: result.error });
-    }
-
-    // Respond back with the result
-    return res.json(result);
-  } catch (error) {
-    console.error('Error starting broadcast:', error);
-    return res.status(500).json({ error: 'Failed to start broadcast' });
-  }
 });
 
 app.use((err, req, res, next) => {
@@ -170,38 +140,53 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Function to create a GStreamer pipeline
-function createGStreamerPipeline() {
-  const pipeline = new gst.Pipeline('appsrc name=source ! videoconvert ! x264enc bitrate=3000 ! flvmux ! rtmpsink location=\'rtmp://a.rtmp.youtube.com/live2/your-stream-key live=1\'');
-
-  pipeline.play();
-  return pipeline;
-}
-
+// Socket.io setup
 io.on('connection', (socket) => {
   console.log('Client connected');
-  let pipeline;
+
+  let command;
 
   socket.on('stream', (byte) => {
-    console.log(`byte received >>>>> ${byte.length}`);
-    if (!pipeline) {
-      pipeline = createGStreamerPipeline();
+    console.log(`byte recieve >>>>> ${byte}`);
+    if (!command) {
+      command = ffmpeg()
+        .input('-')
+        .inputFormat('mpegts')
+        .addOptions([
+          '-c:v libx264',
+          '-preset veryfast',
+          '-maxrate 3000k',
+          '-bufsize 6000k',
+          '-pix_fmt yuv420p',
+          '-g 50',
+          '-c:a aac',
+          '-b:a 160k',
+          '-ac 2',
+          '-ar 44100',
+        ])
+        .on('start', (commandLine) => {
+          console.log(`Spawned Ffmpeg with command: ${commandLine} `);
+        })
+        .on('error', (err, stdout, stderr) => {
+          console.error('Error:', err);
+        })
+        .on('end', () => {
+          console.log('Streaming finished');
+        })
+        .output('rtmp://a.rtmp.youtube.com/live2/your-stream-key')
+        .outputFormat('flv')
+        .run();
     }
 
-    if (pipeline) {
-      // Retrieve the appsrc element from the pipeline
-      const appsrc = pipeline.getChildByName('source');
-      // Push the byte array into the appsrc element
-      appsrc.push(Buffer.from(byte));
-      console.log('Bytes pushed');
+    if (command) {
+      command.stdin.write(byte);
     }
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
-    if (pipeline) {
-      pipeline.stop();
-      pipeline = null;
+    if (command) {
+      command.kill('SIGINT');
     }
   });
 });

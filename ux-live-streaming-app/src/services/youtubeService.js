@@ -152,14 +152,16 @@ async function createPlaylist(accessToken, title, description = '') {
 }
 
 async function fetchAllUserPlaylists(accessToken) {
-  let playlists = [];
-  let nextPageToken = null;
-  do {
+  async function fetchUserPlaylistsRecursive(nextPageToken, playlists = []) {
     const response = await fetchUserPlaylists(accessToken, nextPageToken);
-    playlists = playlists.concat(response.items);
-    nextPageToken = response.nextPageToken;
-  } while (nextPageToken);
-  return playlists;
+    const updatedPlaylists = playlists.concat(response.items);
+    if (response.nextPageToken) {
+      return fetchUserPlaylistsRecursive(response.nextPageToken, updatedPlaylists);
+    }
+    return updatedPlaylists;
+  }
+
+  return fetchUserPlaylistsRecursive(null);
 }
 
 module.exports = {
