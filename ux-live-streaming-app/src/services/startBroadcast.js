@@ -88,13 +88,7 @@ async function bindBroadcast(broadcastId, streamId, youtube) {
   }
 }
 
-async function insertStreamIntoPlaylist(accessToken, playlistId, videoId) {
-  const oauth2Client = getOAuth2Client(accessToken);
-  const youtube = google.youtube({
-    version: 'v3',
-    auth: oauth2Client,
-  });
-
+async function insertStreamIntoPlaylist(youtube, playlistId, videoId) {
   try {
     const response = await youtube.playlistItems.insert({
       part: 'snippet',
@@ -161,7 +155,7 @@ async function startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playl
     if (playlistId) {
       const videoId = streamInfo.newBroadcastId;
       const playlistInsertResponse = await insertStreamIntoPlaylist(
-        accessToken,
+        youtube,
         playlistId,
         videoId,
       );
