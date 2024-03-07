@@ -777,10 +777,11 @@ async function startRecording() {
              if (navigator.onLine){
                 if (socket.readyState === WebSocket.OPEN) {
                   // Send buffered data if there's internet connection and the socket is open
+                  console.log("Sending....")
                   sendDataBuffer();
               }
              } else {
-              // console.log("Thou art Offline")
+              console.log("Thou art Offline")
              }
           }
        };
@@ -791,7 +792,7 @@ async function startRecording() {
       
           if (navigator.onLine && socket.readyState === WebSocket.OPEN) {
             // Send any remaining buffered data
-            // console.log("Send any remaining buffered data")
+            console.log("Send any remaining buffered data")
             sendDataBuffer();
           }
         };
