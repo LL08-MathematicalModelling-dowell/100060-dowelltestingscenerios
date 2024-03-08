@@ -182,15 +182,15 @@ class FFmpegProcessManager:
             return success
 
     def start_ffmpeg_process(self):
-        try:
-            command = self.generate_ffmpeg_command()
-            self.process = subprocess.Popen(
-                command, stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-        except Exception as e:
-            print("Error starting FFmpeg process: ", e)
+        # try:
+        command = self.generate_ffmpeg_command()
+        self.process = subprocess.Popen(
+            command, stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        # except Exception as e:
+            # print("Error starting FFmpeg process: ", e)
 
     def generate_ffmpeg_command(self):
         # common_options = [

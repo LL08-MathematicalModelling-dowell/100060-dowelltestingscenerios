@@ -11,7 +11,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework import status
 
-from . import youtube_api
+
 from .models import VpsTestRecord
 from .serializers import (
     VpsFileSerializer,
@@ -28,7 +28,7 @@ class FileView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
     def post(self, request, *args, **kwargs):
-        return
+        pass
         file_serializer = VpsIncomingFileSerializer(data=request.data)
 
         if file_serializer.is_valid():

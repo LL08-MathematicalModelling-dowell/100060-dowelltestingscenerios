@@ -40,7 +40,8 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/small-screen.css' %}">
     <link rel="stylesheet" href="{% static 'css/fontawesome-free-6.2.0-web/css/all.css' %}">
-
+    <link rel="stylesheet" href="{% static 'css/internet_checker_style.css' %}">
+    <script src="{% static '/js/internet_checker.js' %}" defer></script>
     {% block css %}
     {% endblock css %}
     {% if user.is_authenticated %}
@@ -58,6 +59,15 @@
 
 <body>
     {% include "header.html" %}
+    <link rel="stylesheet" href="https://unicons.iconscout.com/release/v3.0.6/css/line.css">
+    <div class="popup">
+        <div class="icon"><i class=""></i></div>
+        <div class="details">
+            <h2 class="title"></h2>
+            <p class="desc"></p>
+            <button class="reconnect">Reconnect Now</button>
+        </div>
+    </div>
     {% block body %}
     {% endblock body %}
     {% comment %} {% include "footer.html" %} {% endcomment %}

@@ -1,3 +1,4 @@
+
 # UX Live
 
 UX Live is a sophisticated Django application designed to facilitate live streaming from the client's camera, screen, and audio directly to the user's YouTube channel. This powerful tool is built on the Django framework, leveraging Django REST framework, Django Channels, and Google AllAuth for seamless integration and a robust streaming experience.
@@ -83,3 +84,4 @@ This project is licensed under the [Apache License](LICENSE).
 ## Support
 
 For any questions, feedback, or assistance, please contact [maintainer's email or contact information].
+
