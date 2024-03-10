@@ -777,6 +777,7 @@ async function startRecording() {
              if (navigator.onLine){
                 if (socket.readyState === WebSocket.OPEN) {
                   // Send buffered data if there's internet connection and the socket is open
+
                   sendDataBuffer();
               }
              } else {
@@ -817,8 +818,7 @@ async function startRecording() {
   async function sendDataBuffer() {
     while (mediaBuffer.length > 0) {
        const data = mediaBuffer.shift(); // Get and remove the first item from the buffer
-       console.log("Sending data to socket, data: ")
-       console.log(data)
+
        await socket.send(data);
     }
  }
