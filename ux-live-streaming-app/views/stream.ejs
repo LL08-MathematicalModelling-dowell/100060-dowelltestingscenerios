@@ -92,21 +92,6 @@
     </div>
   </div>
 
-  <div class="user-profile">
-    <% if (user) { %>
-      <div>
-        <img src=<%=user.image %> alt="Profile Picture">
-      </div>
-      <div>
-        <span>Welcome, <%= user.displayName %></span>
-      </div>
-      <% } else { %>
-        <div>
-          <span>Welcome, Guest: <%= user %></span>
-        </div>
-        <% } %>
-  </div>
-
   <div class="stream-container">
     <video id="preview" autoplay controls playsinline></video>
   </div>
