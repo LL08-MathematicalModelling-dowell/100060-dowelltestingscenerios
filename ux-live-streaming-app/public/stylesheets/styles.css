@@ -1,14 +1,15 @@
 video {
     margin-top: 20px;
+    width: fit-content;
     max-width: 90%;
     border: 3px solid #0d98ba;
-    width: 60%;
-    height: 440px;
-    max-height: 700px;
+    height: 400px;
+    max-height: fit-content;
 }
 
 /* ============================================= */
 body {
+    box-sizing: border-box;
     background-color: #121212;
     color: #ffffff;
     font-family: 'Arial', sans-serif;
@@ -19,20 +20,41 @@ body {
     font-weight: 700;
 }
 
-.header,
-.footer {
-    display: flex;
-    justify-content: space-between;
+.header{
+    display: grid;
+    /* justify-content: space-between; */
+    grid-template-columns: 2fr 3fr 1fr;
     align-items: center;
     padding: 10px;
     background-color: #121212;
     opacity: .6;
+    margin-bottom: 20px;
+}
 
+.footer {
+    display: grid;
+    /* justify-content: space-between; */
+    grid-template-columns: 3fr 3fr 1fr;
+    align-items: center;
+    padding: 10px;
+    background-color: #121212;
+    opacity: .6;
+}
+
+.user-profile{
+    display: grid;
+    text-align: center;
+}
+
+img{
+    border-radius: 7px;
 }
 
 .stream-container {
     text-align: center;
+    align-content: center;
     padding: 20px;
+    /* width: fit-content; */
 }
 
 #stream-playback {
@@ -62,15 +84,18 @@ body {
 
 }
 
-.profile-img {
-    width: 50px;
-    height: 50px;
+.profile-img img {
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     margin-right: 10px;
     background-color: #ddd;
     overflow: hidden;
     object-fit: cover;
+    
 }
+
+
 
 button {
     padding: 5px 10px;
@@ -132,4 +157,18 @@ button:hover {
 .active {
     background-color: #4CAF50;
     /* Green background to indicate active */
+}
+
+@media only screen and (max-width: 582px) {
+    /* Styles for screens narrower than 542px */
+    .header, .footer, .stream-container, .user-profile {
+        display: grid;
+        grid-template-columns: auto;
+        text-align: center;
+        width: 100%;
+    }
+    .icon-button {
+        /* Increase size for better touch interaction */
+    }
+    /* Any other specific adjustments */
 }

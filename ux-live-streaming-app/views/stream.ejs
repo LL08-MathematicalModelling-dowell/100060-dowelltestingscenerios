@@ -10,7 +10,7 @@
 
 <body>
   <div class="header">
-    <div id="stream-timer">00:00:01</div>
+    <!-- <div id="stream-timer">00:00:01</div> -->
     <div id="live-indicator" onclick="toggleLiveIndicator()">LIVE</div>
     <div class="profile-settings">
       <!-- Share Camera -->
@@ -94,16 +94,21 @@
 
   <div class="user-profile">
     <% if (user) { %>
-      <img src=<%=user.image %> alt="Profile Picture">
-      <span>Welcome, <%= user.displayName %></span>
+      <div>
+        <img src=<%=user.image %> alt="Profile Picture">
+      </div>
+      <div>
+        <span>Welcome, <%= user.displayName %></span>
+      </div>
       <% } else { %>
-        <span>Welcome, Guest: <%= user %></span>
+        <div>
+          <span>Welcome, Guest: <%= user %></span>
+        </div>
         <% } %>
   </div>
 
   <div class="stream-container">
     <video id="preview" autoplay controls playsinline></video>
-
   </div>
 
   <div class="footer">
