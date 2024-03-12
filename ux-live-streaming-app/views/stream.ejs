@@ -23,7 +23,7 @@
           </svg>
 
           <svg id="cam-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-            class="bi bi-camera-video" viewBox="0 0 16 16">
+            class="bi bi-camera-video-on camera_status" viewBox="0 0 16 16">
             <path fill-rule="evenodd"
               d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2zm11.5 5.175 3.5 1.556V4.269l-3.5 1.556zM2 4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1z" />
           </svg>
@@ -65,7 +65,7 @@
           <img id="mic-off" src="images/mic-mute.svg" alt="Microphone on" style="background-color: aliceblue;"> -->
 
           <svg id="mic-on" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-            class="bi bi-mic" viewBox="0 0 16 16">
+            class="bi bi-mic-on audio_status" viewBox="0 0 16 16">
             <path
               d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5" />
             <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3" />
@@ -124,8 +124,13 @@
     function toggleCamera() {
       const cameraIcon = document.getElementById('camera');
       cameraIcon.classList.toggle('active');
+      const cameraStatus = document.querySelectorAll('[class^="bi-camera-video-"],[class*="bi-camera-video-"]');
+      for (var i = 0; i < cameraStatus.length; i++) {
+      var element = cameraStatus[i];
+      element.classList.toggle('camera_status')
+      };
       // Additional functionality to actually start/stop camera share goes here
-    }
+    };
 
     // Toggle screen share function
     function toggleScreenShare() {
@@ -145,6 +150,11 @@
     function toggleAudio() {
       const audioIcon = document.getElementById('audio-container');
       audioIcon.classList.toggle('active');
+      const audioStatus = document.querySelectorAll('[class^="bi-mic-"],[class*="bi-mic-"]');
+      for (var i = 0; i < audioStatus.length; i++) {
+      var element = audioStatus[i];
+      element.classList.toggle('audio_status')
+      };
       // Additional functionality to actually mute/unmute goes here
     }
 
