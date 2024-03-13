@@ -1,0 +1,109 @@
+{% extends 'library_base.html' %}
+{% load static %}
+<!-- library.html -->
+{% block css %}
+<style>
+  body {
+    background-color: #dfdfdf;
+  }
+
+  .lower-nav h1 {
+    color: white;
+  }
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>Library</title>
+{% endblock title %}
+
+{% block body %}
+<div class="library-container">
+  <!-- video container -->
+  <div class="library-video-container">
+    <!-- YouTube IPlayer -->
+      <div class="player" id="youtube_player">
+          <iframe src="https://www.youtube.com/embed/Iv8mg2iFWYA" frameborder="0" allowfullscreen></iframe>
+      </div>
+      <div class="single-video-title">
+      {% comment %} <div class="single-video-title fs-4 fw-bold"> {% endcomment %}
+        <h3 class="play-video-title" >About DoWell UX Living Lab</h3>
+      </div>
+      <div class="single-video-footer">
+        <div class="video-footer-top">
+          <div class="video-author">
+            <div class="">
+              <img class="img-profile media-figure" src="https://yt3.ggpht.com/ytc/APkrFKZXQA_NYMO_UZLLp282-49JTY7TgJ7iajU-bCbH=s88-c-k-c0x00ffffff-no-rj" alt="">
+            </div>
+            <h4 id="channelName">DoWell Research</h4>
+          </div>
+        </div>
+        <div class="video-footer-bottom">
+        <div class="video-privacy">
+          <h5 id="playingvideo_privacy">Privacy: <span>Unlisted</span></h5>
+        </div>
+          <p class="likes">9.7k...</p>
+          <p class="subscriber">186 subscribers</p>
+          <div class="library-share-btn">
+            <button class="library-share" onClick="shareLibraryLinkModal()">Share</button>
+          </div>
+        </div>
+      </div>
+  </div>
+  <!-- end video container -->
+  <!--  playlist container -->
+  <div class="playlist-video-container">
+    <div class="video-title-container">
+      <div class="library-header">
+        <h2>Videos</h2>
+        <div  id="playlisttitle">Selected Playlist: </div>
+        <!--<h3>Selected Playlist: <span>On the Rock</span></h3>-->
+      </div>
+    <div class="video-list-container container_scroll_bar" id="videosContainer">
+      <!-- single list -->
+      {% comment %} <div class="single-video-item">
+        <div class="video-img">
+          <img src="./img/dowell logo.jpg" alt="">
+        </div>
+        <div class="video-list-title">
+          <p>Camera_Screen_recording 2023-10-09T14:24:56.299282</p>
+        </div>
+      </div> {% endcomment %}
+      <!-- end single list -->
+    </div>
+    <br>
+    <button class="showmore" id="MorevideosButton">Show More</button>
+      
+    </div>
+    <!-- all playlist container -->
+    <div class="all-playlist">
+      <div class="library-header">
+        <h2>All Playlists</h2>
+      </div>
+      <div class="video-list-container container_scroll_bar" id="playlistContainer">
+      <!-- single list -->
+      {% comment %} <div class="single-video-item">
+        <div class="video-img">
+          <img src="./img/dowell logo.jpg" alt="">
+        </div>
+        <div class="video-list-title">
+          <p>On the Rock</p>
+        </div>
+      </div> {% endcomment %}
+      <!-- end single list -->
+    </div>
+    <br>
+    <button class="showmore" id="showMoreButton">Show More</button>
+    </div>
+  </div>
+  <!-- end playlist container -->
+</div>
+{% include 'modals.html' %}
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+<script src="{% static '/js/library.js' %}"></script>
+<script> const csrfToken = "{{ csrf_token }}"; </script>
+
+{% endblock body %}

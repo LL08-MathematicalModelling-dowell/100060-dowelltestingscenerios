@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<style>
+    body {
+        background-color: #dfdfdf;  
+    }
+    .lower-nav h1{
+        color: white;
+    }
+</style>
+{% endblock css %}
+
+{% block title %}
+<title>About Live UX Storyboard</title>
+{% endblock title %}
+
+{% block body %}
+<div class="lower-nav">
+    <h1>About Live UX Storyboard</h1>
+</div>
+<div class="section">
+    <div class="about-content">
+        <p>An application that helps to record user activities using:</p>
+        <br>
+        <ol class="">
+            <li>Their webcam.</li>
+            <li>Their Screen.</li>
+            <li>Their Microphone.</li>
+        </ol>
+        <br>
+        <p>Some of the files are saved in YouTube and others on our interserver VPS.</p>
+        <br>
+        <h1>Contact Us</h1>
+        <p>If you have any compliments, complaints, questions or suggestions, please send us a message at: <strong>dowelltestrecorder@gmail.com</strong></p>
+    </div>
+</div>
+{% endblock body %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block css %}
+{% endblock css %}
+{% block title %}
+<title>Live UX Storyboard</title>
+{% endblock title %}
+{% block body %}
+{% load socialaccount %}
+{% include "lowernav.html" %} --
+<!-- Main container -->
+<div class="contain">
+    <main class="main-contents">
+        <!--display video title-->
+        <div class="video-title" style="text-align: center; text-transform: capitalize;"></div>
+        <!-- Video component -->
+        <div class="video-component" id="screen">
+            <video id="video" autoplay muted></video>
+            <div class="video-timer">
+                <p><span class="hour-time">00</span>:<span class="minute-time">00</span>:<span
+                        class="second-time">00</span></p>
+            </div>
+        </div>
+        <!-- Settings and controls -->
+        <div class="main-content-check-boxes">
+            <div class="setting-icon">
+                <input type="checkbox" name="webcam" id="webcam-recording" onClick="showCameraModal()">
+                <label for="webcam-recording"><i class="fas fa-camera"></i>
+                    <p>Webcam</p>
+                </label>
+            </div>
+            <div class="setting-icon">
+                <input type="checkbox" name="screen" id="screen-recording">
+                <label for="screen-recording"><i class="fas fa-desktop"></i>
+                    <p>Screen</p>
+                </label>
+            </div>
+            <div class="setting-icon">
+                <input type="checkbox" name="audio" id="audio-settings" onclick="showAudioModal()">
+                <label for="audio-settings"><i class="fas fa-microphone-lines"></i>
+                    <p>Audio</p>
+                </label>
+            </div>
+
+            <div class="setting-icon">
+                <input type="checkbox" name="public" id="public-videos" onClick="disablePrivandUnlist()">
+                <label for="public-videos"><i class="fas fa-globe"></i>
+                    <p>Public</p>
+                </label>
+            </div>
+            <div class="setting-icon">
+                <input type="checkbox" name="private" id="private-videos" onClick="disablePublicandUnlist()">
+                <label for="private-videos"><i class="fas fa-eye-slash"></i>
+                    <p>Private</p>
+                </label>
+            </div>
+            <div class="setting-icon">
+                <input type="checkbox" name="unlisted" id="unlisted-videos" onClick="disablePubandPriv()" checked>
+                <label for="unlisted-videos"><i class="fas fa-chain-broken"></i>
+                    <p>Unlisted</p>
+                </label>
+            </div>
+        </div>
+        <div class="input-start-record-btn">
+            <!-- main content inputs -->
+            {% if user.is_authenticated %}
+            <div class="main-content-btns">
+                <div class="create-playlist-btn tooltip-container">
+                    <button id="create-playlist" onclick="showCreatingNewPlaylistModal()">
+                        <i class="fas fa-save"></i>
+                    </button>
+                    <span class="tooltip-text">Create new Playlist</span>
+
+                </div>
+                <div class="record-btn tooltip-container">
+                    <button id="start" onClick="validateAll()">
+
+                        <i class="fas fa-record-vinyl"></i>
+                    </button>
+                    <span class="tooltip-text">Start Recording</span>
+                </div>
+                <div class="stop-btn tooltip-container" style="display:none">
+                    <button id="stop" onClick="stopRecording()">
+                        <i class="fas fa-stop-circle"></i>
+                    </button>
+                    <span class="tooltip-text">Stop Recording</span>
+                </div>
+                <div class="library-btn tooltip-container">
+                    <a href="{% url 'library' %}">
+                        <button id="library">
+                            <i class="fas fa-folder"></i>
+                        </button>
+                    </a>
+                    <span class="tooltip-text">Library</span>
+                </div>
+                <div class="share-record-btn tooltip-container" style="display:none">
+                    <button id="share_records" onClick="shareLinkModal()">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <span class="tooltip-text">Share Video</span>
+                </div>
+                <div class="playback-btn tooltip-container" id="playback-video-button" style="display:none;">
+                    <button onClick='previewVideo()'>
+                        <i class="fab fa-youtube"></i>
+                    </button>
+                    <span class="tooltip-text">Replay recorded video</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="main-content-btns">
+            <div class="create-playlist-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-save"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+            <div class="record-btn tooltip-container">
+                <a href="{% provider_login_url 'google' %}?next=/"><i class="fas fa-record-vinyl"></i></a>
+                <span class="tooltip-text">Login First</span>
+            </div>
+        </div>
+        {% endif %}
+</div>
+</main>
+<div class="status-bar">
+    {% if user_profile %}
+    <div id="app-status">STATUS: Waiting to Record.</div>
+    {% else %}
+    <div id="app-status"></div>
+</div>
+{% endif %}
+</div>
+{% include "youtube_copyright.html" %}
+{% include 'modals.html' %}
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+    crossorigin="anonymous"></script>
+
+<!-- Video Stream Merger JavaScript -->
+<script src="{% static '/js/dist/video-stream-merger.js' %}"></script>
+<script src="{% static '/js/index.js' %}"></script>
+<!-- {% endblock body %} -->
