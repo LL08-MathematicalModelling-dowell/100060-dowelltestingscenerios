@@ -94,7 +94,6 @@
 
   <div class="user-profile">
     <% if (user) { %>
-      <img src=<%=user.image %> alt="Profile Picture">
       <span>Welcome, <%= user.displayName %></span>
       <% } else { %>
         <span>Welcome, Guest: <%= user %></span>
@@ -118,14 +117,22 @@
       <button id="pause-btn">Pause</button>
     </div>
     <div class="status-indicator">
-      <div id="stream-status">Offline</div>
+      <div id="stream-status">Online</div>
     </div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script>
+  <!-- <script>
     const socket = io();
-  </script>
+    socket.on('ffmpegReady', () => {
+      console.log('ffmpeg is ready...');
+      // FFmpeg is ready on the server, start sending stream data
+      if (mediaRecorder){
+        console.log('recording')
+        mediaRecorder.start(1000); // Adjust as necessary for your use case
+      }
+    });
+  </script> -->
 
   <script src="/javascripts/stream.js"></script>
 

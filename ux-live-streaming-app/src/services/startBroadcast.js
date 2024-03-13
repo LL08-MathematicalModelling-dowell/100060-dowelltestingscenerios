@@ -30,10 +30,10 @@ async function insertBroadcast(videoPrivacyStatus, videoTitle, youtube) {
         },
       },
     });
-    console.log('Broadcast created:', response.data);
+    // console.log('Broadcast created: ', response.data);
     return response.data.id;
   } catch (error) {
-    console.error('Error creating broadcast:', error);
+    console.error('Error creating broadcast ==> ', error);
     throw error;
   }
 }
@@ -60,7 +60,7 @@ async function insertStream(youtube) {
     const newStreamIngestionAddress = cdn.ingestionInfo.ingestionAddress;
     const newRtmpUrl = `${newStreamIngestionAddress}/${newStreamName}`;
 
-    console.log('Stream created:', response.data);
+    // console.log('Stream created: ', response.data);
     return {
       newStreamId,
       newStreamName,
@@ -68,7 +68,7 @@ async function insertStream(youtube) {
       newRtmpUrl,
     };
   } catch (error) {
-    console.error('Error creating stream:', error);
+    console.error('Error creating stream: ==> ' , error);
     throw error;
   }
 }
@@ -80,10 +80,10 @@ async function bindBroadcast(broadcastId, streamId, youtube) {
       id: broadcastId,
       streamId,
     });
-    console.log('Broadcast bound to stream:', response.data);
+    // console.log('Broadcast bound to stream: ', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error binding broadcast:', error);
+    console.error('Error binding broadcast: ==> ', error);
     throw error;
   }
 }
@@ -102,10 +102,10 @@ async function insertStreamIntoPlaylist(youtube, playlistId, videoId) {
         },
       },
     });
-    console.log('Stream inserted into playlist:', response.data);
+    console.log('Stream inserted into playlist :', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error inserting stream into playlist:', error);
+    console.error('Error inserting stream into playlist: ==> ', error);
     throw error;
   }
 }
@@ -127,10 +127,10 @@ async function createBroadcast(videoPrivacyStatus, videoTitle, youtube) {
 
     // Adding the new broadcast id to the stream info
     streamInfo.newBroadcastId = newBroadcastId;
-
+    // console.log('stream Info: ', streamInfo);
     return streamInfo;
   } catch (error) {
-    console.error('Error in createBroadcast:', error);
+    // console.error('Error in createBroadcast:', error);
     return { error: error.message };
   }
 }
@@ -148,7 +148,7 @@ async function startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playl
     const streamInfo = await createBroadcast(videoPrivacyStatus, videoTitle, youtube);
 
     if (streamInfo.error) {
-      return streamInfo;
+      return { error: streamInfo.error };
     }
 
     // Optional: Insert the broadcast into a playlist
@@ -164,11 +164,11 @@ async function startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playl
         return { error: playlistInsertResponse.error };
       }
     }
-    console.log(`XXXXXXXXXXXXXXXXXXXXX  ${streamInfo} XXXXXXXXXXXXXXXXXXXXXXX`);
+    // console.log(`XXXXXXXXXXXXXXXXXXXXX  ${streamInfo} XXXXXXXXXXXXXXXXXXXXXXX`);
 
-    return streamInfo;
+    return { newRtmpUrl: streamInfo.newRtmpUrl };
   } catch (error) {
-    console.error('Error in startBroadcast:', error);
+    console.error('Error in startBroadcast: ==> ', error);
     return { error: error.message };
   }
 }
@@ -185,13 +185,13 @@ async function transitionBroadcast(accessToken, broadcastId, status) {
     });
 
     if (response.data.status.lifeCycleStatus === 'complete') {
-      console.log('Broadcast transitioned:', response.data);
+      // console.log('Broadcast transitioned:', response.data);
       return response.data;
     }
-    console.error('Broadcast transition error:', response.data);
+    // console.error('Broadcast transition error:', response.data);
     return { error: response.data };
   } catch (error) {
-    console.error('Error transitioning broadcast:', error);
+    console.error('Error transitioning broadcast:  ==> ', error);
     throw error;
   }
 }

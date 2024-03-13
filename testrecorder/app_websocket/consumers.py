@@ -1,10 +1,11 @@
-
+from youtube.models import UserProfile
+from youtube.utils import transition_broadcast
+from django.core.cache import cache
+from channels.db import database_sync_to_async
 import os
 import subprocess
 import django
 from channels.consumer import AsyncConsumer
-from channels.db import database_sync_to_async
-from django.core.cache import cache
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
@@ -12,8 +13,6 @@ django.setup()
 
 
 # All setting are moved bellow the django setup to avoid import error in django setup process.
-from youtube.models import UserProfile
-from youtube.utils import transition_broadcast
 
 
 @database_sync_to_async
@@ -128,8 +127,6 @@ class FFmpegProcessManager:
         if self.process:
 
             self.process_manager_cleanup(scope)
-            # _ = self.transition_broadcast(scope)
-            # cache.delete(f"stream_dict{scope.get('user').id}")
 
     def transition_broadcast(self, scope):
         """Transition the broadcast"""
@@ -193,32 +190,41 @@ class FFmpegProcessManager:
             print("Error starting FFmpeg process: ", e)
 
     def generate_ffmpeg_command(self):
-        # common_options = [
-        #     'ffmpeg',
-        #     '-vcodec', 'copy',
-        #     '-acodec', 'aac',
-        #     '-f', 'flv',
-        #     '-preset', 'ultrafast',
-        #     self.rtmp_url,
-        # ]
-        common_options = [
+        """Enhanced FFMPEG command generator for live streaming to YouTube, with robust handling of audio and network conditions."""
+        command = [
             'ffmpeg',
-            '-vcodec', 'copy',
-            '-acodec', 'aac',
-            '-f', 'flv',
-            '-preset', 'ultrafast',
-            '-tune', 'zerolatency',  # Enable zerolatency tuning
-            self.rtmp_url,
+            # Read input at native frame rate. Mainly used for live input.
+            '-re',
+            '-i', '-',  # Input from stdin.
+            '-c:v', 'libx264',  # Video codec.
+            '-preset', 'ultrafast',  # Encoding preset.
+            '-tune', 'zerolatency',  # Tuning for zero latency.
+            '-g', '50',  # GOP size.
+            '-keyint_min', '50',  # Minimum keyframe interval.
+            '-x264opts', 'keyint=50:no-scenecut',  # x264 options.
+            '-f', 'flv',  # Output format.
+            # '-bufsize', '6000k',  # Set buffer size.
+            '-maxrate', '3000k',  # Max bitrate for the output stream.
+            # '-drop_pkts_on_overflow', '1',  # Drop packets when buffer is full.
+            # Attempt to recover from buffer overflow.
+            '-attempt_recovery', '10',
+            # Time to wait before recovery attempt, in seconds.
+            '-recovery_wait_time', '35',
+            self.rtmp_url,  # RTMP URL for YouTube.
         ]
 
         if not self.audio_enabled:
-            return common_options + [
-                '-f', 'lavfi', '-i', 'anullsrc',
-                '-i', '-',
+            # If audio is not enabled, explicitly add the silent audio source and configure audio codec.
+            command += [
+                '-f', 'lavfi', '-i', 'anullsrc',  # Add silent audio source.
+                '-c:a', 'aac',  # Specify audio codec for silent audio.
+                '-b:a', '128k',  # Specify bitrate for silent audio.
+                '-ar', '44100',  # Specify sample rate for silent audio.
+                # Match stream duration to the video input if no audio.
                 '-shortest',
             ]
 
-        return common_options + ['-i', '-']
+        return command
 
     def extract_rtmp_url(self, data):
         """Extract the rtmp url from the data"""

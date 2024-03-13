@@ -17,14 +17,14 @@ app.post('/startBroadcast', async (req, res) => {
     // Start the broadcast
     const result = await startBroadcast(accessToken, videoPrivacyStatus, testNameValue, playlistId);
 
-    if (result.error) {
-      return res.status(500).json({ error: result.error });
+    if (result.errors) {
+      return res.status(500).json({ error: result});
     }
 
     // Respond back with the result
     res.json(result);
   } catch (error) {
     console.error('Error starting broadcast:', error);
-    res.status(500).json({ error: 'Failed to start broadcast' });
+    res.status(500).json({ error: `Failed to start broadcast ${error.errors[0].message}` });
   }
 });

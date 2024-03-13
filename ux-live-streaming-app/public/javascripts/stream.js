@@ -1,16 +1,62 @@
 let mediaRecorder; // Declare mediaRecorder variable
-
+let rtmpUrl = null; // RTMP URL from the server
+let ffmpegReady = false;
 // Function to set preview for video element
 function setPreview(stream) {
   const videoElement = document.getElementById('preview');
   videoElement.srcObject = stream;
 }
 
-// Function to handle getting media streams using WebRTC
+// Establish connection to server
+const socket = io(); // Global socket connection
+
+socket.on('ffmpegReady', () => {
+  console.log('ffmpeg is ready...');
+  ffmpegReady = true;
+});
+
+async function startBroadcast(videoPrivacyStatus, videoTitle, playlistId) {
+  // Fetch request to start the broadcast and get the RTMP URL
+  try {
+    const response = await fetch('/startBroadcast', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ videoPrivacyStatus, videoTitle, playlistId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(JSON.stringify(response));
+    }
+
+    const { newRtmpUrl } = await response.json();
+    console.log('Broadcast started successfully:', newRtmpUrl);
+
+    // rtmpUrl = newRtmpUrl;
+    return newRtmpUrl;
+  } catch (error) {
+    console.error(error);
+    alert('Failed to start the broadcast. Check console for details.');
+    return null;
+  }
+}
+
 async function getMedia(type) {
+  if (!rtmpUrl) {
+    console.log('RTMP URL is not set. Starting broadcast first.');
+    rtmpUrl = await startBroadcast('private', 'My Awesome Live Stream', 'PLnHd_LVqZUfFHWMlgkzvrKRvWlxTF5hR4');
+    if (!rtmpUrl) {
+      console.log('broadcast not created, sockect closed');
+      return;
+    }
+    if (rtmpUrl && socket) {
+      console.log('sending rtmpurl ==>> ', rtmpUrl);
+      socket.emit('rtmpUrl', { rtmpUrl });
+    }
+  }
+
   const audio = true;
   const mediaData = [];
-  // const socket = io(); // Establish connection to server
+
   try {
     let stream;
     if (type === 'screen') {
@@ -26,23 +72,35 @@ async function getMedia(type) {
       stream = new MediaStream([screenTrack, cameraTrack, audioTrack]);
     }
     setPreview(stream);
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=h264' });
 
-    mediaRecorder = new MediaRecorder(stream);
+    console.log('XXXXXXXXXXXXXXXXXX MEDIA RECORDER CREATED XXXXXXXXXXXXXXXX');
 
-    // Inside getMedia function, modify the mediaRecorder setup
-    mediaRecorder.ondataavailable = (e) => {
-      mediaData.push(e.data);
-      if (socket) {
-        const reader = new FileReader();
-        reader.onload = function () {
-          const arrayBuffer = reader.result;
-          socket.emit('stream', new Uint8Array(arrayBuffer));
-        };
-        reader.readAsArrayBuffer(e.data);
+    // mediaRecorder.ondataavailable event handler to send data to the server
+    mediaRecorder.ondataavailable = function (event) {
+      if ((event.data && event.data.size > 0) && rtmpUrl) {
+        event.data.arrayBuffer().then((arrayBuffer) => {
+          const buffer = new Uint8Array(arrayBuffer);
+          console.log('Byte sent...');
+          socket.emit('stream', buffer);
+        });
       }
     };
 
-    mediaRecorder.start();
+    mediaRecorder.ondataavailable = (event) => {
+      console.log('dataavailable: ===> ', rtmpUrl);
+      if (event.data.size > 0 && rtmpUrl !== null) {
+        // console.log(`stream byte ====>>> ${event.data}`);
+
+        mediaData.push(event.data);
+
+        // Convert Blob to ArrayBuffer
+        // event.data.arrayBuffer().then((arrayBuffer) => {
+        //   const buffer = new Uint8Array(arrayBuffer);
+        socket.emit('stream', event.data);
+        // });
+      }
+    };
 
     mediaRecorder.onstop = () => {
       document.getElementById('preview').srcObject = null; // Clear preview
@@ -50,13 +108,17 @@ async function getMedia(type) {
       const recordedUrl = URL.createObjectURL(recordedBlob);
       document.getElementById('preview').src = recordedUrl;
     };
+
+    if (ffmpegReady === true) {
+      mediaRecorder.start(1000);
+    }
   } catch (error) {
     console.error('Error getting media:', error);
+    alert('Failed to get media. Check console for details.');
   }
 }
 
-// Function to stop media streams
-async function stopMedia() {
+function stopMedia() {
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     mediaRecorder.stop();
   }
@@ -69,10 +131,9 @@ async function stopMedia() {
   }
 }
 
-// Event listeners for buttons
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('screen').addEventListener('click', () => getMedia('screen'));
   document.getElementById('camera').addEventListener('click', () => getMedia('camera'));
   document.getElementById('both').addEventListener('click', () => getMedia('both'));
-  document.getElementById('stop-btn').addEventListener('click', () => stopMedia());
+  document.getElementById('stop-btn').addEventListener('click', stopMedia);
 });

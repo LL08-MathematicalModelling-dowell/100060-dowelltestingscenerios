@@ -75,8 +75,8 @@ router.post('/startbroadcast', async (req, res) => {
     // Start the broadcast
     const result = await startBroadcast(accessToken, videoPrivacyStatus, videoTitle, playlistId);
 
-    if (result.error) {
-      return res.status(500).json({ error: result.error });
+    if (result.errors) {
+      return res.status(500).json({ error: result.errors });
     }
 
     // Respond back with the result

@@ -100,7 +100,6 @@ const listLiveBroadcasts = async (accessToken) => {
     throw error;
   }
 };
-
 async function fetchUserPlaylists(accessToken, pageToken = null) {
   const oauth2Client = getOAuth2Client(accessToken);
   const youtube = google.youtube({
@@ -113,10 +112,16 @@ async function fetchUserPlaylists(accessToken, pageToken = null) {
       part: 'snippet,contentDetails',
       mine: true,
       maxResults: 25,
-      pageToken, // Pagination: Set pageToken to fetch next page
+      pageToken, // Use the pageToken for pagination
     });
-    console.log(response.data);
-    return response.data;
+
+    // Extract only the ID and name from each playlist
+    const playlists = response.data.items.map((item) => ({
+      id: item.id,
+      name: item.snippet.title,
+    }));
+
+    return { playlists, nextPageToken: response.data.nextPageToken };
   } catch (error) {
     console.error('Error fetching playlists:', error);
     throw error;
@@ -152,12 +157,18 @@ async function createPlaylist(accessToken, title, description = '') {
 }
 
 async function fetchAllUserPlaylists(accessToken) {
-  async function fetchUserPlaylistsRecursive(nextPageToken, playlists = []) {
-    const response = await fetchUserPlaylists(accessToken, nextPageToken);
-    const updatedPlaylists = playlists.concat(response.items);
-    if (response.nextPageToken) {
-      return fetchUserPlaylistsRecursive(response.nextPageToken, updatedPlaylists);
+  async function fetchUserPlaylistsRecursive(nextPageToken, accumulatedPlaylists = []) {
+    const {
+      playlists,
+      nextPageToken: newNextPageToken,
+    } = await fetchUserPlaylists(accessToken, nextPageToken);
+
+    const updatedPlaylists = accumulatedPlaylists.concat(playlists);
+
+    if (newNextPageToken) {
+      return fetchUserPlaylistsRecursive(newNextPageToken, updatedPlaylists);
     }
+
     return updatedPlaylists;
   }
 

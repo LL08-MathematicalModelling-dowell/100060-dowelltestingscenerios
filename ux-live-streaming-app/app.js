@@ -7,8 +7,10 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 // const ffmpeg = require('fluent-ffmpeg');
 const bodyParser = require('body-parser');
-const gst = require('gstreamer-superficial');
+// const gst = require('gstreamer-superficial');
+const { spawn } = require('child_process');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const cookieParser = require('cookie-parser');
 
 const { startBroadcast } = require('./src/services/startBroadcast');
 require('dotenv').config();
@@ -28,6 +30,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
+app.use(cookieParser());
 app.use(bodyParser.json());
 
 // Rate limiting middleware
@@ -69,8 +72,8 @@ passport.use(new GoogleStrategy(
   },
   async (accessToken, refreshToken, profile, cb) => {
     try {
-      console.log(`XXX access Token => ${accessToken}  -- refresh token -- ${refreshToken} XXX`);
-      console.log(`profile XXXX ${JSON.stringify(profile, null, 2)}`);
+      // console.log(`XXX access Token => ${accessToken}  -- refresh token -- ${refreshToken} XXX`);
+      // console.log(`profile XXXX ${JSON.stringify(profile, null, 2)}`);
       const {
         id, displayName, name, photos, emails,
       } = profile;
@@ -124,12 +127,60 @@ app.get(
       req.session.user = req.user;
     }
     console.log(`Session user after auth: ${JSON.stringify(req.session.user)}`);
-    res.redirect('/stream');
+    const cookieOptions = {
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      httpOnly: true,
+    };
+    const { googleId, accessToken } = req.session.user;
+    res
+      .cookie('accessToken', accessToken, cookieOptions)
+      .cookie('googleId', googleId, cookieOptions)
+      .redirect('/stream');
   },
 );
 
-app.get('/', (req, res) => res.send(`Home Page user: ${req.user}`));
-app.get('/stream', (req, res) => res.render('stream', { user: req.user }));
+app.get('/', async (req, res) => {
+  let { user } = req.session;
+  if (!user) {
+    try {
+      const googleId = req.cookies?.googleId;
+      if (googleId) {
+        user = await User.findOne({ googleId });
+        if (user) {
+          req.session.user = user;
+          return res.send(`Home Page user: ${req.session.user.displayName}`);
+        }
+        return res.send('Login throught google: localhost:3000/auth/google/');
+      }
+    } catch (err) {
+      console.error('Error getting user from cookie:', err);
+      return res.send('Login throught google: localhost:3000/auth/google/');
+    }
+  }
+  return res.send(`Home Page user: ${req.session.userdisplayName}`);
+});
+
+app.get('/stream', async (req, res) => {
+  let { user } = req.session;
+  if (!user) {
+    try {
+      const googleId = req.cookies?.googleId;
+      if (googleId) {
+        user = await User.findOne({ googleId });
+        if (user) {
+          req.session.user = user;
+          return res.send(`Home Page user: ${req.session.user.displayName}`);
+        }
+        return res.redirect('/');
+      }
+    } catch (err) {
+      console.error('Error getting user from cookie:', err);
+      return res.redirect('/');
+    }
+  }
+  return res.render('stream', { user: req.session.user });
+});
+
 app.use('/api/stream', streamRoutes);
 app.use('/youtube', youtubeRoutes);
 
@@ -140,9 +191,9 @@ app.get('/auth/logout', (req, res) => {
 
 app.post('/startBroadcast', async (req, res) => {
   const {
-    accessToken, videoPrivacyStatus, videoTitle, playlistId,
+    videoPrivacyStatus, videoTitle, playlistId,
   } = req.body;
-
+  const { accessToken } = req.session.user;
   // Ensure all required fields are provided
   if (!accessToken || !videoPrivacyStatus || !videoTitle) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -170,38 +221,70 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Function to create a GStreamer pipeline
-function createGStreamerPipeline() {
-  const pipeline = new gst.Pipeline('appsrc name=source ! videoconvert ! x264enc bitrate=3000 ! flvmux ! rtmpsink location=\'rtmp://a.rtmp.youtube.com/live2/your-stream-key live=1\'');
-
-  pipeline.play();
-  return pipeline;
-}
+// const { spawn } = require('child_process');
+// const io = require('socket.io')(server); // Ensure your server is properly initialized
 
 io.on('connection', (socket) => {
   console.log('Client connected');
-  let pipeline;
 
-  socket.on('stream', (byte) => {
-    console.log(`byte received >>>>> ${byte.length}`);
-    if (!pipeline) {
-      pipeline = createGStreamerPipeline();
+  let ffmpegProcess; // This will hold the reference to the FFmpeg child process
+
+  socket.on('rtmpUrl', (data) => {
+    const { rtmpUrl } = data;
+    console.log(`Received new RTMP URL: ${rtmpUrl}`);
+
+    if (!ffmpegProcess) {
+      // Start FFmpeg child process with the appropriate command
+      const ffmpegArgs = [
+        // '-f', 'webm',
+        // '-i', '-', // Input from stdin
+        // '-c', 'copy', // Copy video and audio codecs without re-encoding
+        // '-f', 'flv',
+        // rtmpUrl, // Output to RTMP server
+        // 'ffmpeg',
+        '-vcodec', 'copy',
+        '-acodec', 'aac',
+        '-f', 'flv',
+        '-preset', 'ultrafast',
+        '-tune', 'zerolatency', // Enable zerolatency tuning
+        rtmpUrl,
+      ];
+
+      ffmpegProcess = spawn('ffmpeg', ffmpegArgs);
+
+      ffmpegProcess.stdout.on('data', (data) => {
+        console.log(`FFmpeg stdout: ${data}`);
+      });
+
+      ffmpegProcess.stderr.on('data', (data) => {
+        console.error(`FFmpeg stderr: ${data}`);
+      });
+
+      ffmpegProcess.on('close', (code) => {
+        console.log(`FFmpeg child process exited with code ${code}`);
+        ffmpegProcess = null; // Reset the reference
+      });
+
+      // Emit 'ffmpegReady' event once FFmpeg process is initialized
+      socket.emit('ffmpegReady');
+    } else {
+      console.log('FFmpeg process is already running.');
     }
+  });
 
-    if (pipeline) {
-      // Retrieve the appsrc element from the pipeline
-      const appsrc = pipeline.getChildByName('source');
-      // Push the byte array into the appsrc element
-      appsrc.push(Buffer.from(byte));
-      console.log('Bytes pushed');
+  socket.on('stream', (byteBuffer) => {
+    if (ffmpegProcess) {
+      ffmpegProcess.stdin.write(byteBuffer);
+    } else {
+      console.log('FFmpeg process not initialized. Ignoring stream data.');
     }
   });
 
   socket.on('disconnect', () => {
     console.log('Client disconnected');
-    if (pipeline) {
-      pipeline.stop();
-      pipeline = null;
+    if (ffmpegProcess) {
+      ffmpegProcess.kill('SIGINT');
+      ffmpegProcess = null; // Ensure the process reference is reset
     }
   });
 });
