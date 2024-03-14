@@ -3,10 +3,12 @@ import django
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.core.cache import cache
-import gi
 import subprocess
+import gi
+gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject
 
+Gst.init(None)
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
@@ -30,7 +32,7 @@ class VideoConsumer(AsyncConsumer):
     """Socket Consumer that accept websocket connection and live stream"""
 
     def __init__(self):
-        self.process_manager = FFmpegProcessManager(send=self.send)
+        self.process_manager = GStreamerProcessManager(send=self.send)
 
     async def websocket_connect(self, event):
         try:
@@ -55,8 +57,10 @@ class VideoConsumer(AsyncConsumer):
     async def websocket_receive(self, event):
         """Receive message from WebSocket."""
         if 'text' in event:
+            # print("text")
             await self.process_text_event(event['text'])
         elif 'bytes' in event:
+            # print("bytes")
             await self.process_bytes_event(event['bytes'])
 
     async def websocket_disconnect(self, event):
@@ -66,16 +70,20 @@ class VideoConsumer(AsyncConsumer):
     async def process_text_event(self, text_data):
         """Process the text event"""
         if 'browser_sound' in text_data:
+            # print("browser-sound")
             rtmp_url = self.process_manager.handle_browser_sound(text_data)
             await self.send_ack_message("RTMP url received: " + rtmp_url)
         elif 'rtmp://a.rtmp.youtube.com' in text_data or 'rtmps://a.rtmps.youtube.com' in text_data:
+            # print("rtmp-url")
             rtmp_url = self.process_manager.handle_rtmp_url(text_data)
             await self.send_ack_message("RTMP url received: " + rtmp_url)
         elif 'command' in text_data:
+            # print("command")
             await self.process_command_event(text_data.split(",", 1)[1])
 
     async def process_command_event(self, command):
         """Process the command event"""
+        # print(f"commands - {command}")
         if command == 'end_broadcast':
             success = self.process_manager.process_manager_cleanup(self.scope)
             # success = self.process_manager.end_broadcast(self.scope)
@@ -83,6 +91,7 @@ class VideoConsumer(AsyncConsumer):
 
     async def process_bytes_event(self, bytes_data):
         """Process the bytes event"""
+        # print("bytes data")
         self.process_manager.handle_bytes_data(bytes_data)
 
     async def send_ack_message(self, message):
@@ -116,6 +125,7 @@ class GStreamerProcessManager:
 
     def handle_browser_sound(self, text_data):
         """Handle the browser sound message"""
+        # print(f"Gst - browser sound..  url - {self.rtmp_url}")
         self.audio_enabled = True
         self.rtmp_url = self.extract_rtmp_url(text_data)
         self.start_gstreamer_pipeline()
@@ -126,6 +136,7 @@ class GStreamerProcessManager:
         """Handle the rtmp url message"""
         self.audio_enabled = False
         self.rtmp_url = data.strip()
+        # print(f"url - {self.rtmp_url}")
         self.start_gstreamer_pipeline()
 
         return self.rtmp_url
@@ -137,7 +148,9 @@ class GStreamerProcessManager:
 
     def handle_bytes_data(self, bytes_data):
         """Handle the bytes data message"""
+        # print(f"bytes-handle - Gst.. appsrc - {self.appsrc}")
         if self.appsrc:
+            print("appsrc-ready")
             # Push incoming video data to appsrc
             buf = Gst.Buffer.new_wrapped(bytes_data)
             self.appsrc.emit("push-buffer", buf)
@@ -150,6 +163,7 @@ class GStreamerProcessManager:
     def transition_broadcast(self, scope):
         """Transition the broadcast"""
         success = False
+        # print("transition")
         if self.pipeline:
             try:
                 stream_dict = cache.get(
@@ -172,6 +186,7 @@ class GStreamerProcessManager:
 
     def gstreamer_process_cleanup(self, scope):
         """Cleanup the GStreamer process manager"""
+        print("cleanup - func")
         if self.pipeline:
             self.pipeline.set_state(Gst.State.NULL)
             self.transition_broadcast(scope=scope)
@@ -188,6 +203,18 @@ class GStreamerProcessManager:
             x264enc = Gst.ElementFactory.make("x264enc", "video-encoder")
             flvmux = Gst.ElementFactory.make("flvmux", "flv-muxer")
             rtmpsink = Gst.ElementFactory.make("rtmpsink", "rtmp-sink")
+
+             # Print element names for debugging
+            print("appsrc:", self.appsrc.get_name())
+            print("decodebin:", decodebin.get_name())
+            print("x264enc:", x264enc.get_name())
+            print("flvmux:", flvmux.get_name())
+            print("rtmpsink:", rtmpsink.get_name())
+
+            # Set appsrc properties
+            self.appsrc.set_property("caps", Gst.Caps.from_string("video/x-raw, format=RGB"))  # Example caps
+            self.appsrc.set_property("is-live", True)
+            self.appsrc.set_property("format", Gst.Format.TIME)
 
             # Check if elements were created successfully
             if not self.appsrc or not decodebin or not x264enc or not flvmux or not rtmpsink:
