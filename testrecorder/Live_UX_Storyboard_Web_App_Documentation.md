@@ -67,7 +67,7 @@ somebody wanted to access what was discussed in the meeting again.
 
 The following diagram is the application architecture that was followed:
 
-<img src="media/image1.png" style="width:6.5in;height:3.43056in" alt="Live UX Storyboard Web App Architecture.png" />
+<img src="image1.png" style="width:6.5in;height:3.43056in" alt="Live UX Storyboard Web App Architecture.png" />
 
 **Figure 4.1:** Live UX Storyboard Application Architecture
 
