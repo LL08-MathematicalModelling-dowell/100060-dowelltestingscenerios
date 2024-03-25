@@ -1,21 +1,21 @@
 """
 Second views file for the YouTube app.
 """
-import json
 import logging
-import requests
 from django.core.cache import cache
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import authentication_classes
+from .serializers import YouTubeVideoSerializer
 
 
 from .models import ChannelRecord
 from core.auth import APIKeyAuthentication
-from .utils import get_user_cache_key, create_user_youtube_object
+from .utils import get_user_cache_key, create_user_youtube_object, upload_video_to_playlist
 
 
 logger = logging.getLogger(__name__)
@@ -127,79 +127,7 @@ class UserChannelsView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
             
-    def is_available_in_db(self, email) -> bool:
-        """
-        Checks if record already exist in the database'
-
-        Return:
-            True: If record exist in the database.
-            False: If record is not in the database.
-        """
-        url = "http://100002.pythonanywhere.com/"
-
-        payload = json.dumps({
-            "cluster": "ux_live",
-            "database": "ux_live",
-            "collection": "credentials",
-            "document": "credentials",
-            "team_member_ID": "1200001",
-            "function_ID": "ABCDE",
-            "command": "find",
-            "field": {
-                'user_email': email
-            },
-            "update_field": {
-                "order_nos": 21
-            },
-            "platform": "bangalore"
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.request(
-            "POST", url, headers=headers, data=payload).json()
-
-        if response.get('data') is None:
-            return False
-
-        return True
-
-    def fetch_user_credential_from_dowell_connection_db(self, email):
-        """
-        Inserts a new user youtube info record into the company's database
-
-        Return:
-            Json response from the database.
-        """
-
-        url = "http://100002.pythonanywhere.com/"
-
-        payload = json.dumps({
-            "cluster": "ux_live",
-            "database": "ux_live",
-            "collection": "credentials",
-            "document": "credentials",
-            "team_member_ID": "1200001",
-            "function_ID": "ABCDE",
-            "command": "find",
-            "field": {
-                'user_email': email,
-            },
-            "update_field": {
-                "order_nos": 21
-            },
-            "platform": "bangalore"
-        })
-        headers = {
-            'Content-Type': 'application/json'
-        }
-
-        response = requests.request(
-            "POST", url, headers=headers, data=payload).json()
-
-        return response
-
+ 
 @authentication_classes([APIKeyAuthentication])
 class DeleteVideoView(APIView):
     """
@@ -213,7 +141,7 @@ class DeleteVideoView(APIView):
         can access this view.
     """
 
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def delete(self, request):
         """
@@ -241,7 +169,7 @@ class DeleteVideoView(APIView):
         ```
         """
         try:
-            youtube, credential = create_user_youtube_object(request=request)
+            youtube, _ = create_user_youtube_object(request=request)
             if youtube is None:
                 # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -256,6 +184,7 @@ class DeleteVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)})
 
+
 @authentication_classes([APIKeyAuthentication])
 class LoadVideoView(APIView):
     """
@@ -264,13 +193,10 @@ class LoadVideoView(APIView):
     Methods:
         get(request): Load all videos
 
-     Attributes:
+    Attributes:
         permission_classes: a list containing the IsAuthenticated permission class to ensure only authenticated users
         can access this view.
     """
-
-    permission_classes = [IsAuthenticated]
-    
     def get(self, request):
         """
         Load all videos from YouTube.
@@ -286,7 +212,7 @@ class LoadVideoView(APIView):
             Exception: If an error occurs during the loading process.
         """
         try:
-            youtube, credential = create_user_youtube_object(request=request)
+            youtube, _ = create_user_youtube_object(request=request)
             if youtube is None:
                 # print('youtube object creation failed!!')
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -349,6 +275,7 @@ class LoadVideoView(APIView):
         except Exception as e:
             return Response({'Error': str(e)}, status=status.HTTP_404_NOT_FOUND)
 
+
 @authentication_classes([APIKeyAuthentication])
 class YouTubeVideoAPIView(APIView):
     """
@@ -389,18 +316,18 @@ class YouTubeVideoAPIView(APIView):
                 If the video is not found, returns None.
                 If an exception is raised, returns None.
     """
-    def get(self, request, broadcast_id):
+    def get(self, request, video_id):
         # Retrieve the video from the YouTube API
-        video_data = self.get_video_data(request, broadcast_id)
+        video_data = self.get_video_data(request, video_id)
 
         if video_data:
             return Response(video_data)
         else:
             return Response({'error': 'Video not found'}, status=404)
 
-    def get_video_data(self, request, broadcast_id):
+    def get_video_data(self, request, video_id):
         # Set up the YouTube API client
-        youtube, credential = create_user_youtube_object(request=request)
+        youtube, _ = create_user_youtube_object(request=request)
         if youtube is None:
             # print('youtube object creation failed!!')
             return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -409,7 +336,7 @@ class YouTubeVideoAPIView(APIView):
             # Make a request to the YouTube API to retrieve video details
             response = youtube.videos().list(
                 part='snippet',
-                id=broadcast_id
+                id=video_id
             ).execute()
 
             if 'items' in response and len(response['items']) > 0:
@@ -422,3 +349,70 @@ class YouTubeVideoAPIView(APIView):
             # Handle any error that occurred during the API request
             print(f'An error occurred: {e}')
             return None
+
+
+@authentication_classes([APIKeyAuthentication])
+class UploadVideoToYouTube(APIView):
+    """
+    API endpoint to upload a video to YouTube and add it to a playlist.
+
+    POST request:
+    - Accepts video data including title, description, tags, video path, and playlist ID.
+    - Validates the input data.
+    - Uploads the video to YouTube.
+    - Adds the uploaded video to the specified playlist.
+
+    Returns:
+    - HTTP 201 Created with the video ID upon successful upload.
+    - HTTP 400 Bad Request with validation errors if the input data is invalid.
+    """
+    serializer_class = YouTubeVideoSerializer
+
+    def post(self, request, format=None):
+        
+
+        youtube, _ = create_user_youtube_object(request=request)
+        if youtube is None:
+            # print('youtube object creation failed!!')
+            return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            video_file = request.data['video_path']
+            video_id = self._upload_video_to_youtube(video_file, data, youtube)
+            return Response({'video_id': video_id}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def _upload_video_to_youtube(self, video, data, youtube):
+        """ Call the utility function to upload the video to YouTube. """
+        video_id = upload_video_to_playlist(
+            youtube,
+            video_path=video,
+            title=data['title'],
+            description=data['description'],
+            tags=data['tags'],
+            playlist_id=data['playlist_id'],
+        )
+        return video_id
+
+class ServiceEndpointsView(APIView):
+    def get(self, request):
+        links = {
+            'Start the broadcast': reverse('create-broadcast-api'),
+            'Transition the live broadcast': reverse('transition-broadcast-api'),
+            'Fetch all playlists': reverse('fetch-playlists'),
+            'Create a playlist': reverse('create-playlist'),
+            'Logout': reverse('logout'),
+            'Fetch user youtube channels': reverse('user_channel'),
+            'Delete a a video': reverse('delete-video'),
+            'Fetch all videos': reverse('videos'),
+            'Fetch a video': reverse('youtube_video', args=['video_id_value']),
+            'Upload a video': reverse('upload_video_to_youtube'),
+            'websocket Url': 'wss://www.liveuxstoryboard.com/ws/app/?api_key=${apiKey}'
+        }
+
+        youtube_links = {k: v for k, v in links.items() if 'youtube' in v}
+        # youtube_links['websocket Url'] = 'wss://www.liveuxstoryboard.com/ws/app/?api_key=${apiKey}'
+
+        return Response(youtube_links)

@@ -1,9 +1,10 @@
 import json
+from datetime import datetime, timedelta
 from django.core.cache import cache
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
+from googleapiclient.http import MediaFileUpload
 from .models import UserProfile
-from datetime import datetime, timedelta
 
 
 def get_user_cache_key(user_id: int, view_url: str) -> str:
@@ -78,15 +79,74 @@ def create_user_youtube_object(request=None, scope=None) -> tuple:
         return None, None
 
 
-def insert_broadcast(video_privacy_status: str, test_name_value: str, youtube) -> str:
+def upload_video_to_playlist(youtube, video_path, title, description, tags, playlist_id, privacy_status='private'):
+    """
+    Uploads a video to YouTube and adds it to a playlist.
+
+    Parameters:
+        - video_path (str): Path to the video file to be uploaded.
+        - title (str): Title of the video.
+        - description (str): Description of the video.
+        - tags (list): List of tags for the video.
+        - playlist_id (str): ID of the playlist to add the video to.
+        - privacy_status (str, optional): Privacy status of the video (default is 'private').
+
+    Returns:
+        - str: Video ID of the uploaded video.
+    """
+
+    # Define the parameters for the video upload
+    request_body = {
+        'snippet': {
+            'title': title,
+            'description': description,
+            'tags': tags,
+            'categoryId': '22',  # category IDs in YouTube API documentation
+            'playlistId': playlist_id
+        },
+        'status': {
+            'privacyStatus': privacy_status,
+        }
+    }
+
+    # Specify the video file to upload
+    media = MediaFileUpload(video_path)
+
+    # Execute the API request to upload the video
+    response = youtube.videos().insert(
+        part='snippet,status',
+        body=request_body,
+        media_body=media
+    ).execute()
+
+    # Add the video to the playlist
+    youtube.playlistItems().insert(
+        part='snippet',
+        body={
+            'snippet': {
+                'playlistId': playlist_id,
+                'resourceId': {
+                    'kind': 'youtube#video',
+                    'videoId': response['id']
+                }
+            }
+        }
+    ).execute()
+
+    return response['id']
+
+
+def insert_broadcast(video_privacy_status: str, test_name_value: str, youtube, scheduled_start_time: datetime = None) -> dict:
     """
     Creates a liveBroadcast resource and sets its title, scheduled start time,
     scheduled end time, and privacy status.
     """
-    time_delta = timedelta(days=0, hours=0, minutes=0, seconds=1)
-    time_now = datetime.utcnow()
-    future_date_iso = (time_now + time_delta).isoformat()
-    video_title = f"{test_name_value} {future_date_iso}"
+    if scheduled_start_time is None:
+        time_delta = timedelta(days=0, hours=0, minutes=0, seconds=1)
+        time_now = datetime.utcnow()
+        scheduled_start_time = (time_now + time_delta).isoformat()
+
+    video_title = f"{test_name_value} {scheduled_start_time}"
 
     try:
         request = youtube.liveBroadcasts().insert(
@@ -97,7 +157,7 @@ def insert_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
                     "selfDeclaredMadeForKids": False
                 },
                 "snippet": {
-                    "scheduledStartTime": future_date_iso,
+                    "scheduledStartTime": scheduled_start_time,
                     "title": video_title
                 },
                 "contentDetails": {
@@ -109,10 +169,16 @@ def insert_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
         )
 
         insert_broadcast_response = request.execute()
-        return insert_broadcast_response.get("id", None)
+        return (
+            insert_broadcast_response.get("id", None),
+            insert_broadcast_response.get("snippet", None).get("scheduledStartTime", None)
+        )
 
     except Exception as e:
-        raise Exception(e.reason)
+        raise Exception(e)
+
+    except Exception as e:
+        raise Exception(e)
 
 
 def insert_stream(youtube) -> dict:
@@ -151,7 +217,9 @@ def insert_stream(youtube) -> dict:
 
         new_stream_id = insert_stream_response.get("id", "")
         new_stream_name = ingestion_info.get("streamName", "")
-        new_stream_ingestion_address = ingestion_info.get('ingestionAddress') # ("rtmpsIngestionAddress", "")
+        new_stream_ingestion_address = ingestion_info.get(
+            'ingestionAddress'
+        )  # ("rtmpsIngestionAddress", "")
         new_rtmp_url = f"{new_stream_ingestion_address}/{new_stream_name}"
 
         stream_dict = {
@@ -164,7 +232,7 @@ def insert_stream(youtube) -> dict:
         return stream_dict
 
     except Exception as e:
-        raise Exception(e.reason)
+        raise Exception(str(e))
 
 
 def bind_broadcast(youtube, broadcast_id: str, stream_id: str) -> dict:
@@ -183,7 +251,7 @@ def bind_broadcast(youtube, broadcast_id: str, stream_id: str) -> dict:
 
         return bind_broadcast_response
     except Exception as e:
-        raise Exception(e.reason)
+        raise Exception(str(e))
 
 
 def transition_broadcast(broadcast_id: str, status: str, youtube=None, scope=None) -> dict:
@@ -192,7 +260,7 @@ def transition_broadcast(broadcast_id: str, status: str, youtube=None, scope=Non
         youtube, _ = create_user_youtube_object(scope=scope)
 
     if youtube is None:
-            raise Exception('Authentication error')
+        raise Exception('Authentication error')
 
     try:
         request = youtube.liveBroadcasts().transition(
@@ -209,10 +277,10 @@ def transition_broadcast(broadcast_id: str, status: str, youtube=None, scope=Non
             return {"error": f"{broadcast_transition_response}"}
 
     except Exception as e:
-        return {'error': e.reason}
+        return {'error': str(e)}
 
 
-def create_broadcast(video_privacy_status: str, test_name_value: str, youtube) -> dict:
+def create_broadcast(video_privacy_status: str, test_name_value: str, youtube, scheduled_start_time: datetime = None) -> dict:
     """
     Creates a broadcast with a live stream bound
     """
@@ -229,7 +297,8 @@ def create_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
 
         try:
             # Create a new broadcast
-            new_broadcast_id = insert_broadcast(video_privacy_status, test_name_value, youtube)
+            broadcast_id, scheduled_start_time = insert_broadcast(
+                video_privacy_status, test_name_value, youtube, scheduled_start_time=None)
         except Exception as e:
             return {'error': str(e)}
 
@@ -237,17 +306,18 @@ def create_broadcast(video_privacy_status: str, test_name_value: str, youtube) -
             # Create a new stream
             stream_dict = insert_stream(youtube)
             # Add the new broadcast id to the stream dictionary
-            stream_dict['new_broadcast_id'] = new_broadcast_id
+            stream_dict['new_broadcast_id'] = broadcast_id
+            stream_dict['scheduled_start_time'] = scheduled_start_time
             stream_id = stream_dict.get('new_stream_id')
         except Exception as e:
             return {'error': str(e)}
 
         try:
             # Bind the stream to the broadcast
-            bind_broadcast(youtube, new_broadcast_id, stream_id)
+            bind_broadcast(youtube, broadcast_id, stream_id)
         except Exception as e:
             return {'error': str(e)}
-        
+
         return stream_dict
 
     except Exception as e:
@@ -278,20 +348,21 @@ def insert_video_into_playlist(video_id: str, playlist_id: str, youtube) -> dict
 
         return response
     except Exception as e:
-        return {'error': (e.reason)}
+        return {'error': str(e)}
 
 
-def start_broadcast(video_privacy_status: str, test_name_value: str, playlist_id: str, youtube) -> dict:
+def start_broadcast(video_privacy_status: str, test_name_value: str, playlist_id: str, youtube, scheduled_start_time: datetime = None) -> dict:
     """ Start recording a video """
     # Create a new broadcast and retrieve the broadcast id
     stream_dict = create_broadcast(
-        video_privacy_status, test_name_value, youtube)
+        video_privacy_status, test_name_value, youtube, scheduled_start_time)
 
-    if 'error'  not in stream_dict:
+    if 'error' not in stream_dict:
         # Insert the video into the playlist
         video_id = stream_dict.get('new_broadcast_id')
 
-        playlist_insert_response = insert_video_into_playlist(video_id, playlist_id, youtube)
+        playlist_insert_response = insert_video_into_playlist(
+            video_id, playlist_id, youtube)
 
         if 'error' in playlist_insert_response:
             return playlist_insert_response

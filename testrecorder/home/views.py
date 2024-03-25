@@ -27,8 +27,12 @@ class HomePageView(TemplateView):
         add_playlist = CreatePlaylist()
         context_dict = {'add_playlist': add_playlist}
         if request.user.is_authenticated:
-            user_profile = UserProfile.objects.get(user=request.user)
-            context_dict['user_profile'] = user_profile
+            try:
+                user_profile = UserProfile.objects.get(user=request.user)
+                context_dict['user_profile'] = user_profile
+            except UserProfile.DoesNotExist:
+                context_dict['user_profile'] = None
+
         return render(request, self.template_name, context_dict)
 
 

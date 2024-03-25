@@ -32,6 +32,9 @@ let webcamStream = null;
 let screenStream = null;
 let audioStream = null;
 
+// Assume you have a global variable for your buffer
+let mediaBuffer = [];
+
 let currentCamera = "user";
 let audioConstraints = {
   deviceId: { exact: "default" }
@@ -480,16 +483,11 @@ async function stopRecording(errorOccurred = false) {
  */
 async function recordWebcamStream() {
   try {
-    // console.log('============== inside record wbcam screen ==================');
-
     webcamMediaConstraints = {
       video: videoConstraints,
       audio: true,
     };
     webcamStream = await navigator.mediaDevices.getUserMedia(webcamMediaConstraints);
-
-    // console.log('=========== webcam strream gotten ===================');
-
     video.srcObject = webcamStream;
     video.muted = true;
 
@@ -504,9 +502,6 @@ async function recordWebcamStream() {
       return null;
     }
     webcamRecorder = new MediaRecorder(webcamStream, options);
-
-    // console.log('========== webcam recorder ====================');
-
     return webcamRecorder;
   } catch (err) {
     console.error('Webcam stream error >>> ', err);
@@ -617,7 +612,6 @@ async function newRecordWebcamAndScreen() {
 
     // Get supported media type options
     options = await getSupportedMediaType();
-    // console.log('Video options:', options);
 
     const screenWidth = screen.width;
     const screenHeight = screen.height;
@@ -634,8 +628,6 @@ async function newRecordWebcamAndScreen() {
     const videoTrack = screenStream.getVideoTracks()[0];
     const width = videoTrack.getSettings().width;
     const height = videoTrack.getSettings().height;
-    // console.log('Width:', width);
-    // console.log('Height:', height);
 
     const mergerOptions = {
       width: screenStream.width,
@@ -657,9 +649,6 @@ async function newRecordWebcamAndScreen() {
           width: webcamStreamWidth, height: webcamStreamHeight, mute: true
         });
     }
-    // else {
-    //   console.log('Camera Stream not available or merger height not defined');
-    // }
 
     // Start the merger and set the video source to the merged stream
     await merger.start();
@@ -672,7 +661,6 @@ async function newRecordWebcamAndScreen() {
   } catch (err) {
     // Handle errors during recording
     document.getElementById("app-status").innerHTML = "STATUS: Error while recording merged stream.";
-    // console.log("Merged stream recording stoped with the following error >> ", err);
     await stopStreams();
     await resetStateOnError();
 
@@ -783,8 +771,29 @@ async function startRecording() {
         $('.lower-nav').fadeOut('slow');
 
         streamRecorder.ondataavailable = (event) => {
-          if ((recordinginProgress && event.data.size > 0) && (socket.readyState === WebSocket.OPEN)) {
-            socket.send(event.data);
+          if (recordinginProgress && event.data.size > 0) {
+             mediaBuffer.push(event.data)
+             
+             if (navigator.onLine){
+                if (socket.readyState === WebSocket.OPEN) {
+                  // Send buffered data if there's internet connection and the socket is open
+
+                  sendDataBuffer();
+              }
+             } else {
+              // console.log("Thou art Offline")
+             }
+          }
+       };
+
+        streamRecorder.onstop = () => {
+          recordinginProgress = false;
+          document.getElementById("app-status").innerHTML = "STATUS: Recording stopped.";
+      
+          if (navigator.onLine && socket.readyState === WebSocket.OPEN) {
+            // Send any remaining buffered data
+            // console.log("Send any remaining buffered data")
+            sendDataBuffer();
           }
         };
 
@@ -805,6 +814,14 @@ async function startRecording() {
     resetStateOnError();
     // showErrorModal(message = errorMessage);
   }
+
+  async function sendDataBuffer() {
+    while (mediaBuffer.length > 0) {
+       const data = mediaBuffer.shift(); // Get and remove the first item from the buffer
+
+       await socket.send(data);
+    }
+ }
 }
 
 /**
@@ -1346,8 +1363,27 @@ async function createWebsocket(recordWebcam, recordScreen) {
 
   async function handleSocketClose() {
     recordinginProgress = false;
-    if (recordinginProgress) {
+    // Attempt reconnection here
+    const maxReconnectionAttempts = 3;
+    let reconnectionAttempts = 0;
+
+    for (; reconnectionAttempts < maxReconnectionAttempts; reconnectionAttempts++) {
+      try {
+        [socket, socketTyp] = await createWebsocket(recordWebcam, recordScreen);
+        recordinginProgress = true;
+        console.log('WebSocket reconnected successfully');
+        return socket;
+      } catch (error) {
+        console.error('WebSocket reconnection attempt failed:', error);
+      }
+      await new Promise(resolve => setTimeout(resolve, 10000));
+    }
+
+    if (reconnectionAttempts === maxReconnectionAttempts) {
+      // Only stop recording if it's in progress
+      await stopRecording();
       handLeNotification();
+      console.log('WebSocket reconnection failed after multiple attempts');
     }
   }
 }
@@ -1397,7 +1433,6 @@ async function startBroadcast() {
       body: JSON.stringify(broadcastData),
       headers: headers
     });
-
     if (!response.ok) {
       // Parse the error data from the response
       const data = await response.json();
@@ -1538,29 +1573,6 @@ async function showErrorModal(liveStreamError = null, message = null) {
   }
 }
 
-// Timer to check network status every second
-networkTimer = setInterval(() => {
-  checkNetworkStatus();
-}, 1000) // each 1 second
-
-// Function to check network status
-async function checkNetworkStatus() {
-  let currentDateTime = new Date();
-  let resultInSeconds = currentDateTime.getTime() / 1000;
-  let timeNow = resultInSeconds;
-  if (msgRcvdFlag === true) {
-    lastMsgRcvTime = timeNow;
-    msgRcvdFlag = false;
-  } else {
-    if (recordinginProgress === false) {
-      lastMsgRcvTime = timeNow;
-    } else if ((timeNow - lastMsgRcvTime) > 25) { // More than 25 secs
-      msgRcvdFlag = false;
-      lastMsgRcvTime = timeNow;
-    }
-  }
-}
-
 // sets youtube video privacy status
 async function setVideoPrivacyStatus() {
   // Check if we need to make videos public
@@ -1679,8 +1691,10 @@ async function stopVideoElemTracks(videoElem) {
 
 // Sends an RTMP URL to the websocket
 async function sendRTMPURL(socket) {
+  showCreatingBroadcastModal(false);
+  // Check if we need to add audio stream
+
   if (socket != null && socket.readyState === WebSocket.OPEN) {
-    // Check if we need to add audio stream
     recordAudio = microphoneStatus();
     if (recordAudio == true) {
       let msg = "browser_sound," + newRtmpUrl;
@@ -1688,7 +1702,25 @@ async function sendRTMPURL(socket) {
     } else {
       await socket.send(newRtmpUrl);
     }
+  } else {
+    console.log("Attempting websocket reconnection...");
+    // If the socket is not in an open state, attempt reconnection
+    socket = await handleSocketClose();
+
+    if (socket != null && socket.readyState === WebSocket.OPEN) {
+      // Check if we need to add an audio stream
+      recordAudio = microphoneStatus();
+
+      if (recordAudio) {
+        let msg = "browser_sound," + newRtmpUrl;
+        await socket.send(msg);
+      } else {
+        await socket.send(newRtmpUrl);
+      }
+
+    }
   }
+  displayUtilities();
 }
 
 // Creating youtube broadcast modal
@@ -1957,6 +1989,13 @@ async function showPlaylistCreatedModal() {
   // Show modal
   const playlistCreatedModal = new bootstrap.Modal(document.getElementById('playlist-created-modal'));
   playlistCreatedModal.show();
+
+  // Add event listener to the modal for a click event
+  const modalElement = document.getElementById('playlist-created-modal');
+  modalElement.addEventListener('click', () => {
+    // Reload the page upon clicking the modal
+    location.reload();
+  });
 }
 
 // Shows Playlist creation Error occurred modal
@@ -2201,7 +2240,7 @@ async function load_gallery() {
     'Authorization': `API-KEY ${apiKey}`,
     'Content-Type': 'application/json'
   }
-  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers});
+  const playlistsResponse = await fetch('/youtube/fetchplaylists/api/', { method: 'GET', headers: headers });
 
   if (playlistsResponse.ok) {
     const playlistsData = await playlistsResponse.json();
@@ -2270,7 +2309,7 @@ async function load_videos(playlist_id) {
       return;
     }
 
-    const videos = []; 
+    const videos = [];
 
     // Iterate over the playlist videos and extract necessary information
     playlistVideos.forEach(video => {
@@ -2290,7 +2329,7 @@ async function load_videos(playlist_id) {
       videos.push(videoObject);
     });
     const selectElement = document.getElementById('all_video');
-    selectElement.innerHTML = ''; 
+    selectElement.innerHTML = '';
     videos.forEach(video => {
       const option = document.createElement('option');
       option.value = video.id;

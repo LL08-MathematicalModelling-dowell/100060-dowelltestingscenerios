@@ -11,16 +11,13 @@ from .views_w import (
     LoadVideoView,
     YouTubeVideoAPIView,
     UserChannelsView,
-)
-
-from .views_library import (
-    FetchlibraryPlaylists,
-    SelectedPlaylistLoadVideo,
-    RateVideoView
+    ServiceEndpointsView,
+    UploadVideoToYouTube,
 )
 
 
 urlpatterns = [
+    path('', ServiceEndpointsView.as_view(), name='youtube-end-points'),
     path('createbroadcast/api/', StartBroadcastView.as_view(), name='create-broadcast-api'),
     path('transitionbroadcast/api/', TransitionBroadcastView.as_view(), name='transition-broadcast-api'),
     path('fetchplaylists/api/', FetchPlaylistsView.as_view(), name='fetch-playlists'),
@@ -29,8 +26,7 @@ urlpatterns = [
     path('channels/api/', UserChannelsView.as_view(), name='user_channel'),
     path('delete-video/api/', DeleteVideoView.as_view(), name='delete-video'),
     path('videos/api/', LoadVideoView.as_view(), name='videos'),
-    path('video/<str:broadcast_id>/', YouTubeVideoAPIView.as_view(), name='youtube_video'),
-    path('fetchlibraryplaylists/api/', FetchlibraryPlaylists.as_view(), name='fetchlibrary-playlists'),
-    path('videos/api/<str:playlistId>/', SelectedPlaylistLoadVideo.as_view(), name='videos_from_playlistId'),
-    path('videos/api/rate/<str:videoId>/', RateVideoView.as_view(), name='rate_video'),
+    path('video/<str:video_id>/', YouTubeVideoAPIView.as_view(), name='youtube_video'),
+    path('upload-video/', UploadVideoToYouTube.as_view(), name='upload_video_to_youtube'),
 ]
+

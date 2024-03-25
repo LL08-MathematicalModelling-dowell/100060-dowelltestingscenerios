@@ -9,8 +9,6 @@ from googleapiclient.errors import HttpError
 from django.contrib.auth import logout
 from rest_framework.decorators import authentication_classes
 
-
-
 from core.auth import APIKeyAuthentication
 from .serializers import (
     StartBroadcastSerializer,
@@ -27,6 +25,7 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
+
 @authentication_classes([APIKeyAuthentication])
 class StartBroadcastView(APIView):
     """ DRF API that handles requests to start a broadcast """
@@ -41,13 +40,15 @@ class StartBroadcastView(APIView):
             video_privacy_status = serializer.validated_data["video_privacy"]
             test_name_value = serializer.validated_data["video_title"]
             playlist_id = serializer.validated_data["playlist_id"]
+            # scheduled_start_time = serializer.validated_data['scheduled_start_time']
+            scheduled_start_time = serializer.validated_data.get('scheduled_start_time', None)
 
             youtube, _ = create_user_youtube_object(request=request)
 
             if youtube is None:
                 return Response({'Error': 'Account is not a Google account'}, status=status.HTTP_401_UNAUTHORIZED)
 
-            stream_dict = start_broadcast(video_privacy_status, test_name_value, playlist_id, youtube)
+            stream_dict = start_broadcast(video_privacy_status, test_name_value, playlist_id, youtube, scheduled_start_time)
 
             if "error" in stream_dict:
                 return Response(stream_dict, status=status.HTTP_400_BAD_REQUEST)
@@ -111,10 +112,46 @@ def fetch_playlists_with_pagination(youtube_object):
             fetch_playlists = False
 
         playlists.extend(response['items'])
-
     return playlists
 
 
+def fetch_and_add_playlist_to_cache(request, cache_key):
+    """ Fetche user playlist and adds it to the cache """
+    # Get the user's youtube object
+    youtube, credential = create_user_youtube_object(request)
+    if youtube is None:
+        return Response({'Error': 'Authentication error'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Get the playlists
+    playlists = fetch_playlists_with_pagination(youtube)
+
+    # Check if the playlist is empty
+    if not playlists:
+        return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
+
+    user_playlists = {}
+    todays_playlist_dict = {}
+    channel_title = ""
+
+    for playlist in playlists:
+        playlist_id = playlist["id"]
+        title = playlist["snippet"]["title"]
+
+        if "Daily Playlist" not in title:
+            user_playlists[playlist_id] = title
+
+        channel_title = playlist["snippet"]["channelTitle"]
+
+    youtube_details = {
+        'channel_title': channel_title,
+        'user_playlists': user_playlists,
+        'todays_playlist_dict': todays_playlist_dict
+    }
+
+    # Cache the response, expires in 6 hours
+    cache.set(cache_key, youtube_details, 6 * 60 * 60)
+    return youtube_details
+  
 @authentication_classes([APIKeyAuthentication])
 class FetchPlaylistsView(APIView):
     """
@@ -132,43 +169,12 @@ class FetchPlaylistsView(APIView):
             cache_key = get_user_cache_key(user.id, '/fetchplaylists/api/')
             cached_response = cache.get(cache_key, None)
 
-            # Return the cached response if it exists
+            # # Return the cached response if it exists
             if cached_response is not None:
                 return Response(cached_response, status=status.HTTP_200_OK)
 
-            # Get the user's youtube object
-            youtube, _ = create_user_youtube_object(request=request)
-            if youtube is None:
-                return Response({'Error': 'Authentication error'}, status=status.HTTP_401_UNAUTHORIZED)
 
-            # Get the playlists
-            playlists = fetch_playlists_with_pagination(youtube)
-
-            # Check if the playlist is empty
-            if not playlists:
-                return Response({'Error': 'The playlist is empty.'}, status=status.HTTP_204_NO_CONTENT)
-
-            user_playlists = {}
-            todays_playlist_dict = {}
-            channel_title = ""
-
-            for playlist in playlists:
-                playlist_id = playlist["id"]
-                title = playlist["snippet"]["title"]
-
-                if "Daily Playlist" not in title:
-                    user_playlists[playlist_id] = title
-
-                channel_title = playlist["snippet"]["channelTitle"]
-
-            youtube_details = {
-                'channel_title': channel_title,
-                'user_playlists': user_playlists,
-                'todays_playlist_dict': todays_playlist_dict
-            }
-
-            # Cache the response, expires in 6 hours
-            cache.set(cache_key, youtube_details, 6 * 60 * 60)
+            youtube_details = fetch_and_add_playlist_to_cache(request, cache_key)
 
             return Response(youtube_details, status=status.HTTP_200_OK)
 
@@ -226,28 +232,32 @@ class CreatePlaylistView(APIView):
     serializer_class = CreatePlaylistSerializer
     def post(self, request, *args, **kwargs):
         try:
-            serializer = self.serializer_class(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                # Get the new playlist information
-                title = serializer.validated_data["title"]
-                description = serializer.validated_data["description"]
-                privacy = serializer.validated_data["privacy_status"]
+            # Get the new playlist information
+            title = request.data.get("new_playlist_title")
+            description = request.data.get("new_playlist_description")
+            privacy = request.data.get("new_playlist_privacy")
 
-                # Check if playlist already exists
+            # Check if playlist already exists
 
-                # create playlist
-                response = create_playlist(title, description, privacy, request)
+            # create playlist
+            response = create_playlist(title, description, privacy, request)
+            if response:
+                # Get the user object
+                user = request.user
 
-                if response:
-                    msg = {'CreatePlaylistResponse': "Playlist created"}
-                    return Response(msg, status=status.HTTP_200_OK)
-                else:
-                    msg = {'CreatePlaylistResponse': "Failed to create playlist"}
-                    return Response(error_msg, status=status.HTTP_400_BAD_REQUEST)
-            
+                # Fetch and add new playlists to cache.
+                cache_key = get_user_cache_key(user.id, '/fetchplaylists/api/')
+                fetch_and_add_playlist_to_cache(request, cache_key)
+
+                msg = {'CreatePlaylistResponse': "Playlist created"}
+                return Response(msg, status=status.HTTP_200_OK)
+            else:
+                msg = {'CreatePlaylistResponse': "Failed to create playlist"}
+                return Response(msg, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as err:
             error_msg = "Error while creating playlist: " + str(err)
-           # print(error_msg)
+            print("Error Message", error_msg)
 
             if "already exists!" in error_msg:
                 return Response(error_msg, status=status.HTTP_409_CONFLICT)
