@@ -1,20 +1,17 @@
-
 import asyncio
 import os
-import subprocess
+from time import sleep
 import django
 import ffmpeg
 from channels.consumer import AsyncConsumer
 from channels.db import database_sync_to_async
 from django.core.cache import cache
-import queue
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'testrecorder.settings')
 django.setup()
 
 
 # All setting are moved bellow the django setup to avoid import error in django setup process.
-
 from youtube.utils import transition_broadcast
 from youtube.models import UserProfile
 
@@ -68,16 +65,16 @@ class VideoConsumer(AsyncConsumer):
         """Handle when websocket is disconnected"""
         self.connection_in_progress = False
         self.reconnection_attempts = 3
-        reconnected = False
+        self.reconnected = False
 
         while self.reconnection_attempts > 0:
-            await asyncio.sleep(5)
+            sleep(5)
             if self.connection_in_progress:
-                reconnected = True
+                self.reconnected = True
                 break
-            self.reconnection_attempts = self.reconnection_attempts -1
+            self.reconnection_attempts = self.reconnection_attempts - 1
 
-        if not reconnected:
+        if not self.reconnected:
             self.process_manager.cleanup_on_disconnect(self.scope)
 
     async def process_text_event(self, text_data):
@@ -109,6 +106,7 @@ class VideoConsumer(AsyncConsumer):
 
 class FFmpegProcessManager:
     """ Manages the FFmpeg process """
+
     def __init__(self, send=None):
         self.process = None
         self.rtmp_url = None
@@ -164,7 +162,7 @@ class FFmpegProcessManager:
 
         return success
 
-    def process_manager_cleanup(self, scope):
+    async def process_manager_cleanup(self, scope):
         """Cleanup the process manager"""
         try:
             if self.process:
@@ -188,7 +186,7 @@ class FFmpegProcessManager:
             self.process.stdin.write(bytes_data)
 
     def start_ffmpeg_process(self):
-        """ Starts the FFMPEG process """        
+        """ Starts the FFMPEG process """
         try:
             input_args = {}
             if not self.audio_enabled:
